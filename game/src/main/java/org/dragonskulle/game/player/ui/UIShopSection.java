@@ -10,10 +10,7 @@ import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
-import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.ui.TransformUI;
-import org.dragonskulle.ui.UIMaterial;
-import org.dragonskulle.ui.UIRenderable;
 import org.dragonskulle.ui.UIText;
 
 /**
@@ -78,22 +75,14 @@ public class UIShopSection extends Component implements IOnStart {
      */
     protected void setState(ShopState state) {
         if (state != getLastState()) {
-            String newText = "Shop is Closed";
-            if (state.equals(ShopState.CLOSED)) {
-                show(mNewBuildingPanel, false);
-                show(mCurrentPanel, false);
-                setLastState(state);
-                if (Reference.isValid(mTitleRef)) {
-                    mTitleRef.get().setText(newText);
-                }
-                swapPanels(new Reference<>(null));
-                return;
-            }
+            log.info("Setting visible state to " + state);
+
+            String newText = "";
             Reference<GameObject> newPanel;
-            log.warning("setting visible state to " + state);
+
             switch (state) {
                 case ATTACK_SCREEN:
-                    newPanel = new Reference<>(null);
+                    newPanel = null;
                     break;
                 case BUILDING_NEW:
                     newPanel = mNewBuildingPanel;
@@ -103,10 +92,16 @@ public class UIShopSection extends Component implements IOnStart {
                     newPanel = mUpgradePanel;
                     newText = "Upgrade Building";
                     break;
+                case CLOSED:
+                    newPanel = null;
+                    newText = "";
+                    show(mCurrentPanel, false);
+                    show(mUpgradePanel, false);
+                    show(mNewBuildingPanel, false);
+                    break;
                 default:
-                    log.warning("Menu hasn't been updated to reflect this screen yet  " + state);
                     if (Reference.isValid(mTitleRef)) {
-                        mTitleRef.get().setText(newText);
+                        mTitleRef.get().setText("");
                     }
                     setState(ShopState.CLOSED);
                     return;
@@ -137,14 +132,13 @@ public class UIShopSection extends Component implements IOnStart {
      * @param newPanel the new panel
      */
     private void swapPanels(Reference<GameObject> newPanel) {
-        log.info("swapping panels");
+        log.info("Swapping panels.");
         // if there is a screen being shown
         // deactivate the panel
         if (Reference.isValid(mCurrentPanel)) {
             mCurrentPanel.get().setEnabled(false);
         }
 
-        log.info("maybe showing newPanel");
         if (Reference.isValid(newPanel)) {
             newPanel.get().setEnabled(true);
         }
@@ -179,23 +173,20 @@ public class UIShopSection extends Component implements IOnStart {
         // Outer window stuff
         TransformUI tran = getGameObject().getTransform(TransformUI.class);
         //        0.08f, 0.86f, 1 - 0.08f, 1 - 0.03f when using transform
-        tran.setParentAnchor(0.08f, 0.68f, 1 - 0.08f, 1 - 0.03f);
-        UIRenderable renderable = new UIRenderable(new SampledTexture("white.bmp"));
-        ((UIMaterial) renderable.getMaterial()).getColour().set(0.235, 0.219, 0.235, 1);
-        getGameObject().addComponent(renderable);
+        tran.setParentAnchor(0.08f, 0.15f, 1 - 0.08f, 1 - 0.15f);
         Reference<GameObject> textObj =
                 getGameObject()
                         .buildChild(
                                 "main_shop_text",
                                 new TransformUI(true),
                                 (self) -> {
-                                    UIText mWindowText = new UIText("Shop is Closed");
+                                    UIText mWindowText = new UIText("");
                                     self.addComponent(mWindowText);
                                     mTitleRef = mWindowText.getReference(UIText.class);
                                 });
 
         TransformUI mTextTransform = textObj.get().getTransform(TransformUI.class);
         mTextTransform.setParentAnchor(0.05f, 0f);
-        mTextTransform.translate(0, -0.22f); // remove if using transforms
+        mTextTransform.translate(0, -0.65f); // remove if using transforms
     }
 }

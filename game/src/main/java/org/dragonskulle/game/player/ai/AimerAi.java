@@ -2,7 +2,6 @@
 package org.dragonskulle.game.player.ai;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Random;
@@ -11,7 +10,9 @@ import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonTile;
+import org.dragonskulle.game.player.BuildingDescriptor;
 import org.dragonskulle.game.player.Player;
+import org.dragonskulle.game.player.PredefinedBuildings;
 import org.dragonskulle.game.player.ai.algorithms.AStar;
 import org.dragonskulle.game.player.ai.algorithms.graphs.Graph;
 import org.dragonskulle.game.player.ai.algorithms.graphs.Node;
@@ -67,7 +68,7 @@ public class AimerAi extends AiPlayer {
     private static final float AIM_AT_CAPITAL = 0.01f;
 
     /** This is the number of tries we should do before resetting. */
-    private static final int TRIES = 10;
+    private static final int TRIES = 20;
 
     protected ProbabilisticAiPlayer mProbabilisticAi = null;
 
@@ -88,9 +89,8 @@ public class AimerAi extends AiPlayer {
     @Override
     protected void simulateInput() {
 
-        if (getPlayer() == null) {
-            return;
-        }
+        Player player = getPlayer();
+        if (player == null) return;
 
         // Checks if we have reached the capital
         if (mPath.size() == 0) {
@@ -128,7 +128,12 @@ public class AimerAi extends AiPlayer {
                 mPath = new ArrayDeque<Integer>();
                 return;
             }
+
             HexagonTile nextTile = mGraph.getNode(nextNode).getHexTile().get();
+            // If the AI wants to attack, then try to ensure its not in cooldown.
+            if (nextTile.isClaimed() && player.inCooldown()) {
+                return;
+            }
 
             if (mGraph.getNode(nextNode) == mNodePreviouslyOn) {
                 mAttempts++;
@@ -138,15 +143,14 @@ public class AimerAi extends AiPlayer {
 
             // Checks if we have been on this tile for ages
             if (mAttempts > TRIES) {
+                log.info("All tried depleted.");
                 mPath = new ArrayDeque<Integer>();
                 return;
             }
             mNodePreviouslyOn = mGraph.getNode(nextNode);
             // Checks whether to build or to attack
             if (nextTile.isClaimed()) {
-
                 attack(nextTile, nextNode);
-
                 return;
             } else {
                 build(nextTile, nextNode);
@@ -171,7 +175,6 @@ public class AimerAi extends AiPlayer {
         // ATTACK
         if (!nextTile.hasBuilding()) {
             // If the building is not on the current node get the next tile
-
             mGone.push(nextNode);
             nextNode = mPath.pop();
             if (!Reference.isValid(mGraph.getNode(nextNode).getHexTile())) {
@@ -185,15 +188,12 @@ public class AimerAi extends AiPlayer {
         // Get the building on the tile.
         Building building = nextTile.getBuilding();
         if (!nextTile.hasBuilding() && nextTilePlayer == null) {
-
             // If there is no building here and no one claims build.
-
             build(nextTile, nextNode);
             return;
         }
 
         if (!nextTile.hasBuilding()) {
-
             // The tile has not got a building but it is claimed so there is a building nearby
 
             // Go Back
@@ -221,12 +221,11 @@ public class AimerAi extends AiPlayer {
 
             if (building != null && getPlayer().isBuildingOwner(building)) {
                 // Will attack
-
                 mProbabilisticAi.tryToAttack(building);
 
                 // Assumption is that the code at the start of the method will move back
                 // to
-                // correct postion
+                // correct position
                 mPath.push(nextNode);
             }
 
@@ -236,21 +235,23 @@ public class AimerAi extends AiPlayer {
         // This will check for buildings to attack from
         for (Building attacker : building.getAttackableBuildings()) {
 
-            // Checks its ours
-            if (getPlayer().isBuildingOwner(attacker)) {
+            // If the attacker is not ours, continue.
+            if (!getPlayer().isBuildingOwner(attacker)) continue;
 
-                // Used so lambdas work
-                final Building defender = nextTile.getBuilding();
-                getPlayer().getClientAttackRequest().invoke(d -> d.setData(attacker, defender));
+            // Ensure the player can afford to attack.
+            if (attacker.getAttackCost() > getPlayer().getTokens().get()) continue;
 
-                // Checks if the attack was successful
-                if (nextTilePlayer != null
-                        && nextTilePlayer.getNetworkObject().getOwnerId()
-                                == getPlayer().getNetworkObject().getOwnerId()) {
-                    mGone.push(nextNode);
-                }
-                return;
+            // Used so lambdas work
+            final Building defender = nextTile.getBuilding();
+            getPlayer().getClientAttackRequest().invoke(d -> d.setData(attacker, defender));
+
+            // Checks if the attack was successful
+            if (nextTilePlayer != null
+                    && nextTilePlayer.getNetworkObject().getOwnerId()
+                            == getPlayer().getNetworkObject().getOwnerId()) {
+                mGone.push(nextNode);
             }
+            return;
         }
     }
 
@@ -262,8 +263,15 @@ public class AimerAi extends AiPlayer {
      */
     private void build(HexagonTile tileToBuildOn, int nextNode) {
         log.info("A* Building");
+
+        // Get a building type that they can afford.
+        BuildingDescriptor option = getRandomBuildingType();
+        if (option == null) return;
+
         // BUILD
-        getPlayer().getClientBuildRequest().invoke((d) -> d.setTile(tileToBuildOn));
+        getPlayer()
+                .getClientBuildRequest()
+                .invoke((d) -> d.setTile(tileToBuildOn, PredefinedBuildings.getIndex(option)));
         mGone.push(nextNode);
     }
 
@@ -319,7 +327,7 @@ public class AimerAi extends AiPlayer {
             if (!hexagonTile.get().isClaimed()) {
                 mPath.push(previousNode);
                 previousNode = mGone.pop();
-            } else if (!getPlayer().isClaimingTile(hexagonTile.get())) {
+            } else if (!getPlayer().hasClaimedTile(hexagonTile.get())) {
                 mPath.push(previousNode);
                 previousNode = mGone.pop();
             } else {
@@ -340,7 +348,7 @@ public class AimerAi extends AiPlayer {
             mPath.push(firstElement);
             return;
         }
-        if (getPlayer().isClaimingTile(mGraph.getNode(firstElement).getHexTile().get())) {
+        if (getPlayer().hasClaimedTile(mGraph.getNode(firstElement).getHexTile().get())) {
 
             mGone.push(firstElement);
             mNodePreviouslyOn = mGraph.getNode(firstElement);
@@ -368,18 +376,15 @@ public class AimerAi extends AiPlayer {
 
         // Goes through the ownedBuildings
         while (true) {
-            Reference<Building> building = ownedBuildings.get(index);
+            Reference<Building> buildingReference = ownedBuildings.get(index);
 
             // Checks the building is valid
-            if (Reference.isValid(building)
-                    && building.get().getAttackableBuildings().size() != 0) {
-                // Check
+            if (Reference.isValid(buildingReference)) {
+                Building buildingToAim = buildingReference.get().getRandomAttackableBuilding();
 
-                ArrayList<Building> attackableBuildings =
-                        new ArrayList<Building>(building.get().getAttackableBuildings());
-                Building buildingToAim =
-                        attackableBuildings.get(mRandom.nextInt(attackableBuildings.size()));
-                return buildingToAim.getOwner();
+                if (buildingToAim != null) {
+                    return buildingToAim.getOwner();
+                }
             }
             index++;
 
@@ -485,7 +490,7 @@ public class AimerAi extends AiPlayer {
                                 tile -> {
                                     if (tile.hasBuilding()
                                             && tile.getBuilding().isCapital()
-                                            && opponentPlayer.isClaimingTile(tile)) {
+                                            && opponentPlayer.hasClaimedTile(tile)) {
                                         tileToAim[0] = tile;
                                         return true;
                                     } else {
@@ -500,7 +505,7 @@ public class AimerAi extends AiPlayer {
                             .anyMatch(
                                     tile -> {
                                         if (tile.hasBuilding()
-                                                && opponentPlayer.isClaimingTile(tile)) {
+                                                && opponentPlayer.hasClaimedTile(tile)) {
                                             tileToAim[0] = tile;
                                             return true;
                                         } else {
@@ -544,17 +549,5 @@ public class AimerAi extends AiPlayer {
         buildings.mStartNode = mGraph.getNode(getPlayer().getCapital().getTile());
 
         return buildings;
-    }
-
-    /**
-     * Returns the AI {@link Player}
-     *
-     * @return The {@link Player} in the {@link Reference} or {@code null} if it does not exist
-     */
-    private Player getPlayer() {
-        if (!Reference.isValid(mPlayer)) {
-            return null;
-        }
-        return mPlayer.get();
     }
 }

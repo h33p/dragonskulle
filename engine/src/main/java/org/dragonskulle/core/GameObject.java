@@ -1,12 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.core;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,7 +20,7 @@ import org.dragonskulle.components.Transform3D;
  *     itself in the world and other GameObjects.
  */
 @Accessors(prefix = "m")
-public class GameObject implements Serializable {
+public class GameObject {
 
     @Getter private Reference<GameObject> mReference = new Reference<>(this);
     private final ArrayList<Component> mComponents = new ArrayList<>();
@@ -75,6 +69,8 @@ public class GameObject implements Serializable {
          *
          * <p>This method will be called to allow initial setup of the object. It will be already
          * linked up with its parent, if there is any.
+         *
+         * @param go The {@link GameObject}.
          */
         void handleBuild(GameObject go);
     }
@@ -101,42 +97,6 @@ public class GameObject implements Serializable {
      */
     public static GameObject instantiate(GameObject object, Transform transform) {
         GameObject instance = object.createClone();
-        transform.setGameObject(instance);
-        instance.mTransform = transform;
-        return instance;
-    }
-
-    /**
-     * Create a game object from its byte data.
-     *
-     * @param objectData data to deserialize
-     * @return instantiated object
-     */
-    public static GameObject instantiate(byte[] objectData) {
-        if (objectData != null) {
-            try {
-                ByteArrayInputStream bais = new ByteArrayInputStream(objectData);
-                return (GameObject) new ObjectInputStream(bais).readObject();
-            } catch (ClassCastException | ClassNotFoundException | IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Create a clone of a GameObject, providing a new transform for the object.
-     *
-     * @param objectData data of the object
-     * @param transform New transform for the object. Must be passed exclusively (i.e. only to this
-     *     instance)
-     * @return The new instance of the GameObject
-     */
-    public static GameObject instantiate(byte[] objectData, Transform transform) {
-        GameObject instance = instantiate(objectData);
-        if (instance == null) {
-            return null;
-        }
         transform.setGameObject(instance);
         instance.mTransform = transform;
         return instance;
@@ -199,6 +159,7 @@ public class GameObject implements Serializable {
      *
      * @param name name of the object
      * @param enabled controls whether the object is enabled by default
+     * @param transform The transform to be used.
      * @param handler handler callback that allows to do initial setup
      */
     public GameObject(String name, boolean enabled, Transform transform, IBuildHandler handler) {
@@ -210,6 +171,7 @@ public class GameObject implements Serializable {
      * Constructor for game object, allows initial setup.
      *
      * @param name name of the object
+     * @param transform The transform to be used.
      * @param handler handler callback that allows to do initial setup
      */
     public GameObject(String name, Transform transform, IBuildHandler handler) {
@@ -316,6 +278,8 @@ public class GameObject implements Serializable {
      * <p>Doesn't return a list of references as this method should only be used by the engine which
      * is responsible for the destroying of objects and therefore won't keep any strong references
      * to destroyed objects.
+     *
+     * @param ret The List that will be populated with children.
      */
     protected void getAllChildren(List<GameObject> ret) {
         for (GameObject child : mChildren) {
@@ -405,6 +369,7 @@ public class GameObject implements Serializable {
      *
      * @param name name of the object
      * @param handler handler callback to do initial setup
+     * @return A {@link Reference} to the child GameObject.
      */
     public Reference<GameObject> buildChild(String name, IBuildHandler handler) {
         return buildChild(name, mEnabled, handler);
@@ -415,7 +380,9 @@ public class GameObject implements Serializable {
      * parent, and then call the build handler method.
      *
      * @param name name of the object
+     * @param enabled Whether the object is enabled.
      * @param handler handler callback to do initial setup
+     * @return A {@link Reference} to the child GameObject.
      */
     public Reference<GameObject> buildChild(String name, boolean enabled, IBuildHandler handler) {
         GameObject go = new GameObject(name, enabled);
@@ -429,7 +396,9 @@ public class GameObject implements Serializable {
      * parent, and then call the build handler method.
      *
      * @param name name of the object
+     * @param transform The transform for the object.
      * @param handler handler callback to do initial setup
+     * @return A {@link Reference} to the child GameObject.
      */
     public Reference<GameObject> buildChild(
             String name, Transform transform, IBuildHandler handler) {
@@ -441,7 +410,10 @@ public class GameObject implements Serializable {
      * parent, and then call the build handler method.
      *
      * @param name name of the object
+     * @param enabled Whether the object is enabled.
+     * @param transform The transform for the object.
      * @param handler handler callback to do initial setup
+     * @return A {@link Reference} to the child GameObject.
      */
     public Reference<GameObject> buildChild(
             String name, boolean enabled, Transform transform, IBuildHandler handler) {
@@ -491,29 +463,6 @@ public class GameObject implements Serializable {
         }
     }
 
-    /**
-     * Serialize a game object to bytes.
-     *
-     * @return byte representation of the object
-     */
-    public byte[] serialize() {
-        byte[] objectData = null;
-
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(baos);
-            oos.writeObject(this);
-            oos.flush();
-            oos.close();
-            baos.close();
-            objectData = baos.toByteArray();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return objectData;
-    }
-
     public GameObject createClone() {
         return Engine.getCloner().deepClone(this);
     }
@@ -521,7 +470,7 @@ public class GameObject implements Serializable {
     /**
      * Getter for mChildren.
      *
-     * @return mChildren
+     * @return mChildren The children of the GameObject.
      */
     public ArrayList<GameObject> getChildren() {
         return new ArrayList<>(mChildren);
@@ -530,6 +479,8 @@ public class GameObject implements Serializable {
     /**
      * Getter for mTransform with cast.
      *
+     * @param <T> A type of the {@link Transform}.
+     * @param type The class of the transform.
      * @return mTransform cast to type if cast is valid, null otherwise
      */
     public <T extends Transform> T getTransform(Class<T> type) {
@@ -570,7 +521,9 @@ public class GameObject implements Serializable {
     /**
      * Setter for mDepth.
      *
-     * <p>This method will recursively update mDepth for all mChildren
+     * <p>This method will recursively update mDepth for all mChildre
+     *
+     * @param newDepth The new depth value.
      */
     protected void setDepth(int newDepth) {
         mDepth = newDepth;

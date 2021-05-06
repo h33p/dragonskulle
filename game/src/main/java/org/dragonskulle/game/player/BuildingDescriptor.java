@@ -15,8 +15,6 @@ public class BuildingDescriptor {
     @Getter public final int mAttack;
     @Getter public final int mDefence;
     @Getter public final int mTokenGenerationLevel;
-    @Getter public final int mViewDistance;
-    @Getter public final int mAttackDistance;
     @Getter public final int mCost;
     @Getter public final int mSellPrice;
     @Getter public final String mIconPath;
@@ -28,8 +26,6 @@ public class BuildingDescriptor {
      * @param mAttack the attack value
      * @param mDefence the defence value
      * @param mTokenGeneration the token generation value
-     * @param mViewDistance the view distance value
-     * @param mAttackDistance the attack distance value
      * @param mCost the cost value
      * @param mSellPrice the sell price value
      * @param mIconPath the icon path to be displayed in the menu
@@ -39,8 +35,6 @@ public class BuildingDescriptor {
             int mAttack,
             int mDefence,
             int mTokenGeneration,
-            int mViewDistance,
-            int mAttackDistance,
             int mCost,
             int mSellPrice,
             String mIconPath,
@@ -48,8 +42,6 @@ public class BuildingDescriptor {
         this.mAttack = mAttack;
         this.mDefence = mDefence;
         this.mTokenGenerationLevel = mTokenGeneration;
-        this.mViewDistance = mViewDistance;
-        this.mAttackDistance = mAttackDistance;
         this.mCost = mCost;
         this.mSellPrice = mSellPrice;
         this.mIconPath = mIconPath;
@@ -59,13 +51,7 @@ public class BuildingDescriptor {
     @Override
     public String toString() {
         return String.format(
-                "BuildingDescriptor{(%d:%d:%d:%d:%d:%d:%d)",
-                mAttack,
-                mDefence,
-                mTokenGenerationLevel,
-                mViewDistance,
-                mAttackDistance,
-                mCost,
-                mSellPrice);
+                "BuildingDescriptor{(%d:%d:%d:%d:%d)",
+                mAttack, mDefence, mTokenGenerationLevel, mCost, mSellPrice);
     }
 }

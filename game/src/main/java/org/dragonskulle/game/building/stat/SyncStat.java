@@ -3,7 +3,6 @@ package org.dragonskulle.game.building.stat;
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.Serializable;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -31,7 +30,7 @@ public class SyncStat extends SyncInt {
     private static final int sErrorCost = 9999;
 
     /** An interface for getting the value of a stat at a given level. */
-    public static interface IValueCalculator extends Serializable {
+    public static interface IValueCalculator {
         int getValue(int level);
     }
 
@@ -93,7 +92,7 @@ public class SyncStat extends SyncInt {
             return sErrorCost;
         }
 
-        return (getLevel() / 2) + mBuilding.get().getStatBaseCost();
+        return (getLevel() * 3) + mBuilding.get().getStatBaseCost();
     }
 
     /**

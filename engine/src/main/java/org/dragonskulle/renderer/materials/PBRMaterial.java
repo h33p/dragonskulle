@@ -5,7 +5,6 @@ import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32A32_SFLOAT;
 import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32_SFLOAT;
 import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32_SFLOAT;
 
-import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +25,7 @@ import org.dragonskulle.renderer.ShaderSet;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.renderer.components.Light;
 import org.joml.Matrix4fc;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 /**
@@ -36,7 +36,7 @@ import org.joml.Vector4f;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial, Serializable {
+public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial {
 
     private static final Map<Integer, ShaderSet> sShaderSets = new TreeMap<Integer, ShaderSet>();
 
@@ -104,11 +104,12 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial, Seri
 
             AttributeDescription[] regAttributes = {
                 new AttributeDescription(1, 0, VK_FORMAT_R32G32B32A32_SFLOAT, COL_OFFSET),
-                new AttributeDescription(1, 1, VK_FORMAT_R32G32B32_SFLOAT, CAM_OFFSET),
-                new AttributeDescription(1, 2, VK_FORMAT_R32_SFLOAT, ALPHA_CUTOFF_OFFSET),
-                new AttributeDescription(1, 3, VK_FORMAT_R32_SFLOAT, METALLIC_OFFSET),
-                new AttributeDescription(1, 4, VK_FORMAT_R32_SFLOAT, ROUGHNESS_OFFSET),
-                new AttributeDescription(1, 5, VK_FORMAT_R32_SFLOAT, NORMAL_OFFSET)
+                new AttributeDescription(1, 1, VK_FORMAT_R32G32B32_SFLOAT, EMISSION_COL_OFFSET),
+                new AttributeDescription(1, 2, VK_FORMAT_R32G32B32_SFLOAT, CAM_OFFSET),
+                new AttributeDescription(1, 3, VK_FORMAT_R32_SFLOAT, ALPHA_CUTOFF_OFFSET),
+                new AttributeDescription(1, 4, VK_FORMAT_R32_SFLOAT, METALLIC_OFFSET),
+                new AttributeDescription(1, 5, VK_FORMAT_R32_SFLOAT, ROUGHNESS_OFFSET),
+                new AttributeDescription(1, 6, VK_FORMAT_R32_SFLOAT, NORMAL_OFFSET),
             };
 
             for (AttributeDescription desc : regAttributes) {
@@ -147,7 +148,8 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial, Seri
     }
 
     private static final int COL_OFFSET = 0;
-    private static final int CAM_OFFSET = COL_OFFSET + 4 * 4;
+    private static final int EMISSION_COL_OFFSET = COL_OFFSET + 4 * 4;
+    private static final int CAM_OFFSET = EMISSION_COL_OFFSET + 3 * 4;
     private static final int ALPHA_CUTOFF_OFFSET = CAM_OFFSET + 3 * 4;
     private static final int METALLIC_OFFSET = ALPHA_CUTOFF_OFFSET + 4;
     private static final int ROUGHNESS_OFFSET = METALLIC_OFFSET + 4;
@@ -161,6 +163,8 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial, Seri
 
     /** Base colour of the surface. It will multiply the texture's colour. */
     @Getter private final Vector4f mColour = new Vector4f(1.f);
+    /** Emissive colour of the surface. It will add to the texture's colour. */
+    @Getter private final Vector3f mEmissionColour = new Vector3f(0.f);
     /** Controls which alpha values are cut off. */
     @Getter @Setter private float mAlphaCutoff = 0f;
     /** Metalicness multiplier. */
@@ -280,6 +284,7 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial, Seri
                 .getPosition()
                 .get(offset + CAM_OFFSET, buffer);
         mColour.get(offset + COL_OFFSET, buffer);
+        mEmissionColour.get(offset + EMISSION_COL_OFFSET, buffer);
         ByteBuffer buf = (ByteBuffer) buffer.position(offset + ALPHA_CUTOFF_OFFSET);
         buf.putFloat(mAlphaCutoff);
         buf.putFloat(mMetallic);

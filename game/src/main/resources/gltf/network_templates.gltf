@@ -4,28 +4,8 @@
         "version" : "2.0"
     },
     "extensionsUsed" : [
-        "KHR_lights_punctual",
         "DSKULLE_game_object"
     ],
-    "extensionsRequired" : [
-        "KHR_lights_punctual"
-    ],
-    "extensions" : {
-        "KHR_lights_punctual" : {
-            "lights" : [
-                {
-                    "color" : [
-                        1,
-                        1,
-                        1
-                    ],
-                    "intensity" : 10,
-                    "type" : "directional",
-                    "name" : "Light"
-                }
-            ]
-        }
-    },
     "scene" : 0,
     "scenes" : [
         {
@@ -33,92 +13,11 @@
             "nodes" : [
                 0,
                 1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7
+                2
             ]
         }
     ],
     "nodes" : [
-        {
-            "extensions" : {
-                "KHR_lights_punctual" : {
-                    "light" : 0
-                },
-                "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
-                }
-            },
-            "name" : "Light",
-            "rotation" : [
-                0.16907575726509094,
-                0.27217137813568115,
-                0.7558803558349609,
-                0.570947527885437
-            ],
-            "translation" : [
-                4.076245307922363,
-                1.0054539442062378,
-                5.903861999511719
-            ]
-        },
-        {
-            "camera" : 0,
-            "extensions" : {
-                "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
-                }
-            },
-            "name" : "Camera",
-            "rotation" : [
-                0.483536034822464,
-                0.20870360732078552,
-                0.33687159419059753,
-                0.7804827094078064
-            ],
-            "translation" : [
-                7.358891487121582,
-                -6.925790786743164,
-                4.958309173583984
-            ]
-        },
-        {
-            "extensions" : {
-                "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.TransformHex",
-                    "components" : [
-                        {
-                            "class_name" : "org.dragonskulle.network.components.NetworkHexTransform",
-                            "enabled" : true,
-                            "properties" : [
-                                {
-                                    "name" : "mSyncHeight",
-                                    "value" : false
-                                }
-                            ]
-                        },
-                        {
-                            "class_name" : "org.dragonskulle.game.building.Building",
-                            "enabled" : true
-                        },
-                        {
-                            "class_name" : "org.dragonskulle.game.building.FogInvisibility",
-                            "enabled" : true
-                        }
-                    ]
-                }
-            },
-            "mesh" : 0,
-            "name" : "old_building",
-            "translation" : [
-                -4,
-                0,
-                0
-            ]
-        },
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -134,29 +33,6 @@
             "name" : "player",
             "translation" : [
                 -6,
-                0,
-                0
-            ]
-        },
-        {
-            "extensions" : {
-                "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.TransformHex",
-                    "components" : [
-                        {
-                            "class_name" : "org.dragonskulle.game.player.ai.ProbabilisticAiPlayer",
-                            "enabled" : true
-                        },
-                        {
-                            "class_name" : "org.dragonskulle.game.player.Player",
-                            "enabled" : true
-                        }
-                    ]
-                }
-            },
-            "name" : "aiPlayer",
-            "translation" : [
-                -8,
                 0,
                 0
             ]
@@ -185,7 +61,7 @@
             },
             "name" : "map",
             "translation" : [
-                -10,
+                -8,
                 0,
                 0
             ]
@@ -222,217 +98,6 @@
                 0,
                 0
             ]
-        },
-        {
-            "extensions" : {
-                "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.TransformHex",
-                    "components" : [
-                        {
-                            "class_name" : "org.dragonskulle.game.player.Player",
-                            "enabled" : true
-                        },
-                        {
-                            "class_name" : "org.dragonskulle.game.player.ai.AimerAi",
-                            "enabled" : true
-                        },
-                        {
-                            "class_name" : "org.dragonskulle.game.player.ai.ProbabilisticAiPlayer",
-                            "enabled" : true
-                        }
-                    ]
-                }
-            },
-            "name" : "aStarAi",
-            "translation" : [
-                -12,
-                0,
-                0
-            ]
-        }
-    ],
-    "cameras" : [
-        {
-            "name" : "Camera",
-            "perspective" : {
-                "aspectRatio" : 1.7777777777777777,
-                "yfov" : 0.39959652046304894,
-                "zfar" : 100,
-                "znear" : 0.10000000149011612
-            },
-            "type" : "perspective"
-        }
-    ],
-    "materials" : [
-        {
-            "doubleSided" : true,
-            "name" : "Material.001",
-            "pbrMetallicRoughness" : {
-                "baseColorFactor" : [
-                    0.8006559014320374,
-                    0.0015056653646752238,
-                    0,
-                    1
-                ],
-                "metallicFactor" : 0,
-                "roughnessFactor" : 0.22058823704719543
-            }
-        },
-        {
-            "doubleSided" : true,
-            "name" : "Material.002",
-            "pbrMetallicRoughness" : {
-                "baseColorFactor" : [
-                    0.08714032173156738,
-                    0.03364383056759834,
-                    0.015137717127799988,
-                    1
-                ],
-                "roughnessFactor" : 0.13970589637756348
-            }
-        }
-    ],
-    "meshes" : [
-        {
-            "name" : "Cube.002",
-            "primitives" : [
-                {
-                    "attributes" : {
-                        "POSITION" : 0,
-                        "NORMAL" : 1,
-                        "TEXCOORD_0" : 2
-                    },
-                    "indices" : 3,
-                    "material" : 0
-                },
-                {
-                    "attributes" : {
-                        "POSITION" : 4,
-                        "NORMAL" : 5,
-                        "TEXCOORD_0" : 6
-                    },
-                    "indices" : 7,
-                    "material" : 1
-                }
-            ]
-        }
-    ],
-    "accessors" : [
-        {
-            "bufferView" : 0,
-            "componentType" : 5126,
-            "count" : 241,
-            "max" : [
-                0.35526949167251587,
-                0.36093583703041077,
-                0.5924168825149536
-            ],
-            "min" : [
-                -0.35526949167251587,
-                -0.36093583703041077,
-                0
-            ],
-            "type" : "VEC3"
-        },
-        {
-            "bufferView" : 1,
-            "componentType" : 5126,
-            "count" : 241,
-            "type" : "VEC3"
-        },
-        {
-            "bufferView" : 2,
-            "componentType" : 5126,
-            "count" : 241,
-            "type" : "VEC2"
-        },
-        {
-            "bufferView" : 3,
-            "componentType" : 5123,
-            "count" : 798,
-            "type" : "SCALAR"
-        },
-        {
-            "bufferView" : 4,
-            "componentType" : 5126,
-            "count" : 816,
-            "max" : [
-                0.40454524755477905,
-                0.40454527735710144,
-                0.901775598526001
-            ],
-            "min" : [
-                -0.40454524755477905,
-                -0.40454527735710144,
-                0.5847399830818176
-            ],
-            "type" : "VEC3"
-        },
-        {
-            "bufferView" : 5,
-            "componentType" : 5126,
-            "count" : 816,
-            "type" : "VEC3"
-        },
-        {
-            "bufferView" : 6,
-            "componentType" : 5126,
-            "count" : 816,
-            "type" : "VEC2"
-        },
-        {
-            "bufferView" : 7,
-            "componentType" : 5123,
-            "count" : 3090,
-            "type" : "SCALAR"
-        }
-    ],
-    "bufferViews" : [
-        {
-            "buffer" : 0,
-            "byteLength" : 2892,
-            "byteOffset" : 0
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 2892,
-            "byteOffset" : 2892
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 1928,
-            "byteOffset" : 5784
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 1596,
-            "byteOffset" : 7712
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 9792,
-            "byteOffset" : 9308
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 9792,
-            "byteOffset" : 19100
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 6528,
-            "byteOffset" : 28892
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 6180,
-            "byteOffset" : 35420
-        }
-    ],
-    "buffers" : [
-        {
-            "byteLength" : 41600,
-            "uri" : "network_templates.bin"
         }
     ]
 }

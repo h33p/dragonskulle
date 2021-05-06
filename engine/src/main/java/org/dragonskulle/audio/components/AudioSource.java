@@ -12,6 +12,7 @@ import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.ILateFrameUpdate;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.core.Resource;
 import org.dragonskulle.core.Scene;
 import org.joml.Vector3f;
 import org.lwjgl.openal.AL11;
@@ -118,20 +119,29 @@ public class AudioSource extends Component implements IFixedUpdate, ILateFrameUp
     }
 
     /**
-     * Set the sound of this AudioSource. It will be played as soon as the AudioSource is given a
-     * source by the AudioManager
+     * Set the sound of this AudioSource via the name of the sound. It will be played as soon as the
+     * AudioSource is given a source by the AudioManager.
      *
-     * @param soundId ID that the desired sound was loaded with
+     * @param name Name of the sound to play
      */
-    public void playSound(int soundId) {
-        Sound sound = AudioManager.getInstance().getSound(soundId);
+    public void playSound(String name) {
+        playSound(AudioManager.getResource(name));
+    }
+
+    /**
+     * Set the sound of this AudioSource via a sound resource. It will be played as soon as the
+     * AudioSource is given a source by the AudioManager.
+     *
+     * @param sound Sound resource to play
+     */
+    public void playSound(Resource<Sound> sound) {
         if (sound == null) {
             return;
         }
 
-        mSound = sound;
+        mSound = sound.get();
         detachSource();
-        mTimeLeft = sound.mLength;
+        mTimeLeft = mSound.mLength;
     }
 
     /**

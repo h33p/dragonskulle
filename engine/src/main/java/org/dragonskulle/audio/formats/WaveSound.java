@@ -1,10 +1,10 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.audio.formats;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
@@ -25,7 +25,7 @@ import org.lwjgl.openal.AL11;
  *     then buffered using alBufferData.
  */
 @Log
-public class WaveSound extends Sound implements Serializable {
+public class WaveSound extends Sound {
 
     private int mSampleRate;
     private int mFormat;
@@ -133,5 +133,55 @@ public class WaveSound extends Sound implements Serializable {
             log.warning("IOException when reading audio file " + file.getAbsolutePath());
         }
         return null;
+    }
+
+    private WaveSound() {}
+
+    /**
+     * Parses a .wav file from a byte array. This is slow so should only be done at program start.
+     *
+     * @param data byte array containing the wave data
+     */
+    public WaveSound(byte[] data) {
+        try {
+            AudioInputStream audioInputStream =
+                    AudioSystem.getAudioInputStream(new ByteArrayInputStream(data));
+
+            AudioFormat format = audioInputStream.getFormat();
+
+            mSampleRate = (int) format.getSampleRate();
+
+            mBits = format.getSampleSizeInBits();
+            mChannels = format.getChannels();
+            setALFormat();
+
+            int audioLength = (int) audioInputStream.getFrameLength() * format.getFrameSize();
+
+            byte[] audioBytes = new byte[audioLength];
+
+            // TODO: Probably isn't the best way to do this
+            int bytesRead = audioInputStream.read(audioBytes);
+            if (audioLength != bytesRead) {
+                log.warning("Failed to read in expected number of audio bytes");
+            }
+
+            mLength = (float) bytesRead / format.getSampleRate();
+
+            if (mBits == 16) {
+                mLength /= 2;
+            }
+
+            ByteOrder order = format.isBigEndian() ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN;
+            ByteBuffer buffer = processRawBytes(audioBytes, mBits == 8, order);
+
+            mBuffer = AL11.alGenBuffers();
+            AL11.alBufferData(mBuffer, mFormat, buffer, mSampleRate);
+        } catch (UnsupportedAudioFileException e) {
+            log.warning("Attempted to load unsupported audio file");
+        } catch (FileNotFoundException e) {
+            log.warning("Attempted to load file that doesn't exist");
+        } catch (IOException e) {
+            log.warning("IOException when reading audio file");
+        }
     }
 }

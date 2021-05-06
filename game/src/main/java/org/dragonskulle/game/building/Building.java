@@ -4,12 +4,14 @@ package org.dragonskulle.game.building;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Getter;
@@ -20,21 +22,30 @@ import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
+import org.dragonskulle.components.Transform3D;
 import org.dragonskulle.components.TransformHex;
+import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Resource;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.SingletonStore;
+import org.dragonskulle.game.App;
 import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.HexagonTile.TileType;
+import org.dragonskulle.game.misc.ArcPath;
+import org.dragonskulle.game.misc.ArcPath.IArcHandler;
+import org.dragonskulle.game.misc.ArcPath.IPathUpdater;
 import org.dragonskulle.game.player.Player;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.sync.SyncBool;
+import org.dragonskulle.network.components.sync.SyncFloat;
+import org.dragonskulle.network.components.sync.SyncInt;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 
@@ -72,6 +83,14 @@ public class Building extends NetworkableComponent
     /** Whether the building is a capital. */
     private final SyncBool mIsCapital = new SyncBool(false);
 
+    /**
+     * Whether actions on this building (sell, upgrade, attack, etc. etc.) are locked.
+     *
+     * <p>It is used in attacks to prevent the building from being destroyed, taken over, attacked
+     * twice.
+     */
+    @Getter private final SyncFloat mActionLockTime = new SyncFloat();
+
     /** The tiles the building claims, including the tile the building is currently on. */
     @Getter private final Set<HexagonTile> mClaimedTiles = new HashSet<>();
 
@@ -83,6 +102,12 @@ public class Building extends NetworkableComponent
 
     /** Building templates, used to distinguish the buildings. */
     private static final Resource<GLTF> sBuildingTemplates = GLTF.getResource("building_templates");
+
+    /** Store a random number generator. */
+    private Random mRandom = new Random();
+
+    static final GameObject FIREBALL_TEMPLATE =
+            App.TEMPLATES.get().getDefaultScene().findRootObject("attack_ball");
 
     /**
      * Store {@link HexagonTile}s that are known to be theoretically fine locations for placing a
@@ -107,16 +132,15 @@ public class Building extends NetworkableComponent
     /** Controls how deep around claimed tiles we go for neighbouring tile calculation. */
     private static final int NEIGHBOUR_BOUND = 5;
 
-    /** The cost to buy a {@link Building}. */
-    public static final int BUY_PRICE = 10;
     /** The reimbursement from selling a {@link Building}. */
-    public static final int SELL_PRICE = 2;
+    private SyncInt mSellPrice = new SyncInt(2);
 
     /**
      * The base price for upgrading a stat. Automatically added to {@link SyncStat#getCost()}.
-     * Should alwyas be at least {@code 1}.
+     *
+     * <p>Calculated in {@link #generateStatBaseCost()}.
      */
-    @Getter private int mStatBaseCost = 1;
+    @Getter private int mStatBaseCost = 0;
 
     /** Store the {@link HexagonMap} that the {@link Building} is on. */
     private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
@@ -311,6 +335,30 @@ public class Building extends NetworkableComponent
         assignMesh();
     }
 
+    /** Checks whether arc paths need updating, and updates them. */
+    private void checkPaths() {
+        final int div = 1;
+        final int numFireballs = (mAttack.getLevel() + div - 1) / div;
+
+        if (mPaths.size() == numFireballs || mGameObject == null) {
+            return;
+        }
+
+        mPaths.stream()
+                .filter(Reference::isValid)
+                .map(Reference::get)
+                .forEach(mGameObject::removeComponent);
+
+        mPaths.clear();
+
+        for (int i = 0; i < numFireballs; i++) {
+            ArcPath path = new ArcPath();
+            path.setTemplate(FIREBALL_TEMPLATE);
+            getGameObject().addComponent(path);
+            mPaths.add(path.getReference(ArcPath.class));
+        }
+    }
+
     /**
      * Ensures that changes to stats are reflected in the building.
      *
@@ -328,6 +376,8 @@ public class Building extends NetworkableComponent
         if (!isCapital()) assignMesh();
 
         setStatsRequireVisualUpdate();
+
+        checkPaths();
     }
 
     /** Assigns a visible mesh to be displayed depending on the maximum stat level. */
@@ -408,7 +458,7 @@ public class Building extends NetworkableComponent
             totalUpgrades += stat.getLevel() - SyncStat.LEVEL_MIN;
         }
 
-        mStatBaseCost = 1 + totalUpgrades / 2;
+        mStatBaseCost = 1 + totalUpgrades * 3;
     }
 
     /** Claim the tiles around the building and the tile the building is on. */
@@ -518,11 +568,119 @@ public class Building extends NetworkableComponent
                 });
     }
 
+    private class ArcUpdater implements IPathUpdater, IArcHandler {
+        private final float mAttackStart;
+        private final float mAttackTime;
+
+        private final float mRotx;
+        private final float mRoty;
+        private final float mRotz;
+
+        public ArcUpdater(float attackTime) {
+            mAttackStart = Engine.getInstance().getCurTime();
+            mAttackTime = attackTime;
+            mRotx = (float) Math.random() * 360f;
+            mRoty = (float) Math.random() * 360f;
+            mRotz = (float) Math.random() * 360f;
+        }
+
+        public void handle(ArcPath arcPath) {
+            float curtime = Engine.getInstance().getCurTime();
+
+            float lerptime = (curtime - mAttackStart) / mAttackTime;
+
+            if (lerptime >= 1f) {
+                mUpdater.clear();
+                return;
+            }
+
+            arcPath.setSpawnOffset(lerptime);
+        }
+
+        public void handle(int id, float pathPoint, Transform3D transform) {
+            transform.rotateDeg(pathPoint * mRotx, pathPoint * mRoty, pathPoint * mRotz);
+        }
+    }
+
+    private final List<Reference<ArcPath>> mPaths = new ArrayList<>();
+    private Reference<ArcUpdater> mUpdater = null;
+
+    /**
+     * Show a visual effect representing an attack.
+     *
+     * @param defender defending building to attack
+     * @param attackTime how long should the effect last
+     */
+    public void attackEffect(Building defender, float attackTime) {
+        if (Reference.isValid(mUpdater)) {
+            mUpdater.clear();
+        }
+
+        if (mPaths.isEmpty()) {
+            checkPaths();
+        }
+
+        HexagonTile defenderTile = defender.getTile();
+        HexagonTile tile = getTile();
+
+        if (defenderTile == null || tile == null) {
+            return;
+        }
+
+        mUpdater = new Reference<>(new ArcUpdater(attackTime));
+
+        List<HexagonTile> tiles = defender.getClaimedTiles().stream().collect(Collectors.toList());
+        Collections.shuffle(tiles);
+
+        int o = -2;
+
+        Vector3f cartesianDelta = new Vector3f();
+        Vector2f axialCoords = new Vector2f();
+
+        for (Reference<ArcPath> pathRef : mPaths) {
+            if (!Reference.isValid(pathRef)) {
+                continue;
+            }
+
+            ArcPath path = pathRef.get();
+
+            HexagonTile targetTile = defenderTile;
+
+            if (++o >= 0) {
+                if (o >= tiles.size() || tiles.get(o) == defenderTile) {
+                    continue;
+                }
+
+                targetTile = tiles.get(o);
+            }
+
+            axialCoords.set(targetTile.getQ() - tile.getQ(), targetTile.getR() - tile.getR());
+
+            TransformHex.axialToCartesian(
+                    axialCoords,
+                    targetTile.getSurfaceHeight() - targetTile.getHeight(),
+                    cartesianDelta);
+
+            path.setObjGap(1f);
+            path.setUpdater(mUpdater.cast(IPathUpdater.class));
+            path.setArcHandler(mUpdater.cast(IArcHandler.class));
+
+            path.getPosStart().set(0, 0, 0);
+            path.getPosTarget().set(cartesianDelta);
+
+            float amplitude =
+                    (targetTile.distTo(tile.getQ(), tile.getR()) + (float) Math.random() * 2) * 0.4f
+                            + 0.2f;
+
+            path.setAmplitude(amplitude);
+        }
+    }
+
     /**
      * Attack an opponent building.
      *
-     * <p><b> Currently has no effect other than the basic calculations (i.e. it does not transfer
-     * ownership of Buildings). </b>
+     * <p><b> Has no effect other than the basic calculations (i.e. it does not transfer ownership
+     * of Buildings). </b>
      *
      * <p>There is a chance this will either fail or succeed, influenced by the attack stat of the
      * attacking building and the defence stats of the opponent building.
@@ -568,7 +726,7 @@ public class Building extends NetworkableComponent
     }
 
     /**
-     * Get a {@link HashSet} of opponent {@link Building}s that neighbour our tiles.
+     * Get a {@link Set} of opponent {@link Building}s that neighbour our tiles.
      *
      * @return An ArrayList of opponent Buildings that can be attacked.
      */
@@ -593,6 +751,19 @@ public class Building extends NetworkableComponent
     }
 
     /**
+     * Get a random attackable opponent {@link Building}.
+     *
+     * @return An opponent Building that can be attacked from this Building; otherwise {@code null}.
+     */
+    public Building getRandomAttackableBuilding() {
+        List<Building> buildings = new ArrayList<Building>(getAttackableBuildings());
+        if (buildings.size() == 0) return null;
+
+        int index = mRandom.nextInt(buildings.size());
+        return buildings.get(index);
+    }
+
+    /**
      * Get a {@link List} of tiles that we can attack.
      *
      * @return a {@link List} of tiles that can be attacked.
@@ -603,6 +774,15 @@ public class Building extends NetworkableComponent
         }
 
         return mAttackableTiles;
+    }
+
+    /**
+     * Get whether the building is action locked, i.e. should not have any actions happening to it.
+     *
+     * @return {@code true} if building is action locked, {@code false} otherwise.
+     */
+    public boolean isActionLocked() {
+        return mActionLockTime.get() > Engine.getInstance().getCurTime();
     }
 
     /**
@@ -772,23 +952,9 @@ public class Building extends NetworkableComponent
     }
 
     /**
-     * Remove this building from the game.
+     * Will generate the cost it takes to attack <b>from</b> this Building.
      *
-     * <ul>
-     *   <li>Removes the Building from the owner {@link Player}'s list of owned Buildings.
-     *   <li>Removes any links to any {@link HexagonTile}s.
-     *   <li>Calls {@link GameObject#destroy()}.
-     * </ul>
-     */
-    public void remove() {
-        // Request that the entire building GameObject should be destroyed.
-        getGameObject().destroy();
-    }
-
-    /**
-     * This will create and return a base cost for attacking.
-     *
-     * @return The cost for attacking
+     * @return The cost to attack from this Building.
      */
     public int getAttackCost() {
 
@@ -797,9 +963,8 @@ public class Building extends NetworkableComponent
 
         // Update cost on different stats
         cost += (mDefence.getLevel() * 3);
-        cost += (mAttack.getLevel() * 2);
+        cost += (mAttack.getLevel() * 3);
         cost += (mTokenGeneration.getLevel());
-        cost += (mViewDistance.getLevel());
 
         if (isCapital()) {
             cost += 10;
@@ -895,6 +1060,38 @@ public class Building extends NetworkableComponent
         return getShopStatTypes().stream().map(mStats::get).collect(Collectors.toList());
     }
 
+    /**
+     * Set the sell price.
+     *
+     * @param price The price.
+     */
+    public void setSellPrice(int price) {
+        mSellPrice.set(price);
+    }
+
+    /**
+     * Get the sell price.
+     *
+     * @return The sell price.
+     */
+    public int getSellPrice() {
+        return mSellPrice.get();
+    }
+
+    /** Remove this building from the game (calls {@link GameObject#destroy()}). */
+    public void remove() {
+        // Request that the entire building GameObject should be destroyed.
+        getGameObject().destroy();
+    }
+
+    /**
+     * Destroy the Building. To correctly trigger this, please call {@link #remove()}.
+     *
+     * <ul>
+     *   <li>Removes the Building from the owner {@link Player}'s list of owned Buildings.
+     *   <li>Removes any links to any {@link HexagonTile}s.
+     * </ul>
+     */
     @Override
     protected void onDestroy() {
         Player owner = getOwner();
