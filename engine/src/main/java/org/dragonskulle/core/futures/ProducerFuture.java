@@ -60,15 +60,15 @@ public class ProducerFuture<T> extends Future {
     }
 
     /**
-     * Constructor for {@link ThenFuture}.
+     * Constructor for {@link ProducerFuture}.
      *
      * <p>This future will be constructed as root future.
      *
      * @param producer data to produce.
      * @param postProduction post production action to invoke.
      */
-    public ProducerFuture(IThreadedProducer<T> producer, IProducerFuture<T> produced) {
-        this(null, producer, produced);
+    public ProducerFuture(IThreadedProducer<T> producer, IProducerFuture<T> postProduction) {
+        this(null, producer, postProduction);
     }
 
     @Override
