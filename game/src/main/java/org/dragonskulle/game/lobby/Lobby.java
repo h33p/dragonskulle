@@ -2,7 +2,6 @@
 package org.dragonskulle.game.lobby;
 
 import com.google.common.net.InetAddresses;
-import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -14,6 +13,7 @@ import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.core.futures.ProducerFuture;
 import org.dragonskulle.game.GameState;
 import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.game.player.ui.UIPauseMenu;
@@ -345,6 +345,9 @@ public class Lobby extends Component implements IFrameUpdate {
 
     /** Builds the "Join" section of the UI. */
     private void buildJoinUi() {
+
+        boolean[] isDiscovering = {false};
+
         UIManager.getInstance()
                 .buildVerticalUi(
                         mJoinUi,
@@ -367,33 +370,51 @@ public class Lobby extends Component implements IFrameUpdate {
                                 "Join locally",
                                 (button, __) -> {
                                     button.getLabelText().get().setText("Connecting...");
-                                    final InetAddress address = LobbyDiscovery.discoverLobby();
-                                    if (address != null) {
-                                        mNetworkManager
-                                                .get()
-                                                .createClient(
-                                                        address.getHostAddress(),
-                                                        PORT,
-                                                        (manager, netID) -> {
+                                    isDiscovering[0] = true;
+
+                                    new ProducerFuture<>(
+                                                    () -> LobbyDiscovery.discoverLobby(),
+                                                    (___, address) -> {
+                                                        if (isDiscovering[0] && address != null) {
+                                                            mNetworkManager
+                                                                    .get()
+                                                                    .createClient(
+                                                                            address
+                                                                                    .getHostAddress(),
+                                                                            PORT,
+                                                                            (manager, netID) -> {
+                                                                                button.getLabelText()
+                                                                                        .get()
+                                                                                        .setText(
+                                                                                                "Join locally");
+
+                                                                                mJoiningUi
+                                                                                        .setEnabled(
+                                                                                                true);
+                                                                                mJoinUi.setEnabled(
+                                                                                        false);
+                                                                            },
+                                                                            Lobby::onHostStartGame,
+                                                                            () -> {
+                                                                                mJoiningUi
+                                                                                        .setEnabled(
+                                                                                                false);
+                                                                                mJoinUi.setEnabled(
+                                                                                        true);
+                                                                            });
+                                                        } else {
                                                             button.getLabelText()
                                                                     .get()
                                                                     .setText("Join locally");
-
-                                                            mJoiningUi.setEnabled(true);
-                                                            mJoinUi.setEnabled(false);
-                                                        },
-                                                        Lobby::onHostStartGame,
-                                                        () -> {
-                                                            mJoiningUi.setEnabled(false);
-                                                            mJoinUi.setEnabled(true);
-                                                        });
-                                    } else {
-                                        button.getLabelText().get().setText("Join locally");
-                                    }
+                                                        }
+                                                        isDiscovering[0] = false;
+                                                    })
+                                            .schedule();
                                 }),
                         new UIButton(
                                 "Back",
                                 (__, ___) -> {
+                                    isDiscovering[0] = false;
                                     mJoinUi.setEnabled(false);
                                     mLobbyUi.setEnabled(true);
                                 }));
