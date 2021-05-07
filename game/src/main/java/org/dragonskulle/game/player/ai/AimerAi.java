@@ -68,7 +68,10 @@ public class AimerAi extends AiPlayer {
     private float aimAtCapital = 0.0f;
 
     /** The number of times we've attempted A* */
-    private int aStarAttempts = 0;
+    private int mAStarAttempts = 0;
+
+    /** The number of attempts before it will always aim for a Capital */
+    private static final int NUMBER_OF_ATTEMPTS = 200;
 
     /** This is the number of tries we should do before resetting. */
     private static final int TRIES = 20;
@@ -109,9 +112,9 @@ public class AimerAi extends AiPlayer {
             } else {
                 // This will mean you need 139 attempts to always aim at the capital.  Need 81
                 // attempts for 0.5
-                int denominator = 200;
-                aStarAttempts += 1;
-                aimAtCapital = (float) (Math.exp(aStarAttempts / denominator) - 1);
+
+                mAStarAttempts += 1;
+                aimAtCapital = (float) (Math.pow(2, (mAStarAttempts / NUMBER_OF_ATTEMPTS)) - 1);
             }
             return;
         }
