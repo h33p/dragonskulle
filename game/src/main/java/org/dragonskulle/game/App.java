@@ -319,9 +319,6 @@ public class App implements NativeResource {
      * @param args the input arguments
      */
     public static void main(String[] args) {
-
-        GameUIAppearance.initialise();
-
         do {
             sReload = false;
             try (App app = new App()) {

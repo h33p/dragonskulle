@@ -69,12 +69,12 @@ public class GameUIAppearance {
         return UIManager.getInstance().getAppearance().getRectTextures()[INFO_BOX_2_1].clone();
     }
 
-    /**
-     * Initialise the UI appearance.
-     *
-     * <p>This method will set the game's UI settings to look consistent.
-     */
-    public static void initialise() {
+    /*
+     Initialise the UI appearance.
+
+     <p>This method will set the game's UI settings to look consistent.
+    */
+    static {
         UIAppearance appearance = UIManager.getInstance().getAppearance();
         appearance.setTextFont(Font.getFontResource("fatpixel.ttf"));
         appearance.setButtonTexture(new SampledTexture("ui/wide_button_new.png"));

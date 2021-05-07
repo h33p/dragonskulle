@@ -82,7 +82,7 @@ public class PlayerStats implements UIManager.IUIBuildHandler {
             Vector3fc v =
                     MathUtils.blendColour(
                             mPlayerReference.get().getPlayerColour().get(),
-                            new Vector3f(0.823f, 0.490f, 0.172f));
+                            new Vector3f(0.9f, 0.9f, 0.9f));
             mDidSetOverlay = ((UIMaterial) bg.getMaterial()).mColour.set(v, 0.8f);
         }
     }
