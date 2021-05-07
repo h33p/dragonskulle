@@ -65,7 +65,7 @@ public class AimerAi extends AiPlayer {
     private static final float PLAY_A_STAR = 0.9f;
 
     /** The chance to aim at a capital. */
-    private float aimAtCapital = 0.0f;
+    private float mAimAtCapital = 0.0f;
 
     /** The number of times we've attempted A* */
     private int mAStarAttempts = 0;
@@ -114,7 +114,7 @@ public class AimerAi extends AiPlayer {
                 // attempts for 0.5
 
                 mAStarAttempts += 1;
-                aimAtCapital = (float) (Math.pow(2, (mAStarAttempts / NUMBER_OF_ATTEMPTS)) - 1);
+                mAimAtCapital = (float) (Math.pow(2, (mAStarAttempts / NUMBER_OF_ATTEMPTS)) - 1);
             }
             return;
         }
@@ -437,7 +437,7 @@ public class AimerAi extends AiPlayer {
             return;
         }
 
-        mCapitalAimer = mRandom.nextFloat() <= aimAtCapital;
+        mCapitalAimer = mRandom.nextFloat() <= mAimAtCapital;
 
         // Will find the tile to attack
         HexagonTile tileToAim = getTileBuilding(opponentPlayer);
