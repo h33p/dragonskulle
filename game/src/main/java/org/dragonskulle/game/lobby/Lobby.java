@@ -3,6 +3,7 @@ package org.dragonskulle.game.lobby;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -15,6 +16,9 @@ import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.GameState;
 import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.game.player.ai.AimerAi;
+import org.dragonskulle.game.player.ai.AttackingAimerAi;
+import org.dragonskulle.game.player.ai.BuildingAimerAi;
+import org.dragonskulle.game.player.ai.UpgradeAimerAi;
 import org.dragonskulle.game.player.ui.UIPauseMenu;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.UPnP;
@@ -664,7 +668,19 @@ public class Lobby extends Component implements IFrameUpdate {
                     manager.getServerManager()
                             .spawnNetworkObject(i, manager.findTemplateByName("player"));
             GameObject playerObj = player.get().getGameObject();
-            playerObj.addComponent(new AimerAi());
+
+            // Choose which AI to add
+            Random random = new Random();
+            float randomNumber = random.nextFloat();
+            if (randomNumber <= 0.25f) {
+                playerObj.addComponent(new AimerAi());
+            } else if (randomNumber <= 0.5f) {
+                playerObj.addComponent(new BuildingAimerAi());
+            } else if (randomNumber <= 0.75) {
+                playerObj.addComponent(new AttackingAimerAi());
+            } else {
+                playerObj.addComponent(new UpgradeAimerAi());
+            }
         }
     }
 
