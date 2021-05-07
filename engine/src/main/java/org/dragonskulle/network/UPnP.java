@@ -261,6 +261,21 @@ public class UPnP {
     }
 
     /**
+     * Check if we have mapped a port with a specific protocol during runtime.
+     *
+     * @param port Port to check
+     * @param protocol Protocol to check
+     * @return true if the port is mapped with that protocol, false otherwise
+     */
+    public static boolean checkMappingExists(Integer port, String protocol) {
+        if (sMappings.containsKey(port)) {
+            return sMappings.get(port).stream().filter(p -> p.equals(protocol)).findFirst().orElse(null) != null;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Store a new port mapping in the map of mappings.
      *
      * @param port Port of the new mapping

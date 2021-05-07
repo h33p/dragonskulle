@@ -213,7 +213,9 @@ public class Lobby extends Component implements IFrameUpdate {
                                     LobbyDiscovery.closeLocalLobby();
                                     mHostUi.setEnabled(true);
                                     mHostingUi.setEnabled(false);
-                                    UPnP.deletePortMapping(PORT, "TCP");
+                                    if (UPnP.checkMappingExists(PORT, "TCP")) {
+                                        UPnP.deletePortMapping(PORT, "TCP");
+                                    }
                                 }));
 
         UIManager.getInstance()
