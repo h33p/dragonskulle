@@ -226,7 +226,7 @@ public class AimerAi extends ProbabilisticAiPlayer {
 
             if (building != null && getPlayer().isBuildingOwner(building)) {
                 // Will attack
-                super.simulateInput();
+                super.tryToAttack(building);
 
                 // Assumption is that the code at the start of the method will move back
                 // to
