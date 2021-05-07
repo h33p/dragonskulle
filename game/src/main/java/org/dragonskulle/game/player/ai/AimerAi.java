@@ -62,7 +62,7 @@ public class AimerAi extends AiPlayer {
     private Node mNodePreviouslyOn = null;
 
     /** Whether to use the A* route. */
-    private static final float PLAY_A_STAR = 0.9f;
+    private static final float PLAY_A_STAR = 0.75f;
 
     /** The chance to aim at a capital. */
     private float mAimAtCapital = 0.0f;
