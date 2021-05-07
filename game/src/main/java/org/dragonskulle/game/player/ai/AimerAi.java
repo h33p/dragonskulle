@@ -190,7 +190,7 @@ public class AimerAi extends AiPlayer {
             // If the building is not on the current node get the next tile
             mGone.push(nextNode);
             if (mPath.size() == 0) {
-            	return;
+                return;
             }
             nextNode = mPath.pop();
             if (!Reference.isValid(mGraph.getNode(nextNode).getHexTile())) {
@@ -222,8 +222,8 @@ public class AimerAi extends AiPlayer {
                     return;
                 }
                 if (mGone.size() == 0) {
-                	mPath = new ArrayDeque<Integer>();
-                	return;
+                    mPath = new ArrayDeque<Integer>();
+                    return;
                 }
                 nextNode = mGone.pop();
 
@@ -302,9 +302,9 @@ public class AimerAi extends AiPlayer {
      */
     private int moveForwards() {
         // This will point us to the next tile to use
-    	if (mPath.size() == 0) {
-    		return Integer.MAX_VALUE;
-    	}
+        if (mPath.size() == 0) {
+            return Integer.MAX_VALUE;
+        }
         int nextNode = mPath.pop();
         if (!Reference.isValid(mGraph.getNode(nextNode).getHexTile())) {
             mPath = new ArrayDeque<Integer>();
@@ -334,10 +334,10 @@ public class AimerAi extends AiPlayer {
     /** Move the player to a node owned by them. */
     private void moveBackwards() {
 
-    	if (mGone.size() == 0) {
-    		mPath = new ArrayDeque<Integer>();
-    		return;
-    	}
+        if (mGone.size() == 0) {
+            mPath = new ArrayDeque<Integer>();
+            return;
+        }
         int previousNode = mGone.pop();
 
         // This will get you to the first node which you claimed
@@ -354,19 +354,19 @@ public class AimerAi extends AiPlayer {
             if (!hexagonTile.get().isClaimed()) {
                 mPath.push(previousNode);
                 if (mGone.size() == 0) {
-            		mPath = new ArrayDeque<Integer>();
-            		return;
-            	}
+                    mPath = new ArrayDeque<Integer>();
+                    return;
+                }
                 previousNode = mGone.pop();
             } else if (!getPlayer().hasClaimedTile(hexagonTile.get())) {
                 mPath.push(previousNode);
                 if (mGone.size() == 0) {
-            		mPath = new ArrayDeque<Integer>();
-            		return;
-            	}
+                    mPath = new ArrayDeque<Integer>();
+                    return;
+                }
                 if (mGone.size() == 0) {
-                	mPath = new ArrayDeque<Integer>();
-                	return;
+                    mPath = new ArrayDeque<Integer>();
+                    return;
                 }
                 previousNode = mGone.pop();
             } else {
@@ -380,13 +380,13 @@ public class AimerAi extends AiPlayer {
     /** This is what happens when we start the search and moves from the capital. */
     private void atCapital() {
 
-    	if (mPath.size() == 0) {
-    		return;
-    	}
+        if (mPath.size() == 0) {
+            return;
+        }
         int nextDoor = mPath.pop();
         mGone.push(nextDoor);
         if (mPath.size() == 0) {
-        	return;
+            return;
         }
         int firstElement = mPath.pop();
         if (!Reference.isValid(mGraph.getNode(firstElement).getHexTile())) {
