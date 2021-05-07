@@ -9,6 +9,7 @@ import java.net.InetSocketAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -52,27 +53,33 @@ public class LobbyDiscovery {
                 final int discoverLength = UDP_DISCOVER_MAGIC.length;
                 DatagramSocket socket = new DatagramSocket(DISCOVER_PORT);
                 socket.setBroadcast(true);
+                socket.setSoTimeout(100);
                 log.fine("Local lobby starting, waiting for UDP packets");
                 while (mRunning.get()) {
-                    DatagramPacket packet =
-                            new DatagramPacket(new byte[discoverLength], discoverLength);
-                    socket.receive(packet);
-                    log.fine("Received packet from " + packet.getAddress().getHostAddress());
-                    if (Arrays.equals(packet.getData(), UDP_DISCOVER_MAGIC)) {
-                        DatagramPacket response =
-                                new DatagramPacket(
-                                        UDP_CONNECT_RESPONSE,
-                                        UDP_CONNECT_RESPONSE.length,
-                                        packet.getAddress(),
-                                        packet.getPort());
-                        socket.send(response);
-                        log.fine("Packet was a discover packet for us, response sent");
-                    } else {
-                        log.fine("Packet was not meant for us, or was corrupt");
+                    try {
+                        DatagramPacket packet =
+                                new DatagramPacket(new byte[discoverLength], discoverLength);
+                        socket.receive(packet);
+                        log.fine("Received packet from " + packet.getAddress().getHostAddress());
+                        if (Arrays.equals(packet.getData(), UDP_DISCOVER_MAGIC)) {
+                            DatagramPacket response =
+                                    new DatagramPacket(
+                                            UDP_CONNECT_RESPONSE,
+                                            UDP_CONNECT_RESPONSE.length,
+                                            packet.getAddress(),
+                                            packet.getPort());
+                            socket.send(response);
+                            log.fine("Packet was a discover packet for us, response sent");
+                        } else {
+                            log.fine("Packet was not meant for us, or was corrupt");
+                        }
+                    } catch (SocketTimeoutException ignored) {
                     }
                 }
+                socket.close();
             } catch (SocketException e) {
                 log.warning("Failed to create local lobby - Couldn't create UDP Socket");
+                e.printStackTrace();
             } catch (IOException e) {
                 log.warning("Error receiving UDP packet");
             }

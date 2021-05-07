@@ -269,7 +269,11 @@ public class UPnP {
      */
     public static boolean checkMappingExists(Integer port, String protocol) {
         if (sMappings.containsKey(port)) {
-            return sMappings.get(port).stream().filter(p -> p.equals(protocol)).findFirst().orElse(null) != null;
+            return sMappings.get(port).stream()
+                            .filter(p -> p.equals(protocol))
+                            .findFirst()
+                            .orElse(null)
+                    != null;
         } else {
             return false;
         }
