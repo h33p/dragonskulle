@@ -22,13 +22,13 @@ import org.dragonskulle.game.player.PredefinedBuildings;
 public abstract class AiPlayer extends Component implements IFixedUpdate, IOnStart {
 
     /** The time since the last check if the AI player can play. (Start at 0). */
-    protected float mTimeSinceStart;
+    private float mTimeSinceStart;
     /** The lower bound for the random number to choose a time. */
     protected int mLowerBoundTime = 1;
     /** The upper bound for the random number to choose a time. */
     protected int mUpperBoundTime = 2;
     /** Will hold how long the AI player has to wait until playing. */
-    protected int mTimeToWait;
+    private int mTimeToWait;
 
     /** The Random Number Generator. */
     protected Random mRandom = new Random();
@@ -54,7 +54,7 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
      * @param deltaTime The time since the last fixed update
      * @return A boolean to say whether the AI player can play
      */
-    protected boolean shouldPlayGame(float deltaTime) {
+    private boolean shouldPlayGame(float deltaTime) {
         mTimeSinceStart += deltaTime;
 
         // Checks to see how long since last time AI player played and if longer than how long they
@@ -69,7 +69,7 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
     }
 
     /** This will set how long the AI player has to wait until they can play. */
-    protected void createNewRandomTime() {
+    private void createNewRandomTime() {
         mTimeToWait = mRandom.nextInt() % (mUpperBoundTime + 1 - mLowerBoundTime) + mLowerBoundTime;
     }
 
