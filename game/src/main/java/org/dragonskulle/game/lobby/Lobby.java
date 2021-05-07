@@ -22,6 +22,7 @@ import org.dragonskulle.network.UPnP;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkManager.IGameEndEvent;
 import org.dragonskulle.network.components.NetworkObject;
+import org.dragonskulle.network.components.ServerNetworkManager;
 import org.dragonskulle.ui.*;
 import org.joml.Vector4f;
 import org.json.simple.JSONArray;
@@ -52,7 +53,8 @@ public class Lobby extends Component implements IFrameUpdate {
     private final GameObject mFailedToForwardUi;
     private final GameObject mHostingUi;
     private final GameObject mJoiningUi;
-    private final Reference<NetworkManager> mNetworkManager;
+    private final Reference<NetworkManager> mClientNetworkManager;
+    private final Reference<NetworkManager> mServerNetworkManager;
     private String mLobbyId = "";
     private final UIInputBox mLobbyIDText;
 
@@ -61,10 +63,15 @@ public class Lobby extends Component implements IFrameUpdate {
      * dynamic UI elements added to them.
      *
      * @param mainUi Reference to the main UI object
-     * @param networkManager NetworkManager for the scene
+     * @param clientNetworkManager The client NetworkManager for the scene
+     * @param serverNetworkManager The server NetworkManager for the scene
      */
-    public Lobby(Reference<GameObject> mainUi, Reference<NetworkManager> networkManager) {
-        mNetworkManager = networkManager;
+    public Lobby(
+            Reference<GameObject> mainUi,
+            Reference<NetworkManager> clientNetworkManager,
+            Reference<NetworkManager> serverNetworkManager) {
+        mClientNetworkManager = clientNetworkManager;
+        mServerNetworkManager = serverNetworkManager;
 
         mLobbyUi =
                 new GameObject(
@@ -189,7 +196,7 @@ public class Lobby extends Component implements IFrameUpdate {
                         new UIButton(
                                 "Start Game",
                                 (__, ___) -> {
-                                    mNetworkManager.get().getServerManager().start();
+                                    mServerNetworkManager.get().getServerManager().start(false);
                                     LobbyAPI.deleteHostAsync(mLobbyId, this::onDeleteHost);
                                     mLobbyId = "";
                                     mLobbyIDUpdated.set(true);
@@ -199,10 +206,18 @@ public class Lobby extends Component implements IFrameUpdate {
                         new UIButton(
                                 "Close lobby",
                                 (__, ___) -> {
-                                    if (Reference.isValid(networkManager)) {
-                                        final NetworkManager manager = networkManager.get();
-                                        if (manager.getServerManager() != null) {
-                                            manager.getServerManager().destroy();
+                                    if (Reference.isValid(mServerNetworkManager)) {
+                                        final NetworkManager serverManager =
+                                                mServerNetworkManager.get();
+                                        if (serverManager.getServerManager() != null) {
+                                            serverManager.getServerManager().destroy();
+                                        }
+                                    }
+                                    if (Reference.isValid(mClientNetworkManager)) {
+                                        final NetworkManager clientManager =
+                                                mClientNetworkManager.get();
+                                        if (clientManager.getClientManager() != null) {
+                                            clientManager.getClientManager().disconnect();
                                         }
                                     }
                                     if (!mLobbyId.equals("")) {
@@ -227,8 +242,8 @@ public class Lobby extends Component implements IFrameUpdate {
                         new UIButton(
                                 "Leave lobby",
                                 (__, ___) -> {
-                                    if (Reference.isValid(networkManager)) {
-                                        final NetworkManager manager = networkManager.get();
+                                    if (Reference.isValid(mClientNetworkManager)) {
+                                        final NetworkManager manager = mClientNetworkManager.get();
                                         if (manager.getClientManager() != null) {
                                             manager.getClientManager().disconnect();
                                         }
@@ -257,7 +272,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                         return;
                                     }
                                     button.getLabelText().get().setText("Connecting...");
-                                    mNetworkManager
+                                    mClientNetworkManager
                                             .get()
                                             .createClient(
                                                     ip,
@@ -326,8 +341,8 @@ public class Lobby extends Component implements IFrameUpdate {
             LobbyAPI.addNewHostAsync(ip, PORT, this::onAddNewHost);
         }
 
-        if ( createServer(
-                mNetworkManager.get(),
+        if (createServer(
+                mServerNetworkManager.get(),
                 (____) -> {
                     if (removePort) {
                         UPnP.deletePortMapping(PORT, "TCP");
@@ -335,6 +350,23 @@ public class Lobby extends Component implements IFrameUpdate {
                     mHostingUi.setEnabled(false);
                     mHostUi.setEnabled(true);
                 })) {
+            mClientNetworkManager
+                    .get()
+                    .createClient(
+                            "127.0.0.1",
+                            PORT,
+                            null,
+                            Lobby::onHostStartGame,
+                            () -> {
+                                if (Reference.isValid(mServerNetworkManager)) {
+                                    final ServerNetworkManager serverManager =
+                                            mServerNetworkManager.get().getServerManager();
+                                    if (serverManager != null) {
+                                        serverManager.destroy();
+                                    }
+                                }
+                            });
+
             mHostUi.setEnabled(false);
             mHostingUi.setEnabled(true);
             mFailedToForwardUi.setEnabled(false);
@@ -342,7 +374,8 @@ public class Lobby extends Component implements IFrameUpdate {
     }
 
     public static boolean createServer(NetworkManager manager, IGameEndEvent endEvent) {
-        return manager.createServer(PORT, null, Lobby::onClientLoaded, Lobby::onGameStarted, endEvent);
+        return manager.createServer(
+                PORT, null, Lobby::onClientLoaded, Lobby::onGameStarted, endEvent);
     }
 
     /** Builds the "Join" section of the UI. */
@@ -378,7 +411,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                                     () -> LobbyDiscovery.discoverLobby(),
                                                     (___, address) -> {
                                                         if (isDiscovering[0] && address != null) {
-                                                            mNetworkManager
+                                                            mClientNetworkManager
                                                                     .get()
                                                                     .createClient(
                                                                             address
@@ -448,7 +481,7 @@ public class Lobby extends Component implements IFrameUpdate {
                             id,
                             (button, ___) -> {
                                 button.getLabelText().get().setText("Connecting...");
-                                mNetworkManager
+                                mClientNetworkManager
                                         .get()
                                         .createClient(
                                                 ip,
@@ -516,7 +549,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                                         int port =
                                                                 Math.toIntExact(
                                                                         (Long) obj.get("port"));
-                                                        mNetworkManager
+                                                        mClientNetworkManager
                                                                 .get()
                                                                 .createClient(
                                                                         ip,
