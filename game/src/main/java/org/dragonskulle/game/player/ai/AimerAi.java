@@ -65,7 +65,10 @@ public class AimerAi extends AiPlayer {
     private static final float PLAY_A_STAR = 0.9f;
 
     /** The chance to aim at a capital. */
-    private static final float AIM_AT_CAPITAL = 0.01f;
+    private float aimAtCapital = 0.0f;
+
+    /** The number of times we've attempted A* */
+    private int aStarAttempts = 0;
 
     /** This is the number of tries we should do before resetting. */
     private static final int TRIES = 20;
@@ -103,6 +106,12 @@ public class AimerAi extends AiPlayer {
             if (mPath.size() == 0) {
 
                 mProbabilisticAi.simulateInput();
+            } else {
+                // This will mean you need 139 attempts to always aim at the capital.  Need 81
+                // attempts for 0.5
+                int denominator = 200;
+                aStarAttempts += 1;
+                aimAtCapital = (float) (Math.exp(aStarAttempts / denominator) - 1);
             }
             return;
         }
@@ -425,7 +434,7 @@ public class AimerAi extends AiPlayer {
             return;
         }
 
-        mCapitalAimer = mRandom.nextFloat() <= AIM_AT_CAPITAL;
+        mCapitalAimer = mRandom.nextFloat() <= aimAtCapital;
 
         // Will find the tile to attack
         HexagonTile tileToAim = getTileBuilding(opponentPlayer);
