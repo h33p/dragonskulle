@@ -71,10 +71,10 @@ public class AimerAi extends AiPlayer {
     private int mAStarAttempts = 0;
 
     /** The number of attempts before it will always aim for a Capital */
-    private static final float NUMBER_OF_ATTEMPTS = 200f;
+    private static final float NUMBER_OF_ATTEMPTS = 50f;
 
     /** This is the number of tries we should do before resetting. */
-    private static final int TRIES = 20;
+    private static final int TRIES = 5;
 
     protected ProbabilisticAiPlayer mProbabilisticAi = null;
 
@@ -125,7 +125,7 @@ public class AimerAi extends AiPlayer {
             return;
         }
 
-        // This will choose whether to play as an A* player or as a Probablistic Player
+        // This will choose whether to play as an A* player or as a Probabilistic Player
         if (mRandom.nextFloat() < PLAY_A_STAR) {
 
             moveBackwards();
@@ -558,8 +558,47 @@ public class AimerAi extends AiPlayer {
 
         buildings.mGoalNode = mGraph.getNode(target);
 
-        buildings.mStartNode = mGraph.getNode(getPlayer().getCapital().getTile());
+        HexagonTile startHex = getStartHex();
+        if (startHex == null) {
+        	buildings.mStartNode = null;
+        	
+        }
+        else {
+        
+        	buildings.mStartNode = mGraph.getNode(startHex);
+        }
 
         return buildings;
     }
+
+	private HexagonTile getStartHex() {
+		 	List<Reference<Building>> ownedBuildings = getPlayer().getOwnedBuildings();
+	        if (ownedBuildings.size() == 0) {
+	            // This has already been checked but hey ho
+	            return null;
+	        }
+	        int index = mRandom.nextInt(ownedBuildings.size());
+	        final int end = index;
+
+	        // Goes through the ownedBuildings
+	        while (true) {
+	            Reference<Building> buildingReference = ownedBuildings.get(index);
+
+	            // Checks the building is valid
+	            if (Reference.isValid(buildingReference)) {
+	                return buildingReference.get().getTile();
+	            }
+	            index++;
+
+	            // If gone over start at 0
+	            if (index >= ownedBuildings.size()) {
+	                index = 0;
+	            }
+
+	            // Checks if we've gone through the whole list
+	            if (index == end) {
+	                return null;
+	            }
+	        }
+	}
 }
