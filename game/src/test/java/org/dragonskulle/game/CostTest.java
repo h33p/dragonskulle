@@ -23,13 +23,32 @@ public class CostTest {
     public void buildingCost() {
         List<BuildingDescriptor> actualBuildings = PredefinedBuildings.getAll();
 
-        assertEquals(1, actualBuildings.get(0).getCost());
-        assertEquals(10, actualBuildings.get(1).getCost());
-        assertEquals(30, actualBuildings.get(2).getCost());
-        assertEquals(31, actualBuildings.get(3).getCost());
-        assertEquals(32, actualBuildings.get(4).getCost());
-        assertEquals(33, actualBuildings.get(5).getCost());
-        assertEquals(25, actualBuildings.get(6).getCost());
+        // Camp
+        assertEquals(20, actualBuildings.get(0).getCost());
+        
+        // Town
+        assertEquals(75, actualBuildings.get(1).getCost());
+        
+        // City
+        assertEquals(200, actualBuildings.get(2).getCost());
+        
+        // Barracks
+        assertEquals(225, actualBuildings.get(3).getCost());
+        
+        // Castle
+        assertEquals(225, actualBuildings.get(4).getCost());
+        
+        // Merchants
+        assertEquals(225, actualBuildings.get(5).getCost());
+        
+        // Military Complex
+        assertEquals(500, actualBuildings.get(6).getCost());
+        
+        // Fortress
+        assertEquals(500, actualBuildings.get(7).getCost());
+        
+        // Guild
+        assertEquals(500, actualBuildings.get(8).getCost());
     }
 
     /** This will check that the sell price is right */
