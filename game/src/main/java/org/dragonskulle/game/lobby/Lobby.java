@@ -10,9 +10,11 @@ import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
+import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.core.futures.AwaitFuture;
 import org.dragonskulle.game.GameState;
 import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.game.player.ai.AimerAi;
@@ -655,6 +657,12 @@ public class Lobby extends Component implements IFrameUpdate {
                                 pauseMenu.endGame();
                             }
                         }));
+
+        float target = Engine.getInstance().getCurTime() + 5f;
+
+        new AwaitFuture((__) -> Engine.getInstance().getCurTime() >= target)
+                .then((__) -> gameState.endGame(-1))
+                .schedule();
 
         // Get the number of clients and thus the number of AI needed
         int clientNumber = manager.getServerManager().getClients().size();

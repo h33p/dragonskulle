@@ -1,6 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player.ui;
 
+import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnAwake;
@@ -19,6 +20,7 @@ import org.dragonskulle.utils.TextUtils;
  *
  * @author Craig Wilbourne
  */
+@Log
 public class UIDescription extends Component implements IOnAwake, IFixedUpdate {
 
     // The different fields that are displayed:
@@ -35,7 +37,7 @@ public class UIDescription extends Component implements IOnAwake, IFixedUpdate {
     private static final int TEXT_LENGTH = 27;
 
     /** Whether the component has been initialised. */
-    private boolean initialised = false;
+    private boolean mInitialised = false;
 
     @Override
     public void onAwake() {
@@ -78,10 +80,10 @@ public class UIDescription extends Component implements IOnAwake, IFixedUpdate {
 
         label.get().setText(text);
 
-        System.out.println("ran: " + initialised);
+        log.fine("ran: " + mInitialised);
 
         // The initial label text has been set.
-        initialised = true;
+        mInitialised = true;
     }
 
     /**
@@ -126,10 +128,10 @@ public class UIDescription extends Component implements IOnAwake, IFixedUpdate {
 
     @Override
     public void fixedUpdate(float deltaTime) {
-        if (initialised) {
-            updateCost();
-        } else {
+        if (!mInitialised) {
             update(PredefinedBuildings.BASE, null);
+        } else if (Reference.isValid(mPlayerRef)) {
+            updateCost();
         }
     }
 

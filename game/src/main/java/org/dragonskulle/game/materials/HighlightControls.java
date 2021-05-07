@@ -25,7 +25,7 @@ public class HighlightControls extends Component implements IOnAwake, IFrameUpda
     private Reference<Renderable> mRenderable = new Reference<>(null);
     private final String mChildName;
     private PBRHighlightMaterial mHighlightMaterial;
-    @Getter private final Vector4f mTargetColour = new Vector4f();
+    @Getter private final Vector4f mTargetColour = new Vector4f(0f);
 
     public HighlightControls() {
         this(null);

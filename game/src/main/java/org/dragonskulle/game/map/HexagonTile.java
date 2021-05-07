@@ -542,12 +542,7 @@ public class HexagonTile implements INetSerializable {
                 break;
         }
 
-        Reference<HighlightControls> controls = mGameObject.getComponent(HighlightControls.class);
-        if (controls == null) {
-            mHighlightControls = new Reference<>(null);
-        } else {
-            mHighlightControls = controls;
-        }
+        mHighlightControls = mGameObject.getComponent(HighlightControls.class);
 
         mHandler.updateGameObject(this);
     }

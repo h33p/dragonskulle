@@ -520,7 +520,8 @@ public class GameObject {
      * @param enabled New value for mEnabled
      */
     public void setEnabled(boolean enabled) {
-        mEnabled = enabled;
+
+        mEnabled = enabled && (mParent == null || mParent.mEnabled);
 
         for (GameObject child : mChildren) {
             child.setEnabled(enabled);
