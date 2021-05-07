@@ -71,7 +71,7 @@ public class AimerAi extends AiPlayer {
     private int mAStarAttempts = 0;
 
     /** The number of attempts before it will always aim for a Capital */
-    private static final int NUMBER_OF_ATTEMPTS = 200;
+    private static final float NUMBER_OF_ATTEMPTS = 200f;
 
     /** This is the number of tries we should do before resetting. */
     private static final int TRIES = 20;
@@ -394,7 +394,7 @@ public class AimerAi extends AiPlayer {
             if (Reference.isValid(buildingReference)) {
                 Building buildingToAim = buildingReference.get().getRandomAttackableBuilding();
 
-                if (buildingToAim != null) {
+                if (buildingToAim != null && !buildingToAim.getOwner().hasLost()) {
                     return buildingToAim.getOwner();
                 }
             }
