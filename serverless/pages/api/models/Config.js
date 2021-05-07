@@ -4,7 +4,7 @@ const ConfigSchema = new mongoose.Schema(
 {
   global : {
     inflation : Float,
-    mapSize : NUMBER
+    mapSize : Number
   },
   player : {
     attackCooldown : Float,
@@ -26,7 +26,7 @@ const ConfigSchema = new mongoose.Schema(
   aiAimer : {
     playAStar : Float,
     aimAtCapital : Float,
-    tries : NUMBER
+    tries : Number
   },
   attackStat : {
     value : {

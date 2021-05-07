@@ -37,7 +37,7 @@
       "maxValue" : 100.0
     },
     "cost" : {
-      "selfLevelMultiplier" : 3.0,
+      "selfLevelMultiplier" : 3.0
     }
   },
   "buildDistanceStat" : {
@@ -52,7 +52,7 @@
       "maxValue" : 100.0
     },
     "cost" : {
-      "selfLevelMultiplier" : 3.0,
+      "selfLevelMultiplier" : 3.0
     }
   },
   "claimDistanceStat" : {
@@ -67,7 +67,7 @@
       "maxValue" : 100.0
     },
     "cost" : {
-      "selfLevelMultiplier" : 3.0,
+      "selfLevelMultiplier" : 3.0
     }
   },
   "defenceStat" : {
@@ -82,7 +82,7 @@
       "maxValue" : 100.0
     },
     "cost" : {
-      "selfLevelMultiplier" : 3.0,
+      "selfLevelMultiplier" : 3.0
     }
   },
   "generationStat" : {
@@ -97,7 +97,7 @@
       "maxValue" : 100.0
     },
     "cost" : {
-      "selfLevelMultiplier" : 3.0,
+      "selfLevelMultiplier" : 3.0
     }
   },
   "viewDistanceStat" : {
@@ -112,7 +112,7 @@
       "maxValue" : 3.0
     },
     "cost" : {
-      "selfLevelMultiplier" : 3.0,
+      "selfLevelMultiplier" : 3.0
     }
   }
 }

@@ -21,7 +21,19 @@ export default function handler(req, res) {
             return new Promise((resolve, _reject) => {
                 connectToDatabase()
                     .then(() => {
-                        Config.findByIdAndUpdate("608d59b5bd0c7a4700c15d4e", { SyncStat: req.body.SyncStat, Player: req.body.Player, ProbabilisticAiPlayer: req.body.ProbabilisticAiPlayer, AiAimer: req.body.AiAimer }, { upsert: true }, (err, entry) => {
+                        Config.findByIdAndUpdate("609532b3b8079d5af4cb32b8", {
+                            global: req.body.global,
+                            player: req.body.player,
+                            ai: req.body.ai,
+                            probabilisticAi: req.body.probabilisticAi,
+                            aiAimer: req.body.aiAimer,
+                            attackStat: req.body.attackStat,
+                            buildDistanceStat: req.body.buildDistanceStat,
+                            claimDistanceStat: req.body.claimDistanceStat,
+                            defenceStat: req.body.defenceStat,
+                            generationStat: req.body.generationStat,
+                            viewDistanceStat: req.body.viewDistanceStat
+                        }, { upsert: true }, (err, entry) => {
                             if (err) {
                                 console.error(err)
                                 res.setHeader('content-type', 'text/plain');
