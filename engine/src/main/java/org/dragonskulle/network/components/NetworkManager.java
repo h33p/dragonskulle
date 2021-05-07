@@ -55,7 +55,7 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
     }
 
     /** Simple server client connection handler interface. */
-    public static interface IConnectedClientEvent {
+    public interface IConnectedClientEvent {
         /**
          * Handle client connection on the server.
          *
@@ -125,7 +125,7 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
      * Constructor for network manager.
      *
      * @param templates spawnable templates for objects in the game. Each object has a unique ID,
-     *     and it can be looked up by name using {@link findTemplateByName} method
+     *     and it can be looked up by name using findTemplateByName method
      * @param builder builder which will be used to build the game scene.
      */
     public NetworkManager(TemplateManager templates, ISceneBuilder builder) {
@@ -198,7 +198,7 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
      *     game scene.
      * @param startEventHandler callback that gets called when the game starts
      */
-    public void createServer(
+    public boolean createServer(
             int port,
             IConnectedClientEvent connectionHandler,
             IClientLoadedEvent loadHandler,
@@ -214,10 +214,12 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
                                 loadHandler,
                                 startEventHandler,
                                 endEventHandler);
+                return true;
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+        return false;
     }
 
     /**

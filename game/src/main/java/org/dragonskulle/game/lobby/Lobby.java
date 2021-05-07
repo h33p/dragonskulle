@@ -326,7 +326,7 @@ public class Lobby extends Component implements IFrameUpdate {
             LobbyAPI.addNewHostAsync(ip, PORT, this::onAddNewHost);
         }
 
-        createServer(
+        if ( createServer(
                 mNetworkManager.get(),
                 (____) -> {
                     if (removePort) {
@@ -334,15 +334,15 @@ public class Lobby extends Component implements IFrameUpdate {
                     }
                     mHostingUi.setEnabled(false);
                     mHostUi.setEnabled(true);
-                });
-
-        mHostUi.setEnabled(false);
-        mHostingUi.setEnabled(true);
-        mFailedToForwardUi.setEnabled(false);
+                })) {
+            mHostUi.setEnabled(false);
+            mHostingUi.setEnabled(true);
+            mFailedToForwardUi.setEnabled(false);
+        }
     }
 
-    public static void createServer(NetworkManager manager, IGameEndEvent endEvent) {
-        manager.createServer(PORT, null, Lobby::onClientLoaded, Lobby::onGameStarted, endEvent);
+    public static boolean createServer(NetworkManager manager, IGameEndEvent endEvent) {
+        return manager.createServer(PORT, null, Lobby::onClientLoaded, Lobby::onGameStarted, endEvent);
     }
 
     /** Builds the "Join" section of the UI. */
