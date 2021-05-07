@@ -8,6 +8,7 @@ import java.util.Random;
 import java.util.stream.Stream;
 import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.game.GameConfig.AiAimerConfig;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.BuildingDescriptor;
@@ -61,15 +62,6 @@ public class AimerAi extends AiPlayer {
     /** The node we previously were on. */
     private Node mNodePreviouslyOn = null;
 
-    /** Whether to use the A* route. */
-    private static final float PLAY_A_STAR = 0.9f;
-
-    /** The chance to aim at a capital. */
-    private static final float AIM_AT_CAPITAL = 0.01f;
-
-    /** This is the number of tries we should do before resetting. */
-    private static final int TRIES = 20;
-
     protected ProbabilisticAiPlayer mProbabilisticAi = null;
 
     /** Basic Constructor. */
@@ -113,8 +105,10 @@ public class AimerAi extends AiPlayer {
             return;
         }
 
+        AiAimerConfig cfg = getConfig().getAiAimer();
+
         // This will choose whether to play as an A* player or as a Probablistic Player
-        if (mRandom.nextFloat() < PLAY_A_STAR) {
+        if (mRandom.nextFloat() < cfg.getPlayAStar()) {
 
             moveBackwards();
 
@@ -142,7 +136,7 @@ public class AimerAi extends AiPlayer {
             }
 
             // Checks if we have been on this tile for ages
-            if (mAttempts > TRIES) {
+            if (mAttempts > cfg.getTries()) {
                 log.info("All tried depleted.");
                 mPath = new ArrayDeque<Integer>();
                 return;
@@ -425,7 +419,7 @@ public class AimerAi extends AiPlayer {
             return;
         }
 
-        mCapitalAimer = mRandom.nextFloat() <= AIM_AT_CAPITAL;
+        mCapitalAimer = mRandom.nextFloat() <= getConfig().getAiAimer().getAimAtCapital();
 
         // Will find the tile to attack
         HexagonTile tileToAim = getTileBuilding(opponentPlayer);

@@ -6,9 +6,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonTile.TileType;
 import org.dragonskulle.network.components.sync.INetSerializable;
 import org.dragonskulle.network.components.sync.ISyncVar;
@@ -42,7 +45,9 @@ public class GameConfig implements ISyncVar {
     }
 
     /** Constructor for {@link GameConfig}. */
-    public GameConfig() {}
+    public GameConfig() {
+        mAi.add(new AiConfig());
+    }
 
     /**
      * Build game config from JSON.
@@ -138,44 +143,18 @@ public class GameConfig implements ISyncVar {
         }
     }
 
-    /** Base AI properties. */
-    @Getter
-    @Setter
-    @Accessors(prefix = "m")
-    public static class AiConfig implements INetSerializable {
-        private float mLowerBoundTime;
-        private float mUpperBoundTime;
-
-        public AiConfig(float lowerBoundTime, float upperBoundTime) {
-            mLowerBoundTime = lowerBoundTime;
-            mUpperBoundTime = upperBoundTime;
-        }
-
-        public AiConfig() {
-            this(1, 2);
-        }
-
-        @Override
-        public void serialize(DataOutput stream, int clientId) throws IOException {
-            stream.writeFloat(mLowerBoundTime);
-            stream.writeFloat(mUpperBoundTime);
-        }
-
-        @Override
-        public void deserialize(DataInput stream) throws IOException {
-            mLowerBoundTime = stream.readFloat();
-            mUpperBoundTime = stream.readFloat();
-        }
-    }
-
     /** Probabilistic AI properties. */
     @Getter
     @Setter
     @Accessors(prefix = "m")
     public static class ProbabilisticAiConfig implements INetSerializable {
+        /** Probability of placing a new {@link Building}. */
         private float mBuildProbability;
+        /** Probability of upgrading an owned {@link Building}. */
         private float mUpgradeProbability;
+        /** Probability of attacking an opponent {@link Building}. */
         private float mAttackProbability;
+        /** Probability of selling an owned {@link Building}. */
         private float mSellProbability;
 
         public ProbabilisticAiConfig(
@@ -190,7 +169,7 @@ public class GameConfig implements ISyncVar {
         }
 
         public ProbabilisticAiConfig() {
-            this(0.65f, 0.15f, 0.15f, 0.05f);
+            this(0.65f, 0.155f, 0.19f, 0.005f);
         }
 
         @Override
@@ -215,8 +194,11 @@ public class GameConfig implements ISyncVar {
     @Setter
     @Accessors(prefix = "m")
     public static class AiAimerConfig implements INetSerializable {
+        /** Whether to use the A* route. */
         private float mPlayAStar;
+        /** The chance to aim at a capital. */
         private float mAimAtCapital;
+        /** This is the number of tries we should do before resetting. */
         private int mTries;
 
         public AiAimerConfig(float playAStar, float aimAtCapital, int tries) {
@@ -226,7 +208,7 @@ public class GameConfig implements ISyncVar {
         }
 
         public AiAimerConfig() {
-            this(0.9f, 0.01f, 10);
+            this(0.9f, 0.01f, 20);
         }
 
         @Override
@@ -276,6 +258,43 @@ public class GameConfig implements ISyncVar {
         public void deserialize(DataInput stream) throws IOException {
             mBonusTile = TileType.getTile(stream.readByte());
             mMultiplier = stream.readFloat();
+        }
+    }
+
+    /** AI properties. */
+    @Getter
+    @Setter
+    @Accessors(prefix = "m")
+    public static class AiConfig implements INetSerializable {
+        private float mLowerBoundTime;
+        private float mUpperBoundTime;
+
+        /** Properties for probabilistic AI. */
+        private ProbabilisticAiConfig mProbabilisticAi;
+        /** Properties for aimer AI. */
+        private AiAimerConfig mAiAimer;
+
+        public AiConfig(float lowerBoundTime, float upperBoundTime) {
+            mLowerBoundTime = lowerBoundTime;
+            mUpperBoundTime = upperBoundTime;
+            mProbabilisticAi = new ProbabilisticAiConfig();
+            mAiAimer = new AiAimerConfig();
+        }
+
+        public AiConfig() {
+            this(1, 2);
+        }
+
+        @Override
+        public void serialize(DataOutput stream, int clientId) throws IOException {
+            stream.writeFloat(mLowerBoundTime);
+            stream.writeFloat(mUpperBoundTime);
+        }
+
+        @Override
+        public void deserialize(DataInput stream) throws IOException {
+            mLowerBoundTime = stream.readFloat();
+            mUpperBoundTime = stream.readFloat();
         }
     }
 
@@ -418,11 +437,7 @@ public class GameConfig implements ISyncVar {
     private PlayerConfig mPlayer = new PlayerConfig();
 
     /** Properties for AI. */
-    private AiConfig mAi = new AiConfig();
-    /** Properties for probabilistic AI. */
-    private ProbabilisticAiConfig mProbabilisticAi = new ProbabilisticAiConfig();
-    /** Properties for aimer AI. */
-    private AiAimerConfig mAiAimer = new AiAimerConfig();
+    private List<AiConfig> mAi = new ArrayList<AiConfig>();
 
     // The attack value is identical to the current level number.
     /** Attack stat configuration. */
@@ -447,9 +462,11 @@ public class GameConfig implements ISyncVar {
         mGlobal.serialize(stream, clientId);
         mPlayer.serialize(stream, clientId);
 
-        mAi.serialize(stream, clientId);
-        mProbabilisticAi.serialize(stream, clientId);
-        mAiAimer.serialize(stream, clientId);
+        stream.writeInt(mAi.size());
+
+        for (AiConfig c : mAi) {
+            c.serialize(stream, clientId);
+        }
 
         mAttackStat.serialize(stream, clientId);
         mBuildDistanceStat.serialize(stream, clientId);
@@ -464,9 +481,15 @@ public class GameConfig implements ISyncVar {
         mGlobal.deserialize(stream);
         mPlayer.deserialize(stream);
 
-        mAi.deserialize(stream);
-        mProbabilisticAi.deserialize(stream);
-        mAiAimer.deserialize(stream);
+        int size = stream.readInt();
+
+        mAi.clear();
+
+        for (int i = 0; i < size; i++) {
+            AiConfig cfg = new AiConfig();
+            cfg.deserialize(stream);
+            mAi.add(cfg);
+        }
 
         mAttackStat.deserialize(stream);
         mBuildDistanceStat.deserialize(stream);

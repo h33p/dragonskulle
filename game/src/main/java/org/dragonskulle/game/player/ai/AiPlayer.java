@@ -72,18 +72,27 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
 
     /** This will set how long the AI player has to wait until they can play. */
     protected void createNewRandomTime() {
+        AiConfig cfg = getConfig();
+
+        mTimeToWait =
+                mRandom.nextInt() % (cfg.getUpperBoundTime() - cfg.getLowerBoundTime())
+                        + cfg.getLowerBoundTime();
+    }
+
+    public AiConfig getConfig() {
+        if (mConfig != null) {
+            return mConfig;
+        }
 
         GameConfig cfg = GameState.getSceneConfig();
 
-        if (cfg != null) {
-            mTimeToWait =
-                    mRandom.nextInt()
-                                    % (cfg.getAi().getUpperBoundTime()
-                                            - cfg.getAi().getLowerBoundTime())
-                            + cfg.getAi().getLowerBoundTime();
+        if (cfg != null && cfg.getAi().size() > 0) {
+            mConfig = cfg.getAi().get(0);
         } else {
-            mTimeToWait = mRandom.nextInt() % 1 + 1;
+            mConfig = new AiConfig();
         }
+
+        return mConfig;
     }
 
     @Override
