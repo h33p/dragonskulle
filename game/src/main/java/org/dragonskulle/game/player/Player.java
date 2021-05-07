@@ -92,7 +92,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /** Whether they own the building. */
     private SyncBool mOwnsCapital = new SyncBool(true);
 
+    /** Player configuration values used for timeout configuration. */
     private PlayerConfig mConfig;
+
     /** When the last time a player attacked. */
     private final SyncFloat mLastAttack = new SyncFloat(-10f);
 

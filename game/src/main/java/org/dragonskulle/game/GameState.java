@@ -102,4 +102,14 @@ public class GameState extends NetworkableComponent implements IOnAwake {
         float deltaTime = getNetworkManager().getServerTime() - mStartTime.get();
         return (float) Math.pow(mConfig.getGlobal().getInflation(), deltaTime);
     }
+
+    public static GameConfig getSceneConfig() {
+        GameState state = Scene.getActiveScene().getSingleton(GameState.class);
+
+        if (state != null) {
+            return state.getConfig();
+        }
+
+        return null;
+    }
 }
