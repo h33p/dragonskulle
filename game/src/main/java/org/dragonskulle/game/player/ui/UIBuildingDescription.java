@@ -21,7 +21,7 @@ import org.dragonskulle.utils.TextUtils;
  * @author Craig Wilbourne
  */
 @Log
-public class UIDescription extends Component implements IOnAwake, IFixedUpdate {
+public class UIBuildingDescription extends Component implements IOnAwake, IFixedUpdate {
 
     // The different fields that are displayed:
     private Reference<UITextRect> mNameRef;

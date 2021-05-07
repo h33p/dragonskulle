@@ -41,7 +41,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
 
     private Reference<UIButton> mBuyButton;
 
-    private Reference<UIDescription> mDescription;
+    private Reference<UIBuildingDescription> mDescription;
 
     /**
      * Constructor.
@@ -71,8 +71,8 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
         transformUI.setParentAnchor(0.16f, 1.09f, 0.86f, 1.09f + 0.25f);
 
         // Add the description box.
-        UIDescription description = new UIDescription();
-        mDescription = description.getReference(UIDescription.class);
+        UIBuildingDescription description = new UIBuildingDescription();
+        mDescription = description.getReference(UIBuildingDescription.class);
         getGameObject().addComponent(description);
 
         // Add the building selection buttons.
@@ -159,7 +159,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
      */
     private void updateDescription(BuildingDescriptor descriptor) {
         if (!Reference.isValid(mDescription)) return;
-        UIDescription description = mDescription.get();
+        UIBuildingDescription description = mDescription.get();
         description.update(descriptor, getPlayer());
     }
 
