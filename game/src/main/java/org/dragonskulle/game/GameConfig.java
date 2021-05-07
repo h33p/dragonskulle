@@ -13,7 +13,13 @@ import org.dragonskulle.game.map.HexagonTile.TileType;
 import org.dragonskulle.network.components.sync.INetSerializable;
 import org.dragonskulle.network.components.sync.ISyncVar;
 
-/** Configurable game properties. */
+/**
+ * Configurable game properties.
+ *
+ * @author Aurimas Blažulionis
+ *     <p>This class allows to customize game configuration very easily. It will be synced by {@link
+ *     GameState} upon clients connecting to the game.
+ */
 @Accessors(prefix = "m")
 @Getter
 @Setter
@@ -21,6 +27,11 @@ public class GameConfig implements ISyncVar {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
+    /**
+     * Convert this config to JSON.
+     *
+     * @return JSON representation of the config.
+     */
     public String toJson() {
         try {
             return MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(this);
@@ -30,8 +41,15 @@ public class GameConfig implements ISyncVar {
         }
     }
 
+    /** Constructor for {@link GameConfig}. */
     public GameConfig() {}
 
+    /**
+     * Build game config from JSON.
+     *
+     * @param jsonData json string representing the config data.
+     * @return new instance of {@link GameConfig}, or {@code null}, if parsing fails.
+     */
     public static GameConfig fromJson(String jsonData) {
         try {
             return MAPPER.readValue(jsonData, GameConfig.class);
@@ -41,6 +59,7 @@ public class GameConfig implements ISyncVar {
         }
     }
 
+    /** Global game properties. */
     @Getter
     @Setter
     @Accessors(prefix = "m")
@@ -72,6 +91,7 @@ public class GameConfig implements ISyncVar {
         }
     }
 
+    /** Player specific properties. */
     @Getter
     @Setter
     @Accessors(prefix = "m")
@@ -118,6 +138,7 @@ public class GameConfig implements ISyncVar {
         }
     }
 
+    /** Base AI properties. */
     @Getter
     @Setter
     @Accessors(prefix = "m")
@@ -147,6 +168,7 @@ public class GameConfig implements ISyncVar {
         }
     }
 
+    /** Probabilistic AI properties. */
     @Getter
     @Setter
     @Accessors(prefix = "m")
@@ -188,6 +210,7 @@ public class GameConfig implements ISyncVar {
         }
     }
 
+    /** Aimer AI properties. */
     @Getter
     @Setter
     @Accessors(prefix = "m")
@@ -310,6 +333,7 @@ public class GameConfig implements ISyncVar {
         }
     }
 
+    /** Stat cost properties. */
     @Getter
     @Setter
     @Accessors(prefix = "m")
@@ -335,6 +359,7 @@ public class GameConfig implements ISyncVar {
         }
     }
 
+    /** Combined stat properties. */
     @Getter
     @Setter
     @Accessors(prefix = "m")
@@ -387,23 +412,34 @@ public class GameConfig implements ISyncVar {
         }
     }
 
+    /** Global game properties. */
     private GlobalConfig mGlobal = new GlobalConfig();
+    /** Properties for players. */
     private PlayerConfig mPlayer = new PlayerConfig();
 
+    /** Properties for AI. */
     private AiConfig mAi = new AiConfig();
+    /** Properties for probabilistic AI. */
     private ProbabilisticAiConfig mProbabilisticAi = new ProbabilisticAiConfig();
+    /** Properties for aimer AI. */
     private AiAimerConfig mAiAimer = new AiAimerConfig();
 
     // The attack value is identical to the current level number.
+    /** Attack stat configuration. */
     private StatConfig mAttackStat = new StatConfig(0, 1, 0, 100, null, 0);
     // Regardless of the level, the build distance will always be the same.
+    /** Build distance stat configuration. */
     private StatConfig mBuildDistanceStat = new StatConfig(2, 0, 0, 100, null, 0);
     // Regardless of the level, the claim distance will always be the same.
+    /** Claim distance stat properties. */
     private StatConfig mClaimDistanceStat = new StatConfig(1, 0, 0, 100, null, 0);
     // The defence value is identical to the current level -1.
+    /** Defence stat properties. */
     private StatConfig mDefenceStat = new StatConfig(-1, 1, 0, 100, TileType.MOUNTAIN, 0.5f);
+    /** Token generation stat properties. */
     private StatConfig mGenerationStat = new StatConfig(-1, 1, 0, 100, TileType.WATER, 0.4f);
     // Regardless of the level, the view distance will always be the same.
+    /** View distance stat properties. */
     private StatConfig mViewDistanceStat = new StatConfig(3, 0, 0, 3, null, 0);
 
     @Override
