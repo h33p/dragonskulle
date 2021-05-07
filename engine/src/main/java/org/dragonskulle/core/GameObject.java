@@ -288,6 +288,15 @@ public class GameObject {
         }
     }
 
+    protected void getAllEnabledChildren(List<GameObject> ret) {
+        for (GameObject child : mChildren) {
+            if (child.isEnabled()) {
+                ret.add(child);
+                child.getAllEnabledChildren(ret);
+            }
+        }
+    }
+
     /**
      * Finds a child by its name.
      *
