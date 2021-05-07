@@ -15,6 +15,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.assets.GLTF;
@@ -90,6 +91,13 @@ public class Building extends NetworkableComponent
      * twice.
      */
     @Getter private final SyncFloat mActionLockTime = new SyncFloat();
+
+    /**
+     * Action lock. This value is only needed to be set by the server, and it is meant to ensure
+     * there are no race conditions when building becoems unlocked by the action lock, but the
+     * action was still not processed.
+     */
+    @Getter @Setter private boolean mServerActionLocked = false;
 
     /** The tiles the building claims, including the tile the building is currently on. */
     @Getter private final Set<HexagonTile> mClaimedTiles = new HashSet<>();
@@ -782,6 +790,16 @@ public class Building extends NetworkableComponent
      * @return {@code true} if building is action locked, {@code false} otherwise.
      */
     public boolean isActionLocked() {
+        return isTimeActionLocked() || mServerActionLocked;
+    }
+
+    /**
+     * Get whether the building is action locked by time, i.e. should definitely not have any
+     * actions happening to it.
+     *
+     * @return {@code true} if building is action locked, {@code false} otherwise.
+     */
+    public boolean isTimeActionLocked() {
         return mActionLockTime.get() > Engine.getInstance().getCurTime();
     }
 

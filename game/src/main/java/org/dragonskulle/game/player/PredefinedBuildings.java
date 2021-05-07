@@ -35,7 +35,7 @@ public class PredefinedBuildings {
     /**
      * Gets all the buildings which can be placed filtered by the cost of the building.
      *
-     * @param currentTokens the current tokens the player has
+     * @param player the player to get the purchasable buildings for
      * @return a list of purchasable buildings
      */
     public static List<BuildingDescriptor> getPurchasable(Player player) {

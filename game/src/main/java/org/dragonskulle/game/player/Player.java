@@ -20,6 +20,8 @@ import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.core.futures.AwaitFuture;
+import org.dragonskulle.game.GameConfig.PlayerConfig;
 import org.dragonskulle.game.GameState;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.StatType;
@@ -90,15 +92,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /** Whether they own the building. */
     private SyncBool mOwnsCapital = new SyncBool(true);
 
-    /** This Is how often a player can attack. */
-    private static final float ATTACK_COOLDOWN = 2f;
+    private PlayerConfig mConfig;
     /** When the last time a player attacked. */
-    private final SyncFloat mLastAttack = new SyncFloat(-ATTACK_COOLDOWN);
+    private final SyncFloat mLastAttack = new SyncFloat(-10f);
 
-    /** The base rate of tokens which will always be added. */
-    private static final int TOKEN_RATE = 2;
-    /** How frequently the tokens should be added. */
-    private static final float TOKEN_TIME = 1f;
     /** The total amount of time passed since the last time tokens where added. */
     private float mCumulativeTokenTime = 0f;
 
@@ -161,8 +158,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         mPlayerHighlightSelection =
                 MapEffects.highlightSelectionFromColour(col.x(), col.y(), col.z());
 
+        PlayerConfig cfg = getConfig();
+
         // TODO Get all Players & add to list
-        updateTokens(TOKEN_TIME);
+        updateTokens(cfg != null ? cfg.getTokenTime() : 1);
     }
 
     /** Used as a queue for tiles to be flood filled */
@@ -188,6 +187,42 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     @Override
     protected void onDestroy() {}
+
+    private GameState getGameState() {
+        if (Reference.isValid(mGameState)) {
+            return mGameState.get();
+        }
+
+        Scene activeScene = Scene.getActiveScene();
+
+        if (activeScene == null) {
+            return null;
+        }
+
+        mGameState = activeScene.getSingletonRef(GameState.class);
+
+        if (!Reference.isValid(mGameState)) {
+            return null;
+        }
+
+        return mGameState.get();
+    }
+
+    private PlayerConfig getConfig() {
+        if (mConfig != null) {
+            return mConfig;
+        }
+
+        GameState state = getGameState();
+
+        if (state == null) {
+            return null;
+        }
+
+        mConfig = state.getConfig().getPlayer();
+
+        return mConfig;
+    }
 
     /**
      * This will randomly place a capital using an angle so each person is within their own slice.
@@ -354,13 +389,18 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param time The time since the last update.
      */
     private void updateTokens(float time) {
+
+        PlayerConfig cfg = getConfig();
+        float tokenTime = cfg.getTokenTime();
+        float tokenRate = cfg.getTokenRate();
+
         // Only the server should add tokens.
         if (getNetworkObject().isServer()) {
             // Increase the total amount of time since tokens where last added.
             mCumulativeTokenTime += time;
 
             // Check to see if enough time has passed.
-            if (mCumulativeTokenTime >= TOKEN_TIME) {
+            if (mCumulativeTokenTime >= tokenTime) {
 
                 // Add tokens for each building.
                 getOwnedBuildingsAsStream()
@@ -369,10 +409,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                         .forEach(building -> mTokens.add(building.getTokenGeneration().getValue()));
 
                 // Add a base amount of tokens.
-                mTokens.add(TOKEN_RATE);
+                mTokens.add(Math.round(tokenRate));
 
                 // Reduce the cumulative time by the TOKEN_TIME.
-                mCumulativeTokenTime -= TOKEN_TIME;
+                mCumulativeTokenTime -= tokenTime;
             }
         }
     }
@@ -667,7 +707,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return Whether the player is in the attack cooldown period.
      */
     public boolean inCooldown() {
-        return getNetworkManager().getServerTime() < mLastAttack.get() + ATTACK_COOLDOWN;
+        return getRemainingCooldown() > 0;
     }
 
     /**
@@ -676,7 +716,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return The remaining time to wait.
      */
     public float getRemainingCooldown() {
-        return ATTACK_COOLDOWN - (getNetworkManager().getServerTime() - mLastAttack.get());
+        return getConfig().getAttackCooldown()
+                - (getNetworkManager().getServerTime() - mLastAttack.get());
     }
 
     /**
@@ -832,7 +873,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      *
      * @param attacker The attacking building.
      * @param defender The defending building.
-     * @return Whether the attempt to attack was successful.
+     * @return Whether the attempt to attack was successfully dispatched.
      */
     private boolean attackAttempt(Building attacker, Building defender) {
 
@@ -855,43 +896,53 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         float lockTime = Engine.getInstance().getCurTime() + 1f;
 
         attacker.getActionLockTime().set(lockTime);
+        attacker.setServerActionLocked(true);
+
         defender.getActionLockTime().set(lockTime);
+        defender.setServerActionLocked(true);
 
         mServerAttackEvent.invoke((data) -> data.setData(attacker, defender));
 
-        // TODO: use Future to delay the actual attack until the animation plays
+        new AwaitFuture((__) -> !attacker.isTimeActionLocked())
+                .then(
+                        (__) -> {
+                            attacker.setServerActionLocked(false);
+                            defender.setServerActionLocked(false);
 
-        boolean won;
-        if (defender.getOwner().hasLost()) won = true;
-        else won = attacker.attack(defender);
-        log.info("Attack is: " + won);
+                            boolean won;
+                            if (defender.getOwner().hasLost()) won = true;
+                            else won = attacker.attack(defender);
+                            log.info("Attack is: " + won);
 
-        // If you've won attack
-        if (won) {
+                            // If you've won attack
+                            if (won) {
 
-            // Special checks for Capital
-            if (defender.isCapital()) {
-                defender.setCapital(false);
+                                // Special checks for Capital
+                                if (defender.isCapital()) {
+                                    defender.setCapital(false);
 
-                GameState state = mGameState.get();
-                state.getNumCapitalsStanding().add(-1);
-                if (state.getNumCapitalsStanding().get() <= 1) {
-                    state.endGame(attacker.getOwnerId());
-                }
+                                    GameState state = mGameState.get();
+                                    state.getNumCapitalsStanding().add(-1);
+                                    if (state.getNumCapitalsStanding().get() <= 1) {
+                                        state.endGame(attacker.getOwnerId());
+                                    }
 
-                // Update stats
-                ArrayList<SyncStat> stats = defender.getStats();
-                for (SyncStat stat : stats) stat.set(SyncStat.LEVEL_MIN);
+                                    // Update stats
+                                    ArrayList<SyncStat> stats = defender.getStats();
+                                    for (SyncStat stat : stats) stat.set(SyncStat.LEVEL_MIN);
 
-                defender.getOwner().setOwnsCapital(false);
-                defender.afterStatChange();
-            }
+                                    defender.getOwner().setOwnsCapital(false);
+                                    defender.afterStatChange();
+                                }
 
-            defender.getNetworkObject().setOwnerId(getNetworkObject().getOwnerId());
-        }
-        log.info("Done");
+                                defender.getNetworkObject()
+                                        .setOwnerId(getNetworkObject().getOwnerId());
+                            }
+                            log.info("Done");
+                        })
+                .schedule();
 
-        return won;
+        return true;
     }
 
     /**
