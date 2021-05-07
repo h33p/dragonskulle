@@ -886,7 +886,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param data The {@link AttackData} sent by the client.
      */
     void attackEvent(AttackData data) {
-        playSound(AudioEvent.ATTACK_INVOKED_SOUND, ServerEvent.EventRecipients.ACTIVE_CLIENTS);
+//        playSound(AudioEvent.ATTACK_INVOKED_SOUND, ServerEvent.EventRecipients.ACTIVE_CLIENTS); //can add later
         HexagonMap map = getMap();
         if (map == null) {
             log.warning("Unable to parse AttackData: Map is null.");
