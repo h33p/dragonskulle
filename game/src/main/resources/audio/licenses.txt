@@ -1,0 +1,3 @@
+building_sell: https://freesound.org/people/BeezleFM/sounds/512133/
+building_upgrade: https://freesound.org/people/InspectorJ/sounds/400991/
+attack_success: https://freesound.org/people/Debsound/sounds/437602/

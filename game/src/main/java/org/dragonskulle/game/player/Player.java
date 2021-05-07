@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -48,6 +49,8 @@ import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.joml.Vector4f;
 
+import static org.dragonskulle.game.GameUIAppearance.*;
+
 /**
  * This is the class which contains all the needed data to play a game.
  *
@@ -57,7 +60,9 @@ import org.joml.Vector4f;
 @Log
 public class Player extends NetworkableComponent implements IOnStart, IFixedUpdate {
 
-    /** A list of {@link Building}s owned by the player. */
+    /**
+     * A list of {@link Building}s owned by the player.
+     */
     private final Map<HexagonTile, Reference<Building>> mOwnedBuildings = new HashMap<>();
 
     /**
@@ -68,55 +73,101 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     private final Map<HexagonTile, Integer> mTilesAround = new HashMap<>();
 
-    /** Link to the current capital. */
+    /**
+     * Link to the current capital.
+     */
     private Reference<Building> mCapital = null;
 
-    /** The number of tokens the player has, synchronised from server to client. */
-    @Getter private SyncInt mTokens = new SyncInt(0);
+    /**
+     * The number of tokens the player has, synchronised from server to client.
+     */
+    @Getter
+    private SyncInt mTokens = new SyncInt(0);
 
-    /** The colour of the player. */
-    @Getter private final SyncVector3 mPlayerColour = new SyncVector3();
+    /**
+     * The colour of the player.
+     */
+    @Getter
+    private final SyncVector3 mPlayerColour = new SyncVector3();
 
-    @Getter private Vector4f mPlayerHighlightSelection;
+    @Getter
+    private Vector4f mPlayerHighlightSelection;
 
-    /** Store a reference to the {@link MapEffects} component. */
+    /**
+     * Store a reference to the {@link MapEffects} component.
+     */
     private Reference<MapEffects> mMapEffects;
 
-    /** Reference to the HexagonMap being used by the Player. */
+    /**
+     * Reference to the HexagonMap being used by the Player.
+     */
     private Reference<HexagonMap> mMap = null;
-    /** Reference to the GameState on the connection. */
+    /**
+     * Reference to the GameState on the connection.
+     */
     private Reference<GameState> mGameState = null;
 
-    /** Whether they own the building. */
+    /**
+     * Whether they own the building.
+     */
     private SyncBool mOwnsCapital = new SyncBool(true);
 
-    /** This Is how often a player can attack. */
+    /**
+     * This Is how often a player can attack.
+     */
     private static final float ATTACK_COOLDOWN = 2f;
-    /** When the last time a player attacked. */
+    /**
+     * When the last time a player attacked.
+     */
     private final SyncFloat mLastAttack = new SyncFloat(-ATTACK_COOLDOWN);
 
-    /** The base rate of tokens which will always be added. */
+    /**
+     * The base rate of tokens which will always be added.
+     */
     private static final int TOKEN_RATE = 2;
-    /** How frequently the tokens should be added. */
+    /**
+     * How frequently the tokens should be added.
+     */
     private static final float TOKEN_TIME = 1f;
-    /** The total amount of time passed since the last time tokens where added. */
+    /**
+     * The total amount of time passed since the last time tokens where added.
+     */
     private float mCumulativeTokenTime = 0f;
 
-    /** Controls how deep into unviewable tiles we go for mTilesAround. */
+    /**
+     * Controls how deep into unviewable tiles we go for mTilesAround.
+     */
     private static final int VIEWABILITY_LOWER_BOUND = -5;
 
-    /** Used by the client to request that a building be placed by the server. */
-    @Getter private transient ClientRequest<BuildData> mClientBuildRequest;
-    /** Used by the client to request that a building attack another building. */
-    @Getter private transient ClientRequest<AttackData> mClientAttackRequest;
-    /** Used by the client to request that a building's stats be increased. */
-    @Getter private transient ClientRequest<StatData> mClientStatRequest;
-    /** Used by the client to request that a building be sold. */
-    @Getter private transient ClientRequest<SellData> mClientSellRequest;
-    /** Sent by the server to tell clients that an attack is happening. */
-    @Getter private transient ServerEvent<AttackData> mServerAttackEvent;
+    /**
+     * Used by the client to request that a building be placed by the server.
+     */
+    @Getter
+    private transient ClientRequest<BuildData> mClientBuildRequest;
+    /**
+     * Used by the client to request that a building attack another building.
+     */
+    @Getter
+    private transient ClientRequest<AttackData> mClientAttackRequest;
+    /**
+     * Used by the client to request that a building's stats be increased.
+     */
+    @Getter
+    private transient ClientRequest<StatData> mClientStatRequest;
+    /**
+     * Used by the client to request that a building be sold.
+     */
+    @Getter
+    private transient ClientRequest<SellData> mClientSellRequest;
+    /**
+     * Sent by the server to tell clients that an attack is happening.
+     */
+    @Getter
+    private transient ServerEvent<AttackData> mServerAttackEvent;
 
-    /** The base constructor for player. */
+    /**
+     * The base constructor for player.
+     */
     public Player() {}
 
     @Override
@@ -165,7 +216,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         updateTokens(TOKEN_TIME);
     }
 
-    /** Used as a queue for tiles to be flood filled */
+    /**
+     * Used as a queue for tiles to be flood filled
+     */
     private final Deque<HexagonTile> mFillTiles = new ArrayDeque<>();
 
     /**
@@ -380,10 +433,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /**
      * This will create a new {@link GameObject} with a {@link Building} component.
      *
-     * @param qPos The q position of the building.
-     * @param rPos The r position of the building.
+     * @param qPos        The q position of the building.
+     * @param rPos        The r position of the building.
      * @param checkIsland {@code true} when we don't want to place on an Island otherwise {@code
-     *     false}
+     *                    false}
      * @return {@code true} a new building is created, otherwise {@code false}.
      */
     private Building createBuilding(int qPos, int rPos, boolean checkIsland) {
@@ -575,7 +628,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      *
      * @param tile The tile to get the building from.
      * @return The reference to the building, if it is in your {@link #mOwnedBuildings}, otherwise
-     *     {@code null}.
+     * {@code null}.
      */
     public Reference<Building> getOwnedBuilding(HexagonTile tile) {
         return mOwnedBuildings.get(tile);
@@ -711,7 +764,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Try to place the building on the tile.
-        buildAttempt(tile, descriptor);
+        if (buildAttempt(tile, descriptor)) {
+            playSound(AudioEvent.BUILDING_UPGRADE_SOUND, ServerEvent.EventRecipients.OWNER);
+        }
     }
 
     /**
@@ -748,7 +803,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     /**
      * Ensure that the {@link HexagonTile} is eligible to have a {@link Building} placed on it.
      *
-     * @param tile The tile to put a building on.
+     * @param tile     The tile to put a building on.
      * @param buyPrice The cost of the building.
      * @return {@code true} if the tile is eligible, otherwise {@code false}.
      */
@@ -764,7 +819,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         return tile.isBuildable(this);
     }
 
-    /** Invoke animation when an attack is being performed. */
+    /**
+     * Invoke animation when an attack is being performed.
+     */
     void attackEffect(AttackData data) {
         HexagonMap map = getMap();
         if (map == null) {
@@ -806,7 +863,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param data The {@link AttackData} sent by the client.
      */
     void attackEvent(AttackData data) {
-
+        playSound(AudioEvent.ATTACK_INVOKED_SOUND, ServerEvent.EventRecipients.ACTIVE_CLIENTS);
         HexagonMap map = getMap();
         if (map == null) {
             log.warning("Unable to parse AttackData: Map is null.");
@@ -826,7 +883,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Try to run an attack.
-        attackAttempt(attacker, defender);
+        if (attackAttempt(attacker, defender)) {
+            playSound(AudioEvent.ATTACK_SUCCESS_SOUND, ServerEvent.EventRecipients.OWNER);
+        } else {
+            playSound(AudioEvent.ATTACK_FAILURE_SOUND, ServerEvent.EventRecipients.OWNER);
+        }
     }
 
     /**
@@ -988,7 +1049,28 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Try to sell the building on the tile.
-        sellAttempt(building);
+        if (sellAttempt(building)) {
+            playSound(AudioEvent.BUILDING_SELL_SOUND, ServerEvent.EventRecipients.OWNER);
+        }
+    }
+
+    private void playSound(AudioEvent sound, ServerEvent.EventRecipients recipients) {
+        log.info("should play sound " + sound);
+        if (Reference.isValid(mGameState)) {
+            switch (recipients) {
+                case OWNER:
+                    mGameState.get().getOwnerAudioEvent().invoke(
+                            new GameState.InvokeAudioEvent(sound)
+                    );
+                    break;
+                case ACTIVE_CLIENTS:
+                case ALL_CLIENTS:
+                    mGameState.get().getGlobalAudioEvent().invoke(
+                            new GameState.InvokeAudioEvent(sound)
+                    );
+                    break;
+            }
+        }
     }
 
     /**
@@ -1080,7 +1162,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         // Try to change the stats of the building.
-        statAttempt(building, statType);
+        if (statAttempt(building, statType)) {
+            playSound(AudioEvent.BUILDING_UPGRADE_SOUND, ServerEvent.EventRecipients.OWNER);
+        }
     }
 
     /**
@@ -1164,7 +1248,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * This will return whether the player has lost their capital and thus the game.
      *
      * @return {@code true} if they have they have lost there capital and thus the game {@code
-     *     false} if not
+     * false} if not
      */
     public boolean hasLost() {
         return !mOwnsCapital.get();
