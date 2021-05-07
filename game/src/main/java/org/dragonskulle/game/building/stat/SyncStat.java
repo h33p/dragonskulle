@@ -92,7 +92,7 @@ public class SyncStat extends SyncInt {
         StatConfig cfg = getStatConfig();
 
         if (cfg == null) {
-            log.warning("mValueCalculator is null.");
+            log.warning("config is null.");
             return 0;
         }
 
@@ -226,6 +226,10 @@ public class SyncStat extends SyncInt {
         }
 
         GameState state = getGameState();
+
+        if (state == null) {
+            return null;
+        }
 
         mConfig = mConfigChooser.getConfig(state.getConfig());
 

@@ -433,9 +433,9 @@ public class GameConfig implements ISyncVar {
     // Regardless of the level, the claim distance will always be the same.
     /** Claim distance stat properties. */
     private StatConfig mClaimDistanceStat = new StatConfig(1, 0, 0, 100, null, 0);
-    // The defence value is identical to the current level -1.
+    // The defence value is identical to the current level.
     /** Defence stat properties. */
-    private StatConfig mDefenceStat = new StatConfig(-1, 1, 0, 100, TileType.MOUNTAIN, 0.5f);
+    private StatConfig mDefenceStat = new StatConfig(0, 1, 0, 100, TileType.MOUNTAIN, 0.5f);
     /** Token generation stat properties. */
     private StatConfig mGenerationStat = new StatConfig(-1, 1, 0, 100, TileType.WATER, 0.4f);
     // Regardless of the level, the view distance will always be the same.
