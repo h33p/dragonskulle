@@ -70,8 +70,10 @@ public class AttackTest {
     @Test
     public void basicAttack() {
         float percentageOfWins = runAttack(mAttacker, mDefender);
+        float calculatedPercentage = mAttacker.calculateAttackOdds(mDefender);
 
         assertEquals(0.5f, percentageOfWins, 0.1f);
+        assertEquals(0.5f, calculatedPercentage, 0.1f);
     }
 
     /**

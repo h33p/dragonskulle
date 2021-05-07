@@ -208,7 +208,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         return mGameState.get();
     }
 
-    private PlayerConfig getConfig() {
+    public PlayerConfig getConfig() {
         if (mConfig != null) {
             return mConfig;
         }

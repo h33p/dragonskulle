@@ -715,22 +715,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
             return;
         }
 
-        int attackLevel = attacker.getAttack().getLevel();
-        int defendLevel = defender.getDefence().getLevel();
-        int difference = attackLevel - defendLevel;
-        String output = "MEDIUM";
-
-        if (difference <= -5) {
-            output = "VERY LOW";
-        } else if (difference <= -3) {
-            output = "LOW";
-        }
-
-        if (difference >= 5) {
-            output = "VERY HIGH";
-        } else if (difference >= 3) {
-            output = "HIGH";
-        }
+        String output = String.format("%.0f%%", attacker.calculateAttackOdds(defender) * 100);
 
         text.get().setText(TextUtils.constructField("Chance", output, 15));
     }
