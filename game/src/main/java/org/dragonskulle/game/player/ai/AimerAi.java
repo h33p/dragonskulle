@@ -24,7 +24,7 @@ import org.dragonskulle.game.player.ai.algorithms.graphs.Node;
  * @author Dragonskulle
  */
 @Log
-public class AimerAi extends AiPlayer {
+public class AimerAi extends ProbabilisticAiPlayer {
 
     /**
      * A Class which holds the Goal Node and Start Node.
@@ -76,22 +76,8 @@ public class AimerAi extends AiPlayer {
     /** This is the number of tries we should do before resetting. */
     private static final int TRIES = 5;
 
-    /** The {@link ProbabilisticAiPlayer} which is its ProbabilisticAi */
-    protected ProbabilisticAiPlayer mProbabilisticAi = null;
-
     /** Basic Constructor. */
     public AimerAi() {}
-
-    @Override
-    public void onStart() {
-
-        if (mProbabilisticAi == null
-                && Reference.isValid(getGameObject().getComponent(ProbabilisticAiPlayer.class))) {
-            mProbabilisticAi = getGameObject().getComponent(ProbabilisticAiPlayer.class).get();
-        }
-
-        super.onStart();
-    }
 
     @Override
     protected void simulateInput() {
@@ -108,8 +94,7 @@ public class AimerAi extends AiPlayer {
 
             // Whilst it cannot find a path play probabilistically
             if (mPath.size() == 0) {
-
-                mProbabilisticAi.simulateInput();
+                super.simulateInput();
             } else {
                 // This will mean you need 139 attempts to always aim at the capital.  Need 81
                 // attempts for 0.5
@@ -171,7 +156,7 @@ public class AimerAi extends AiPlayer {
             }
 
         } else {
-            mProbabilisticAi.simulateInput();
+            super.simulateInput();
         }
     }
 
@@ -241,7 +226,7 @@ public class AimerAi extends AiPlayer {
 
             if (building != null && getPlayer().isBuildingOwner(building)) {
                 // Will attack
-                mProbabilisticAi.tryToAttack(building);
+                super.simulateInput();
 
                 // Assumption is that the code at the start of the method will move back
                 // to
