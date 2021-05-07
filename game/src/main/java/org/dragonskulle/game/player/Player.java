@@ -907,9 +907,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         // Try to run an attack.
         if (attackAttempt(attacker, defender)) {
-            playSound(AudioEvent.ATTACK_SUCCESS_SOUND, ServerEvent.EventRecipients.OWNER);
+            attacker.getOwner().playSound(AudioEvent.ATTACK_SUCCESS_SOUND, ServerEvent.EventRecipients.OWNER);
+            defender.getOwner().playSound(AudioEvent.DEFENCE_FAILED_SOUND, ServerEvent.EventRecipients.OWNER);
         } else {
-            playSound(AudioEvent.ATTACK_FAILURE_SOUND, ServerEvent.EventRecipients.OWNER);
+            attacker.getOwner().playSound(AudioEvent.ATTACK_FAILURE_SOUND, ServerEvent.EventRecipients.OWNER);
+            defender.getOwner().playSound(AudioEvent.DEFENCE_SUCCESS_SOUND, ServerEvent.EventRecipients.OWNER);
         }
     }
 
