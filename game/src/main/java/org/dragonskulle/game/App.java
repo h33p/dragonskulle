@@ -174,14 +174,11 @@ public class App implements NativeResource {
     private static Scene createMainScene(NetworkManager networkManager, boolean asServer) {
         Scene mainScene = createMainScene(networkManager);
         if (asServer) {
-            log.info("I am the server");
             GameObject hostGameUi =
                     new GameObject(
                             "hostGameUi",
                             new TransformUI(false),
                             (root) -> {
-                                // root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f,
-                                // 0.1f)));
                                 root.getTransform(TransformUI.class).setParentAnchor(0f);
                                 root.buildChild(
                                         "populate_with_ai",
@@ -305,7 +302,6 @@ public class App implements NativeResource {
                         new TransformUI(),
                         (settings) -> {
                             settings.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
-                            // settings.getTransform(TransformUI.class).setParentAnchor(0f);
                             settings.addComponent(
                                     new UISettingsMenu(
                                             () -> {

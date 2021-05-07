@@ -1,3 +1,5 @@
 building_sell: https://freesound.org/people/BeezleFM/sounds/512133/
 building_upgrade: https://freesound.org/people/InspectorJ/sounds/400991/
 attack_success: https://freesound.org/people/Debsound/sounds/437602/
+victory: https://samplefocus.com/samples/flawless-victory#_=_
+game_start: https://samplefocus.com/samples/round-1-fight

@@ -22,6 +22,7 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.GameState;
+import org.dragonskulle.game.GameUIAppearance;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.building.stat.SyncStat;
@@ -164,6 +165,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     @Getter
     private transient ServerEvent<AttackData> mServerAttackEvent;
+    @Getter
+    private transient ServerEvent<GameState.InvokeAudioEvent> mOwnerAudioEvent;
+    @Getter
+    private transient ServerEvent<GameState.InvokeAudioEvent> mGlobalAudioEvent;
 
     /**
      * The base constructor for player.
@@ -189,6 +194,24 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         mClientSellRequest = new ClientRequest<>(new SellData(), this::sellEvent);
 
         mServerAttackEvent = new ServerEvent<>(new AttackData(), this::attackEffect);
+
+        mOwnerAudioEvent =
+                new ServerEvent<>(
+                        new GameState.InvokeAudioEvent(),
+                        (data) -> {
+                            GameUIAppearance.getSource().playSound(data.getSoundId().getPath());
+                        },
+                        ServerEvent.EventRecipients.OWNER,
+                        ServerEvent.EventTimeframe.INSTANT);
+
+        mGlobalAudioEvent =
+                new ServerEvent<>(
+                        new GameState.InvokeAudioEvent(),
+                        (data) -> {
+                            GameUIAppearance.getSource().playSound(data.getSoundId().getPath());
+                        },
+                        ServerEvent.EventRecipients.ALL_CLIENTS,
+                        ServerEvent.EventTimeframe.INSTANT);
 
         getNetworkManager().getIdSingletons(getNetworkObject().getOwnerId()).register(this);
 
@@ -765,7 +788,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         // Try to place the building on the tile.
         if (buildAttempt(tile, descriptor)) {
-            playSound(AudioEvent.BUILDING_UPGRADE_SOUND, ServerEvent.EventRecipients.OWNER);
+            playSound(AudioEvent.BUILDING_SOUND, ServerEvent.EventRecipients.OWNER);
         }
     }
 
@@ -1059,13 +1082,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         if (Reference.isValid(mGameState)) {
             switch (recipients) {
                 case OWNER:
-                    mGameState.get().getOwnerAudioEvent().invoke(
+                    mOwnerAudioEvent.invoke(
                             new GameState.InvokeAudioEvent(sound)
                     );
                     break;
                 case ACTIVE_CLIENTS:
                 case ALL_CLIENTS:
-                    mGameState.get().getGlobalAudioEvent().invoke(
+                    mGlobalAudioEvent.invoke(
                             new GameState.InvokeAudioEvent(sound)
                     );
                     break;
@@ -1163,7 +1186,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         // Try to change the stats of the building.
         if (statAttempt(building, statType)) {
-            playSound(AudioEvent.BUILDING_UPGRADE_SOUND, ServerEvent.EventRecipients.OWNER);
+            playSound(AudioEvent.BUILDING_SOUND, ServerEvent.EventRecipients.OWNER);
         }
     }
 

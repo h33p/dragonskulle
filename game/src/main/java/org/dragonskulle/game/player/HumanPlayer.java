@@ -2,10 +2,12 @@
 package org.dragonskulle.game.player;
 
 import java.util.Objects;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
+import org.dragonskulle.audio.components.AudioSource;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
@@ -19,6 +21,7 @@ import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.App;
 import org.dragonskulle.game.GameState;
 import org.dragonskulle.game.GameState.IGameEndEvent;
+import org.dragonskulle.game.GameUIAppearance;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.camera.TargetMovement;
 import org.dragonskulle.game.input.GameActions;
@@ -54,36 +57,65 @@ import org.joml.Vector3f;
 @Log
 public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate, IOnStart {
 
-    /** The current {@link Screen} being displayed. */
-    @Getter private Screen mCurrentScreen = Screen.DEFAULT_SCREEN;
+    /**
+     * The current {@link Screen} being displayed.
+     */
+    @Getter
+    private Screen mCurrentScreen = Screen.DEFAULT_SCREEN;
 
-    /** Stores the current HexagonTile selected. */
-    @Getter @Setter private HexagonTile mHexChosen;
-    /** Stores the current Building being selected, if there is one. */
-    @Getter @Setter private Reference<Building> mBuildingChosen;
+    /**
+     * Stores the current HexagonTile selected.
+     */
+    @Getter
+    @Setter
+    private HexagonTile mHexChosen;
+    /**
+     * Stores the current Building being selected, if there is one.
+     */
+    @Getter
+    @Setter
+    private Reference<Building> mBuildingChosen;
 
-    /** Store a reference to the relevant {@link Player}. */
+    /**
+     * Store a reference to the relevant {@link Player}.
+     */
     private Reference<Player> mPlayer;
 
-    /** Store a reference to the {@link NetworkManager}. */
+    /**
+     * Store a reference to the {@link NetworkManager}.
+     */
     private final Reference<NetworkManager> mNetworkManager;
 
-    /** Store a reference to the {@link UIMenuLeftDrawer}. */
-    @Getter private Reference<UIMenuLeftDrawer> mMenuDrawer;
+    /**
+     * Store a reference to the {@link UIMenuLeftDrawer}.
+     */
+    @Getter
+    private Reference<UIMenuLeftDrawer> mMenuDrawer;
 
-    /** Store a reference to the {@link UITokenCounter} component. */
+    /**
+     * Store a reference to the {@link UITokenCounter} component.
+     */
     private Reference<UITokenCounter> mTokenCounter;
 
-    /** Store a reference to the {@link UILinkedScrollBar} component. */
-    @Getter private Reference<UILinkedScrollBar> mScrollBar;
+    /**
+     * Store a reference to the {@link UILinkedScrollBar} component.
+     */
+    @Getter
+    private Reference<UILinkedScrollBar> mScrollBar;
 
-    /** Event that gets invoked whenever player loses its capital/the game ends. */
+    /**
+     * Event that gets invoked whenever player loses its capital/the game ends.
+     */
     private Reference<IGameEndEvent> mGameEndEventHandler;
 
-    /** Whether the camera is moving to the capital. */
+    /**
+     * Whether the camera is moving to the capital.
+     */
     private boolean mMovedCameraToCapital = false;
 
-    /** Whether the visuals need to be updated. */
+    /**
+     * Whether the visuals need to be updated.
+     */
     private boolean mVisualsNeedUpdate = true;
 
     private class ArcUpdater implements IPathUpdater, IArcHandler {
@@ -103,7 +135,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                     || mHexChosen == null
                     || !Reference.isValid(mBuildingChosen)
                     || !mPlayer.get()
-                            .attackCheck(mBuildingChosen.get(), mHexChosen.getBuilding())) {
+                    .attackCheck(mBuildingChosen.get(), mHexChosen.getBuilding())) {
                 mLerpedStart = MathUtils.lerp(mLerpedStart, -1, lerptime);
 
                 arcPath.setSpawnOffset(mLerpedStart);
@@ -165,10 +197,14 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
-    /** Visual arc path shown on selections */
+    /**
+     * Visual arc path shown on selections
+     */
     private Reference<ArcPath> mArcPath;
 
-    /** Updater for mArcPath */
+    /**
+     * Updater for mArcPath
+     */
     private Reference<ArcUpdater> mUpdater;
 
     private boolean mArcFadeOut = false;
@@ -187,8 +223,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     @Override
     public void onStart() {
-
         // Create the slider used for zooming.
+        log.info("human player running start");
         UILinkedScrollBar component = new UILinkedScrollBar();
         getGameObject()
                 .buildChild(
@@ -243,6 +279,12 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         getGameObject().addComponent(path);
 
         mArcPath = path.getReference(ArcPath.class);
+        log.info("should play start sound");
+        //this shouldnt have to happen to play on start
+        AudioSource src = new AudioSource();
+        getGameObject().addComponent(src);
+        src.playSound(GameUIAppearance.AudioEvent.ON_GAME_START.getPath());
+        log.info("human player running start end");
     }
 
     @Override
@@ -278,7 +320,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                         int id = mPlayer.get().getNetworkObject().getOwnerId();
 
                                         String res = id == winnerId ? "You win!" : "You lose!";
+                                        GameUIAppearance.AudioEvent onGameEndSound = id == winnerId ? GameUIAppearance.AudioEvent.ON_WIN_SOUND : GameUIAppearance.AudioEvent.ON_LOSE_SOUND;
 
+                                        GameUIAppearance.getSource().playSound(onGameEndSound.getPath());
                                         pauseMenu.get().endGame(res);
                                     }
                                 });
@@ -339,7 +383,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         mBuildingChosen = building.getReference(Building.class);
     }
 
-    /** If the user selects a tile, swap to the relevant screen. */
+    /**
+     * If the user selects a tile, swap to the relevant screen.
+     */
     private void detectTileSelection() {
         Player player = getPlayer();
         Cursor cursor = Actions.getCursor();
@@ -390,7 +436,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
-    /** This updates what the user can see */
+    /**
+     * This updates what the user can see
+     */
     private void updateVisuals() {
 
         // Ensure Player and MapEffects exist.
@@ -520,7 +568,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     /**
      * Highlight surrounding Buildings based on the {@link #mHexChosen}.
      *
-     * @param effects The MapEffects to be used.
+     * @param effects         The MapEffects to be used.
      * @param attackHighlight Used to highlight attackable buildings.
      * @param selectHighlight Used when an attackable building is selected.
      */

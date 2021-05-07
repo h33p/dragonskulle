@@ -79,10 +79,6 @@ public class GameState extends NetworkableComponent implements IOnAwake {
     private boolean mInGame = true;
 
     private transient ServerEvent<GameEndEventData> mGameEndEvent;
-    @Getter
-    private transient ServerEvent<InvokeAudioEvent> mOwnerAudioEvent;
-    @Getter
-    private transient ServerEvent<InvokeAudioEvent> mGlobalAudioEvent;
 
     private final List<Reference<IGameEndEvent>> mGameEndListeners = new ArrayList<>();
 
@@ -101,23 +97,6 @@ public class GameState extends NetworkableComponent implements IOnAwake {
                         EventRecipients.ALL_CLIENTS,
                         EventTimeframe.INSTANT);
 
-        mOwnerAudioEvent =
-                new ServerEvent<>(
-                        new InvokeAudioEvent(),
-                        (data) -> {
-                            GameUIAppearance.getSource().playSound(data.getSoundId().getPath());
-                        },
-                        EventRecipients.OWNER,
-                        EventTimeframe.INSTANT);
-
-        mGlobalAudioEvent =
-                new ServerEvent<>(
-                        new InvokeAudioEvent(),
-                        (data) -> {
-                            GameUIAppearance.getSource().playSound(data.getSoundId().getPath());
-                        },
-                        EventRecipients.ACTIVE_CLIENTS,
-                        EventTimeframe.INSTANT);
     }
 
     @Override

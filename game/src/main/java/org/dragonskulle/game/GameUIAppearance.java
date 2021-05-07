@@ -26,13 +26,14 @@ public class GameUIAppearance {
     public enum AudioEvent {
         BUTTON_DOWN_SOUND("button-down.wav"),
         BUTTON_UP_SOUND("button-up.wav"),
-        BUILDING_UPGRADE_SOUND("attack_upgrade.wav"),
+        BUILDING_SOUND("building_upgrade.wav"),
         BUILDING_SELL_SOUND("building_sell.wav"),
         ATTACK_SUCCESS_SOUND("attack_success.wav"),
         ATTACK_FAILURE_SOUND("stock_event.wav"), //todo
-        ON_WIN_SOUND("stock_event.wav"), //todo
-        ON_LOSE_SOUND("stock_event.wav"), //todo
-        ATTACK_INVOKED_SOUND("stock_event.wav"); //todo
+        ATTACK_INVOKED_SOUND("stock_event.wav"), //todo
+        ON_GAME_START("game_start.wav"), //todo
+        ON_WIN_SOUND("victory.wav"), //todo
+        ON_LOSE_SOUND("on_lose.wav"); //todo
 
         private static final AudioEvent[] sValues = values();
 
@@ -142,7 +143,7 @@ public class GameUIAppearance {
         }
     }
 
-    protected static AudioSource getSource() {
+    public static AudioSource getSource() {
         AudioSource singleton = Scene.getActiveScene().getSingleton(AudioSource.class);
 
         if (singleton == null) {
