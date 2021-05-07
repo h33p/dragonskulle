@@ -123,7 +123,7 @@ public class App implements NativeResource {
 
                                                     // Make sure it's an actual camera
                                                     Camera cam = new Camera();
-                                                    cam.mFarPlane = 200;
+                                                    cam.setFarPlane(200);
                                                     camera.addComponent(cam);
 
                                                     camera.addComponent(new MapEffects());
@@ -172,49 +172,6 @@ public class App implements NativeResource {
      */
     static Scene createMainScene(NetworkManager networkManager, boolean asServer) {
         Scene mainScene = createMainScene(networkManager);
-        if (asServer) {
-            log.info("I am the server");
-            GameObject hostGameUi =
-                    new GameObject(
-                            "hostGameUi",
-                            new TransformUI(false),
-                            (root) -> {
-                                // root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f,
-                                // 0.1f)));
-                                root.getTransform(TransformUI.class).setParentAnchor(0f);
-                                root.buildChild(
-                                        "populate_with_ai",
-                                        new TransformUI(true),
-                                        (box) -> {
-                                            box.getTransform(TransformUI.class)
-                                                    .setParentAnchor(0.3f, 0.93f, 1f, 0.93f);
-                                            box.getTransform(TransformUI.class)
-                                                    .setMargin(0f, 0f, 0f, 0.07f);
-                                            box.addComponent(
-                                                    new UIButton(
-                                                            "Fill game with AI",
-                                                            (a, b) -> {
-                                                                log.info("should fill with ai");
-                                                                networkManager
-                                                                        .getServerManager()
-                                                                        .spawnNetworkObject(
-                                                                                -1,
-                                                                                networkManager
-                                                                                        .findTemplateByName(
-                                                                                                "aStarAi"));
-
-                                                                networkManager
-                                                                        .getServerManager()
-                                                                        .spawnNetworkObject(
-                                                                                -2,
-                                                                                networkManager
-                                                                                        .findTemplateByName(
-                                                                                                "aiPlayer"));
-                                                            }));
-                                        });
-                            });
-            mainScene.addRootObject(hostGameUi);
-        }
         return mainScene;
     }
 
