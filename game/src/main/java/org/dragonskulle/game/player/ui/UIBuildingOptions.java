@@ -163,10 +163,18 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
         description.update(descriptor, getPlayer());
     }
 
+    /** Ensure player reference is valid in build description. */
+    private void ensurePlayerValidForDescription() {
+        if (!Reference.isValid(mDescription)) return;
+        UIBuildingDescription description = mDescription.get();
+        description.updatePlayer(getPlayer());
+    }
+
     @Override
     public void fixedUpdate(float deltaTime) {
         updateTokens();
         updateBuyButton();
+        ensurePlayerValidForDescription();
     }
 
     /** Enable and disable the buy button. */

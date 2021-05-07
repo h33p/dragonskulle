@@ -93,6 +93,12 @@ public class UIBuildingDescription extends Component implements IOnAwake, IFixed
      * @param player target player for price inflation calculations.
      */
     void update(BuildingDescriptor descriptor, Player player) {
+        updatePlayer(player);
+
+        if (descriptor == null) {
+            return;
+        }
+
         updateField(mNameRef, descriptor.getName().toUpperCase());
         updateField(
                 mAttackRef,
@@ -105,7 +111,6 @@ public class UIBuildingDescription extends Component implements IOnAwake, IFixed
                 TextUtils.constructField(
                         "Generation", descriptor.getTokenGenerationLevel(), TEXT_LENGTH));
 
-        updatePlayer(player);
         mDescriptor = descriptor;
 
         updateCost();
@@ -116,8 +121,19 @@ public class UIBuildingDescription extends Component implements IOnAwake, IFixed
      *
      * @param player target player to set.
      */
-    private void updatePlayer(Player player) {
+    public void updatePlayer(Player player) {
+
+        boolean update = false;
+
+        if (!Reference.isValid(mPlayerRef) && player != null) {
+            update = true;
+        }
+
         mPlayerRef = player != null ? player.getReference(Player.class) : null;
+
+        if (update) {
+            update(mDescriptor, player);
+        }
     }
 
     /** Update cost shown in the UI, based on base price and inflation. */
