@@ -118,8 +118,8 @@ public class SyncStat extends SyncInt {
         float mainValue =
                 MathUtils.clamp(
                         value.getBaseValue() + value.getMulLevel() * getLevel(),
-                        value.getMaxValue(),
-                        value.getMinValue());
+                        value.getMinValue(),
+                        value.getMaxValue());
 
         return Math.round(mainValue + value.getBonus().getMultiplier() * bonusTiles);
     }
