@@ -298,9 +298,7 @@ public class NetworkClient {
                 mClientListener.hostStartedGame();
                 break;
             default:
-                log.info(
-                        "unsure of what to do with message as unknown playerStyle byte "
-                                + messageType);
+                log.info("unsure of what to do with message as unknown type byte " + messageType);
                 break;
         }
         return messageType;

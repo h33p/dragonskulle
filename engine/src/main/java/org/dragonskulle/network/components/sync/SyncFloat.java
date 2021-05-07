@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.Objects;
 
 /**
- * The playerStyle Sync float.
+ * The type Sync float.
  *
  * @author Oscar L
  */

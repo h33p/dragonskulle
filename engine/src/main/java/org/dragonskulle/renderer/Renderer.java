@@ -948,7 +948,7 @@ public class Renderer implements NativeResource {
      * VK logging entrypoint.
      *
      * @param messageSeverity severity of the message, which will be translated to log level
-     * @param messageType playerStyle of the message, unused
+     * @param messageType type of the message, unused
      * @param pCallbackData pointer to the callback data
      * @param pUserData pointer to the user data (unused)
      * @return VK_FALSE

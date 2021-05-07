@@ -25,7 +25,7 @@ import org.dragonskulle.network.components.sync.SyncInt;
 import org.dragonskulle.utils.IOUtils;
 
 /**
- * The playerStyle Network object.
+ * The type Network object.
  *
  * @author Oscar L The NetworkObject deals with any networked variables.
  */
@@ -161,7 +161,7 @@ public class NetworkObject extends Component {
 
         for (Reference<NetworkableComponent> comp : mNetworkableComponents) {
             NetworkableComponent nc = comp.get();
-            nc.initialize(this, mClientRequests, mServerEvents);
+            nc.initialise(this, mClientRequests, mServerEvents);
         }
 
         int id = 0;
@@ -273,11 +273,6 @@ public class NetworkObject extends Component {
 
         return true;
     }
-
-    public static final int ID_OFFSET = 0;
-    public static final int OWNER_ID_OFFSET = ID_OFFSET + 4;
-    public static final int MASK_LENGTH_OFFSET = OWNER_ID_OFFSET + 4;
-    public static final int MASK_OFFSET = MASK_LENGTH_OFFSET + 1;
 
     /**
      * Updates itself from stream authored by server.

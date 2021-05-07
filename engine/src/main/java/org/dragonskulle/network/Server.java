@@ -17,7 +17,7 @@ import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 
 /**
- * The playerStyle Server.
+ * The type Server.
  *
  * @author Oscar L
  * @author Aurimas Blažulionis

@@ -1,12 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.core;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,7 +20,7 @@ import org.dragonskulle.components.Transform3D;
  *     itself in the world and other GameObjects.
  */
 @Accessors(prefix = "m")
-public class GameObject implements Serializable {
+public class GameObject {
 
     @Getter private Reference<GameObject> mReference = new Reference<>(this);
     private final ArrayList<Component> mComponents = new ArrayList<>();
@@ -103,42 +97,6 @@ public class GameObject implements Serializable {
      */
     public static GameObject instantiate(GameObject object, Transform transform) {
         GameObject instance = object.createClone();
-        transform.setGameObject(instance);
-        instance.mTransform = transform;
-        return instance;
-    }
-
-    /**
-     * Create a game object from its byte data.
-     *
-     * @param objectData data to deserialize
-     * @return instantiated object
-     */
-    public static GameObject instantiate(byte[] objectData) {
-        if (objectData != null) {
-            try {
-                ByteArrayInputStream bais = new ByteArrayInputStream(objectData);
-                return (GameObject) new ObjectInputStream(bais).readObject();
-            } catch (ClassCastException | ClassNotFoundException | IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return null;
-    }
-
-    /**
-     * Create a clone of a GameObject, providing a new transform for the object.
-     *
-     * @param objectData data of the object
-     * @param transform New transform for the object. Must be passed exclusively (i.e. only to this
-     *     instance)
-     * @return The new instance of the GameObject
-     */
-    public static GameObject instantiate(byte[] objectData, Transform transform) {
-        GameObject instance = instantiate(objectData);
-        if (instance == null) {
-            return null;
-        }
         transform.setGameObject(instance);
         instance.mTransform = transform;
         return instance;
@@ -269,16 +227,16 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Get the first component of playerStyle T found.
+     * Get the first component of type T found.
      *
-     * @param playerStyle Class object of T
+     * @param type Class object of T
      * @param <T> Type of component to be returned
-     * @return The first component of playerStyle T found, or null if none were found
+     * @return The first component of type T found, or null if none were found
      */
-    public <T extends Component> Reference<T> getComponent(Class<T> playerStyle) {
+    public <T extends Component> Reference<T> getComponent(Class<T> type) {
         return mComponents.stream()
-                .filter(playerStyle::isInstance)
-                .map(component -> component.getReference(playerStyle))
+                .filter(type::isInstance)
+                .map(component -> component.getReference(type))
                 .filter(Reference::isValid)
                 .findFirst()
                 .orElse(null);
@@ -299,17 +257,17 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Get a list of all components of a specific playerStyle in all children of this GameObject.
+     * Get a list of all components of a specific type in all children of this GameObject.
      *
-     * @param playerStyle Class object of playerStyle T
+     * @param type Class object of type T
      * @param ret List object to store the references to components found
      * @param <T> Type of component to search for
      */
     public <T extends Component> void getComponentsInChildren(
-            Class<T> playerStyle, List<Reference<T>> ret) {
+            Class<T> type, List<Reference<T>> ret) {
         for (GameObject child : mChildren) {
-            child.getComponents(playerStyle, ret);
-            child.getComponentsInChildren(playerStyle, ret);
+            child.getComponents(type, ret);
+            child.getComponentsInChildren(type, ret);
         }
     }
 
@@ -505,29 +463,6 @@ public class GameObject implements Serializable {
         }
     }
 
-    /**
-     * Serialize a game object to bytes.
-     *
-     * @return byte representation of the object
-     */
-    public byte[] serialize() {
-        byte[] objectData = null;
-
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(baos);
-            oos.writeObject(this);
-            oos.flush();
-            oos.close();
-            baos.close();
-            objectData = baos.toByteArray();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return objectData;
-    }
-
     public GameObject createClone() {
         return Engine.getCloner().deepClone(this);
     }
@@ -544,12 +479,12 @@ public class GameObject implements Serializable {
     /**
      * Getter for mTransform with cast.
      *
-     * @param <T> A playerStyle of the {@link Transform}.
-     * @param playerStyle The class of the transform.
-     * @return mTransform cast to playerStyle if cast is valid, null otherwise
+     * @param <T> A type of the {@link Transform}.
+     * @param type The class of the transform.
+     * @return mTransform cast to type if cast is valid, null otherwise
      */
-    public <T extends Transform> T getTransform(Class<T> playerStyle) {
-        return playerStyle.isInstance(mTransform) ? playerStyle.cast(mTransform) : null;
+    public <T extends Transform> T getTransform(Class<T> type) {
+        return type.isInstance(mTransform) ? type.cast(mTransform) : null;
     }
 
     /**
@@ -599,16 +534,16 @@ public class GameObject implements Serializable {
     }
 
     /**
-     * Get all components of a given playerStyle T.
+     * Get all components of a given type T.
      *
-     * @param playerStyle Class object of T
+     * @param type Class object of T
      * @param <T> Type of component to be returned
      * @param ret List that will store the components found
      */
-    public <T extends Component> void getComponents(Class<T> playerStyle, List<Reference<T>> ret) {
+    public <T extends Component> void getComponents(Class<T> type, List<Reference<T>> ret) {
         mComponents.stream()
-                .filter(playerStyle::isInstance)
-                .map(component -> component.getReference(playerStyle))
+                .filter(type::isInstance)
+                .map(component -> component.getReference(type))
                 .filter(Reference::isValid)
                 .collect(Collectors.toCollection(() -> ret));
     }

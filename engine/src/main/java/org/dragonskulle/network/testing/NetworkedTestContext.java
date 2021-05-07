@@ -232,48 +232,47 @@ public class NetworkedTestContext {
     /**
      * Get a server component.
      *
-     * @param <T> playerStyle of the input playerStyle class.
-     * @param playerStyle component's playerStyle.
+     * @param <T> type of the input type class.
+     * @param type component's type.
      * @return reference to the component, if one exists. {@code null} otherwise.
      */
-    public <T extends NetworkableComponent> Reference<T> getServerComponent(Class<T> playerStyle) {
-        return getNetworkComponent(mServer.getManager(), playerStyle);
+    public <T extends NetworkableComponent> Reference<T> getServerComponent(Class<T> type) {
+        return getNetworkComponent(mServer.getManager(), type);
     }
 
     /**
      * Get a client component.
      *
-     * @param <T> playerStyle of the input playerStyle class.
+     * @param <T> type of the input type class.
      * @param i client's index.
-     * @param playerStyle component's playerStyle.
+     * @param type component's type.
      * @return reference to the component, if one exists. {@code null} otherwise.
      */
-    public <T extends NetworkableComponent> Reference<T> getClientComponent(
-            int i, Class<T> playerStyle) {
-        return getNetworkComponent(getClient(i).getManager(), playerStyle);
+    public <T extends NetworkableComponent> Reference<T> getClientComponent(int i, Class<T> type) {
+        return getNetworkComponent(getClient(i).getManager(), type);
     }
 
     /**
      * Get a client component on the first client.
      *
-     * @param <T> playerStyle of the input playerStyle class.
-     * @param playerStyle component's playerStyle.
+     * @param <T> type of the input type class.
+     * @param type component's type.
      * @return reference to the component, if one exists. {@code null} otherwise.
      */
-    public <T extends NetworkableComponent> Reference<T> getClientComponent(Class<T> playerStyle) {
-        return getClientComponent(0, playerStyle);
+    public <T extends NetworkableComponent> Reference<T> getClientComponent(Class<T> type) {
+        return getClientComponent(0, type);
     }
 
     /**
      * Get a network component.
      *
-     * @param <T> playerStyle of the input playerStyle class.
+     * @param <T> type of the input type class.
      * @param manager network manager to get the component from.
-     * @param playerStyle playerStyle of the component.
+     * @param type type of the component.
      * @return reference to the component. {@code null} if does not exist.
      */
     private static <T extends NetworkableComponent> Reference<T> getNetworkComponent(
-            NetworkManager manager, Class<T> playerStyle) {
+            NetworkManager manager, Class<T> type) {
 
         Stream<NetworkObject> objs = manager.getNetworkObjects();
 
@@ -281,7 +280,7 @@ public class NetworkedTestContext {
             return null;
         }
 
-        return objs.map(c -> c.getGameObject().getComponent(playerStyle))
+        return objs.map(c -> c.getGameObject().getComponent(type))
                 .filter(Objects::nonNull)
                 .findFirst()
                 .orElse(null);

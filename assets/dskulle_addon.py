@@ -218,7 +218,7 @@ class ColStringProperty(bpy.types.PropertyGroup):
 
 class ParsedComponents(bpy.types.PropertyGroup):
     """Contains a list of parsed components"""
-    components: bpy.props.CollectionProperty(name = "components", playerStyle = ColStringProperty)
+    components: bpy.props.CollectionProperty(name = "components", type = ColStringProperty)
 
     def prepare(self, cur_name):
         global parsed_components
@@ -248,7 +248,7 @@ class DSKULLE_add_component(bpy.types.Operator):
 
     parsed_class: bpy.props.StringProperty(name = "Class List")
     name: bpy.props.StringProperty(name = "Exact Class")
-    parsed_comps: bpy.props.PointerProperty(playerStyle = ParsedComponents)
+    parsed_comps: bpy.props.PointerProperty(type = ParsedComponents)
 
     def execute(self, context):
         parsed_comp = get_component(self.parsed_class)
@@ -286,7 +286,7 @@ class DSKULLE_change_component_name(bpy.types.Operator):
     id: bpy.props.IntProperty(default=-1)
     parsed_class: bpy.props.StringProperty(name = "Class List")
     name: bpy.props.StringProperty(name = "Exact Class")
-    parsed_comps: bpy.props.PointerProperty(playerStyle = ParsedComponents)
+    parsed_comps: bpy.props.PointerProperty(type = ParsedComponents)
 
     def execute(self, context):
         comp = context.object.dskulle_object.components[self.id]
@@ -418,7 +418,7 @@ class ComponentProperty(bpy.types.PropertyGroup):
     float_prop1: bpy.props.FloatProperty(name = "X")
     float_prop2: bpy.props.FloatProperty(name = "Y")
     float_prop3: bpy.props.FloatProperty(name = "Z")
-    obj: bpy.props.PointerProperty(playerStyle = bpy.types.Object)
+    obj: bpy.props.PointerProperty(type = bpy.types.Object)
 
     def java_to_internal_type(self):
         if self.type_name in java_to_internal:
@@ -462,7 +462,7 @@ class ComponentProperty(bpy.types.PropertyGroup):
 class Component(bpy.types.PropertyGroup):
     enabled: bpy.props.BoolProperty(name = "Enable", default = True, description = "Controls whether the component is enabled")
     class_name: bpy.props.StringProperty(name = "Class Name")
-    properties: bpy.props.CollectionProperty(name = "Properties", playerStyle = ComponentProperty)
+    properties: bpy.props.CollectionProperty(name = "Properties", type = ComponentProperty)
 
     def serialize(self):
         properties = []
@@ -474,7 +474,7 @@ class Component(bpy.types.PropertyGroup):
 
 class GameObject(bpy.types.PropertyGroup):
     transform_type: bpy.props.EnumProperty(name = "Transform", items = (('org.dragonskulle.components.Transform3D', '3D', 'Use Transform3D'), ('org.dragonskulle.components.TransformHex', 'Hex', 'Use TransformHex')))
-    components: bpy.props.CollectionProperty(name = "Components", playerStyle = Component)
+    components: bpy.props.CollectionProperty(name = "Components", type = Component)
 
     def serialize(self, obj):
         components = []
@@ -619,8 +619,8 @@ reg, unreg = bpy.utils.register_classes_factory(register_classes)
 
 def register():
     reg()
-    bpy.types.Object.dskulle_object = bpy.props.PointerProperty(playerStyle = GameObject);
-    bpy.types.Scene.ComponentExportProperties = bpy.props.PointerProperty(playerStyle = ComponentExportProperties)
+    bpy.types.Object.dskulle_object = bpy.props.PointerProperty(type = GameObject);
+    bpy.types.Scene.ComponentExportProperties = bpy.props.PointerProperty(type = ComponentExportProperties)
 
 def unregister():
     del bpy.types.Scene.ComponentExportProperties

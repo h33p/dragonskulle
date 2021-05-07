@@ -83,7 +83,7 @@ public class LobbyAPI {
          * @param url URL to make a request to
          * @param method Method of the request (GET, POST, DELETE etc)
          * @param callback Method to call after request execution
-         * @param contentType Value for request property "content-playerStyle"
+         * @param contentType Value for request property "content-type"
          * @param content Data to send in the request
          */
         public AsyncRequest(
@@ -109,7 +109,7 @@ public class LobbyAPI {
 
                 if (mMethod.equals("POST")) {
                     con.setDoOutput(true);
-                    con.setRequestProperty("content-playerStyle", mContentType);
+                    con.setRequestProperty("content-type", mContentType);
                     OutputStreamWriter writer = new OutputStreamWriter(con.getOutputStream());
                     writer.write(mContent);
                     writer.flush();

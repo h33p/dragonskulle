@@ -8,7 +8,7 @@ import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
 /**
- * The playerStyle Sync vector 3.
+ * The type Sync vector 3.
  *
  * @author Oscar L
  */

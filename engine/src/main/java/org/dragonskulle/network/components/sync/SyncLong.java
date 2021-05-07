@@ -7,9 +7,9 @@ import java.io.IOException;
 import java.util.Objects;
 
 /**
- * The playerStyle Sync long.
+ * The type Sync long.
  *
- * @author Oscar L The playerStyle Sync Long.
+ * @author Oscar L The type Sync Long.
  */
 public class SyncLong extends BaseSyncVar {
 

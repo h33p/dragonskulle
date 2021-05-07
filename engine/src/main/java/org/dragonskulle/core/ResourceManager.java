@@ -81,13 +81,13 @@ public class ResourceManager {
         /**
          * Increase reference count, and return a Resource instance.
          *
-         * @param playerStyle class of the playerStyle. Should really be {@code Class<T>}.
+         * @param type class of the type. Should really be {@code Class<T>}.
          * @return a resource with reference to underlying resource.
          */
         @SuppressWarnings("unchecked")
-        private <F> Resource<F> incRefCount(Class<F> playerStyle) {
+        private <F> Resource<F> incRefCount(Class<F> type) {
             // We are checking if T == F
-            if (playerStyle.isInstance(mResource)) {
+            if (type.isInstance(mResource)) {
                 mRefcount += 1;
                 return new Resource<F>((CountedResource<F>) this);
             } else {
@@ -152,55 +152,55 @@ public class ResourceManager {
     /**
      * Register a resource loader in a composite way.
      *
-     * @param playerStyle playerStyle of the resource
+     * @param type type of the resource
      * @param pathResolver implementation (lambda) of path resolving
      * @param bufferLoader implementation (lambda) of resource loading
      */
     public static <T, F> void registerResource(
-            Class<T> playerStyle,
+            Class<T> type,
             IResourcePathResolver<T, F> pathResolver,
             IResourceBufferLoader<T, F> bufferLoader) {
-        sLoaders.put(playerStyle, new CompositeResourceLoader<>(pathResolver, bufferLoader));
+        sLoaders.put(type, new CompositeResourceLoader<>(pathResolver, bufferLoader));
     }
 
     /**
      * Register a resource loader in a composite way
      *
-     * <p>This method is purely for convenience to allow to easily specify the {@code F}
-     * playerStyle, but does exactly the same as the above method.
+     * <p>This method is purely for convenience to allow to easily specify the {@code F} type, but
+     * does exactly the same as the above method.
      *
-     * @param playerStyle playerStyle of the resource
-     * @param argType playerStyle of the argument
+     * @param type type of the resource
+     * @param argType type of the argument
      * @param pathResolver implementation (lambda) of path resolving
      * @param bufferLoader implementation (lambda) of resource loading
      */
     public static <T, F> void registerResource(
-            Class<T> playerStyle,
+            Class<T> type,
             Class<F> argType,
             IResourcePathResolver<T, F> pathResolver,
             IResourceBufferLoader<T, F> bufferLoader) {
-        registerResource(playerStyle, pathResolver, bufferLoader);
+        registerResource(type, pathResolver, bufferLoader);
     }
 
     /**
      * Register a resource loader.
      *
-     * @param playerStyle playerStyle of the resource
+     * @param type type of the resource
      * @param loader loader for the resource
      */
-    public static <T, F> void registerResource(Class<T> playerStyle, IResourceLoader<T, F> loader) {
-        sLoaders.put(playerStyle, loader);
+    public static <T, F> void registerResource(Class<T> type, IResourceLoader<T, F> loader) {
+        sLoaders.put(type, loader);
     }
 
     /**
-     * Get a resource object by name and class playerStyle
+     * Get a resource object by name and class type
      *
      * <p>This method returns a resource, cached, or newly loaded from `loader`, if nothing was
      * cached.
      *
      * @param arguments arguments used for loading
      * @return loaded resource object, if it succeeded to load, {@code null} otherwise. In addition,
-     *     {@code null} is returned if the object playerStyle does not match the input name
+     *     {@code null} is returned if the object type does not match the input name
      */
     public static <T, F> Resource<T> getResource(ResourceArguments<T, F> arguments) {
         CountedResource<?> inst = sLoadedResources.get(arguments);
@@ -213,35 +213,34 @@ public class ResourceManager {
     }
 
     /**
-     * Get a resource object by name and class playerStyle
+     * Get a resource object by name and class type
      *
      * <p>This method returns a resource, cached, or newly loaded from `loader`, if nothing was
      * cached.
      *
-     * @param playerStyle class of {@code T}. Usually {@code T.class}.
+     * @param type class of {@code T}. Usually {@code T.class}.
      * @param name name of the resource to load
      * @param additionalArgs additional arguments to load with
      * @return loaded resource object, if it succeeded to load, {@code null} otherwise. In addition,
-     *     {@code null} is returned if the object playerStyle does not match the input {@code name}
+     *     {@code null} is returned if the object type does not match the input {@code name}
      */
-    public static <T, F> Resource<T> getResource(
-            Class<T> playerStyle, String name, F additionalArgs) {
-        return getResource(new ResourceArguments<>(playerStyle, name, additionalArgs));
+    public static <T, F> Resource<T> getResource(Class<T> type, String name, F additionalArgs) {
+        return getResource(new ResourceArguments<>(type, name, additionalArgs));
     }
 
     /**
-     * Get a resource object by name and class playerStyle
+     * Get a resource object by name and class type
      *
      * <p>This method returns a resource, cached, or newly loaded from `loader`, if nothing was
      * cached.
      *
-     * @param playerStyle class of {@code T}. Usually {@code T.class}.
+     * @param type class of {@code T}. Usually {@code T.class}.
      * @param name name of the resource to load.
      * @return loaded resource object, if it succeeded to load, {@code null} otherwise. In addition,
-     *     {@code null} is returned if the object playerStyle does not match the input {@code name}
+     *     {@code null} is returned if the object type does not match the input {@code name}
      */
-    public static <T> Resource<T> getResource(Class<T> playerStyle, String name) {
-        return getResource(playerStyle, name, null);
+    public static <T> Resource<T> getResource(Class<T> type, String name) {
+        return getResource(type, name, null);
     }
 
     /**
@@ -265,11 +264,11 @@ public class ResourceManager {
      * <p>Use this method if you want to preemptively remove a resource from cache. Useful when
      * reloading is needed, but active references should not be mutated.
      *
-     * @param playerStyle playerStyle of the resource
+     * @param type type of the resource
      * @param name name of the resource to unlink.
      */
-    public static void unlinkResource(Class<?> playerStyle, String name) {
-        unlinkResource(new ResourceArguments<>(playerStyle, name, null));
+    public static void unlinkResource(Class<?> type, String name) {
+        unlinkResource(new ResourceArguments<>(type, name, null));
     }
 
     /**
