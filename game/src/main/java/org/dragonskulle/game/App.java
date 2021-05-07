@@ -38,7 +38,10 @@ import org.lwjgl.system.NativeResource;
 
 @Log
 public class App implements NativeResource {
-    private static final Settings mSettings = Settings.getInstance().loadSettings();
+    static {
+        GameUIAppearance.initialise();
+        Settings.getInstance().loadSettings();
+    }
 
     private static boolean sReload = false;
 

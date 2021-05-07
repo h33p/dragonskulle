@@ -98,6 +98,10 @@ public class GameState extends NetworkableComponent implements IOnAwake {
         }
     }
 
+    /**
+     * Build the server player view. This contains information about each player, displayed in a
+     * drawer.
+     */
     public void buildServerPlayerView() {
         UIManager.IUIBuildHandler[] playerInfos = buildPlayerInfos();
         // things for player thingys
@@ -126,6 +130,12 @@ public class GameState extends NetworkableComponent implements IOnAwake {
                         });
     }
 
+    /**
+     * Generate the {@link org.dragonskulle.ui.UIManager.IUIBuildHandler}'s for each player, each
+     * handler contains a {@link PlayerStats} component.
+     *
+     * @return the builders
+     */
     private UIManager.IUIBuildHandler[] buildPlayerInfos() {
         NetworkManager networkManager = getNetworkManager();
         ServerNetworkManager serverManager = networkManager.getServerManager();
@@ -140,9 +150,9 @@ public class GameState extends NetworkableComponent implements IOnAwake {
         for (int j = 0; j < mNumPlayers.get(); j++) {
             try {
                 Integer next = playerIterator.next();
-                playerInfoBox[j] = new PlayerStats(serverManager, next, j);
+                playerInfoBox[j] = new PlayerStats(serverManager, next, j + 1);
             } catch (NoSuchElementException e) {
-                playerInfoBox[j] = new PlayerStats(serverManager, null, j);
+                playerInfoBox[j] = new PlayerStats(serverManager, null, j + 1);
             }
         }
         return playerInfoBox;

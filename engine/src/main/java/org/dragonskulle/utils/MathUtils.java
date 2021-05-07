@@ -62,6 +62,19 @@ public class MathUtils {
         return Math.round(val / step) * step;
     }
 
+    /**
+     * Maps one value within a range to another value within a different range with a certain
+     * precision.
+     *
+     * @param sourceNumber the value to be mapped
+     * @param fromA the bottom value of the old range
+     * @param fromB the top value of the old range
+     * @param toA the bottom value of the new range
+     * @param toB the top value of the new range
+     * @param decimalPrecision the precision of the result, i.e. how many decimal places are
+     *     retained
+     * @return the mapped value
+     */
     public static double mapOneRangeToAnother(
             double sourceNumber,
             double fromA,
@@ -113,6 +126,13 @@ public class MathUtils {
         dest.flip();
     }
 
+    /**
+     * Blends one RGB colour with another.
+     *
+     * @param a Colour A
+     * @param b Colour B
+     * @return the blended colour
+     */
     public static Vector3fc blendColour(Vector3fc a, Vector3f b) {
         return new Vector3f(
                 blendSingleColour(a.x(), b.x()),
@@ -120,7 +140,13 @@ public class MathUtils {
                 blendSingleColour(a.z(), b.z()));
     }
 
-    // using photon flux
+    /**
+     * Blends two individual RGBA values using photon flux.
+     *
+     * @param a Value 1
+     * @param b Value 2
+     * @return the blended result
+     */
     public static float blendSingleColour(float a, float b) {
         return (float) Math.sqrt(Math.pow(a, 2) * Math.pow(b, 2));
     }

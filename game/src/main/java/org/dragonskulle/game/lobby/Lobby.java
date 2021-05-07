@@ -47,14 +47,16 @@ import org.json.simple.parser.ParseException;
 public class Lobby extends Component implements IFrameUpdate {
 
     private static final int PORT = 17569;
-    private static PlayerType mAimerAiType =
+    private static final PlayerType mAimerAiType =
             new PlayerType(
                     PlayerType.PlayerStyle.AIMER,
                     new Component[] {new ProbabilisticAiPlayer(), new AimerAi()});
-    private static PlayerType mProbabilisticAiType =
+    private static final PlayerType mProbabilisticAiType =
             new PlayerType(
                     PlayerType.PlayerStyle.PROBABILISTIC,
                     new Component[] {new ProbabilisticAiPlayer()});
+    private static final PlayerType mHumanPlayerType =
+            new PlayerType(PlayerType.PlayerStyle.HUMAN, null);
 
     private final Map<String, String> mHosts = new HashMap<>();
     private final AtomicBoolean mHostsUpdated = new AtomicBoolean(false);
@@ -638,7 +640,7 @@ public class Lobby extends Component implements IFrameUpdate {
             Scene gameScene, NetworkManager manager, ServerClient networkClient) {
         log.fine("Client ID: " + networkClient.getNetworkID() + " loaded.");
         int id = networkClient.getNetworkID();
-        spawnPlayer(id, new PlayerType(PlayerType.PlayerStyle.HUMAN, null), manager);
+        spawnPlayer(id, mHumanPlayerType, manager);
     }
 
     /**
