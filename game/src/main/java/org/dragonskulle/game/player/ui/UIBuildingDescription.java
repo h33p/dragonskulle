@@ -105,10 +105,19 @@ public class UIBuildingDescription extends Component implements IOnAwake, IFixed
                 TextUtils.constructField(
                         "Generation", descriptor.getTokenGenerationLevel(), TEXT_LENGTH));
 
-        mPlayerRef = player != null ? player.getReference(Player.class) : null;
+        updatePlayer(player);
         mDescriptor = descriptor;
 
         updateCost();
+    }
+
+    /**
+     * Update the player reference.
+     *
+     * @param player target player to set.
+     */
+    private void updatePlayer(Player player) {
+        mPlayerRef = player != null ? player.getReference(Player.class) : null;
     }
 
     /** Update cost shown in the UI, based on base price and inflation. */

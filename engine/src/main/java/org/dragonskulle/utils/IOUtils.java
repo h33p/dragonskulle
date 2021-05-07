@@ -4,7 +4,7 @@ package org.dragonskulle.utils;
 import java.io.DataInput;
 import java.io.IOException;
 
-/** IOUtils: A collection of IO-related public static methods. from package sun.misc; */
+/** IOUtils: A collection of IO-related public static methods. */
 public class IOUtils {
     /**
      * Read a certain amount of bytes from the buffer, and return it.

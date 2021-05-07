@@ -116,7 +116,7 @@ public class GameConfig implements ISyncVar {
         }
 
         public PlayerConfig() {
-            this(2, 5, 1, 1.05f, 1);
+            this(2, 5, 1, 1.04f, 1);
         }
 
         @Override
@@ -437,7 +437,7 @@ public class GameConfig implements ISyncVar {
     /** Defence stat properties. */
     private StatConfig mDefenceStat = new StatConfig(0, 1, 0, 100, TileType.MOUNTAIN, 0.5f);
     /** Token generation stat properties. */
-    private StatConfig mGenerationStat = new StatConfig(-1, 1, 0, 100, TileType.WATER, 0.4f);
+    private StatConfig mGenerationStat = new StatConfig(-1, 1, 0, 100, TileType.WATER, 0.3f);
     // Regardless of the level, the view distance will always be the same.
     /** View distance stat properties. */
     private StatConfig mViewDistanceStat = new StatConfig(3, 0, 0, 3, null, 0);

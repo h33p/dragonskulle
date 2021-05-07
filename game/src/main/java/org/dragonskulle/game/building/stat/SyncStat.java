@@ -17,6 +17,7 @@ import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.map.HexagonTile.TileType;
 import org.dragonskulle.network.components.sync.SyncInt;
+import org.dragonskulle.utils.MathUtils;
 
 /**
  * Stores a level and calculates the stat's value from this.
@@ -115,11 +116,10 @@ public class SyncStat extends SyncInt {
         StatValueConfig value = cfg.getValue();
 
         float mainValue =
-                Math.min(
+                MathUtils.clamp(
+                        value.getBaseValue() + value.getMulLevel() * getLevel(),
                         value.getMaxValue(),
-                        Math.max(
-                                value.getMinValue(),
-                                value.getBaseValue() + value.getMulLevel() * getLevel()));
+                        value.getMinValue());
 
         return Math.round(mainValue + value.getBonus().getMultiplier() * bonusTiles);
     }
