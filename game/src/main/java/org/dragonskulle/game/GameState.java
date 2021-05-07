@@ -61,7 +61,7 @@ public class GameState extends NetworkableComponent implements IOnAwake {
     private final List<Reference<IGameEndEvent>> mGameEndListeners = new ArrayList<>();
 
     @Override
-    protected void onNetworkInitialize() {
+    protected void onNetworkInitialise() {
         mGameEndEvent =
                 new ServerEvent<>(
                         new GameEndEventData(),

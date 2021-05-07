@@ -123,7 +123,7 @@ public class App implements NativeResource {
 
                                                     // Make sure it's an actual camera
                                                     Camera cam = new Camera();
-                                                    cam.mFarPlane = 200;
+                                                    cam.setFarPlane(200);
                                                     camera.addComponent(cam);
 
                                                     camera.addComponent(new MapEffects());

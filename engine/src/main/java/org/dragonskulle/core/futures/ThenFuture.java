@@ -8,9 +8,8 @@ import org.dragonskulle.core.Scene;
  * "Then" future.
  *
  * @author Aurimas Blažulionis
- *     <p>This future can be built with {@link Future#then(IThenFuture)}. It simply invoke the input
- *     body, and schedule the next future to be executed for the next iteration of main loop, if
- *     there is one.
+ *     <p>This future can be built with {@link Future#then}. It simply invoke the input body, and
+ *     schedule the next future to be executed for the next iteration of main loop, if there is one.
  */
 public class ThenFuture extends Future {
     /** Interface describing a queued action to be performed. */

@@ -39,7 +39,7 @@ public class TestNetworkComponent extends NetworkableComponent {
 
     /** We need to initialize requests here, since java does not like to serialize lambdas. */
     @Override
-    protected void onNetworkInitialize() {
+    protected void onNetworkInitialise() {
         mPasswordRequest = new ClientRequest<>(new TestAttackData(), this::handleEvent);
     }
     /**
