@@ -79,7 +79,6 @@ public class LobbyDiscovery {
                 socket.close();
             } catch (SocketException e) {
                 log.warning("Failed to create local lobby - Couldn't create UDP Socket");
-                e.printStackTrace();
             } catch (IOException e) {
                 log.warning("Error receiving UDP packet");
             }

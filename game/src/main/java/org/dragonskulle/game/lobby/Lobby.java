@@ -550,7 +550,6 @@ public class Lobby extends Component implements IFrameUpdate {
                                                                         });
 
                                                     } catch (ParseException e) {
-                                                        e.printStackTrace();
                                                         log.warning(
                                                                 "Failed to parse response from get host by id");
                                                     }
@@ -668,7 +667,6 @@ public class Lobby extends Component implements IFrameUpdate {
             mLobbyId = (String) obj.get("_code");
             mLobbyIDUpdated.set(true);
         } catch (ParseException e) {
-            e.printStackTrace();
             log.warning("Failed to parse response from add new host.");
         }
     }
