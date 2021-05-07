@@ -15,7 +15,6 @@ import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.GameState;
 import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.game.player.ai.AimerAi;
-import org.dragonskulle.game.player.ai.ProbabilisticAiPlayer;
 import org.dragonskulle.game.player.ui.UIPauseMenu;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.UPnP;
@@ -665,7 +664,6 @@ public class Lobby extends Component implements IFrameUpdate {
                     manager.getServerManager()
                             .spawnNetworkObject(i, manager.findTemplateByName("player"));
             GameObject playerObj = player.get().getGameObject();
-            playerObj.addComponent(new ProbabilisticAiPlayer());
             playerObj.addComponent(new AimerAi());
         }
     }
