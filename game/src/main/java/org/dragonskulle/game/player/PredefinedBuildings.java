@@ -38,9 +38,11 @@ public class PredefinedBuildings {
      * @param currentTokens the current tokens the player has
      * @return a list of purchasable buildings
      */
-    public static List<BuildingDescriptor> getPurchasable(int currentTokens) {
+    public static List<BuildingDescriptor> getPurchasable(Player player) {
+        int currentTokens = player.getTokens().get();
+        float inflation = player.getInflation();
         return buildings.stream()
-                .filter(b -> b.getCost() <= currentTokens)
+                .filter(b -> b.getCost(inflation) <= currentTokens)
                 .collect(Collectors.toList());
     }
 

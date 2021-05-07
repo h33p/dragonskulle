@@ -101,8 +101,7 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
      *     afford a building.
      */
     protected BuildingDescriptor getRandomBuildingType() {
-        List<BuildingDescriptor> options =
-                PredefinedBuildings.getPurchasable(getPlayer().getTokens().get());
+        List<BuildingDescriptor> options = PredefinedBuildings.getPurchasable(getPlayer());
         // Test if they can afford to build anything.
         if (options.size() == 0) return null;
 

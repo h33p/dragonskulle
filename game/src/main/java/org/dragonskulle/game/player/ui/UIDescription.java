@@ -7,6 +7,7 @@ import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.player.BuildingDescriptor;
+import org.dragonskulle.game.player.Player;
 import org.dragonskulle.game.player.PredefinedBuildings;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIText;
@@ -26,6 +27,12 @@ public class UIDescription extends Component implements IOnAwake, IFixedUpdate {
     private Reference<UITextRect> mDefenceRef;
     private Reference<UITextRect> mTokenRef;
     private Reference<UITextRect> mCostRef;
+
+    private int mPrevCost = -1;
+    private Reference<Player> mPlayerRef;
+    private BuildingDescriptor mDescriptor;
+
+    private static final int TEXT_LENGTH = 27;
 
     /** Whether the component has been initialised. */
     private boolean initialised = false;
@@ -80,26 +87,50 @@ public class UIDescription extends Component implements IOnAwake, IFixedUpdate {
     /**
      * Update the description to match the desired descriptor.
      *
-     * @param descriptor
+     * @param descriptor descriptor to use.
+     * @param player target player for price inflation calculations.
      */
-    void update(BuildingDescriptor descriptor) {
-        final int length = 27;
-
+    void update(BuildingDescriptor descriptor, Player player) {
         updateField(mNameRef, descriptor.getName().toUpperCase());
-        updateField(mAttackRef, TextUtils.constructField("Attack", descriptor.getAttack(), length));
         updateField(
-                mDefenceRef, TextUtils.constructField("Defence", descriptor.getDefence(), length));
+                mAttackRef,
+                TextUtils.constructField("Attack", descriptor.getAttack(), TEXT_LENGTH));
+        updateField(
+                mDefenceRef,
+                TextUtils.constructField("Defence", descriptor.getDefence(), TEXT_LENGTH));
         updateField(
                 mTokenRef,
                 TextUtils.constructField(
-                        "Generation", descriptor.getTokenGenerationLevel(), length));
-        updateField(mCostRef, TextUtils.constructField("COST", descriptor.getCost(), length));
+                        "Generation", descriptor.getTokenGenerationLevel(), TEXT_LENGTH));
+
+        mPlayerRef = player != null ? player.getReference(Player.class) : null;
+        mDescriptor = descriptor;
+
+        updateCost();
+    }
+
+    /** Update cost shown in the UI, based on base price and inflation. */
+    private void updateCost() {
+        float inflation = Reference.isValid(mPlayerRef) ? mPlayerRef.get().getInflation() : 1;
+
+        int curCost = mDescriptor.getCost(inflation);
+
+        if (curCost == mPrevCost) {
+            return;
+        }
+
+        mPrevCost = curCost;
+
+        updateField(mCostRef, TextUtils.constructField("COST", curCost, TEXT_LENGTH));
     }
 
     @Override
     public void fixedUpdate(float deltaTime) {
-        if (initialised) return;
-        update(PredefinedBuildings.BASE);
+        if (initialised) {
+            updateCost();
+        } else {
+            update(PredefinedBuildings.BASE, null);
+        }
     }
 
     @Override

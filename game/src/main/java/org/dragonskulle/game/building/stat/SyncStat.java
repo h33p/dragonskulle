@@ -54,6 +54,9 @@ public class SyncStat extends SyncInt {
     /** Stores the building the stat is related to. */
     private Reference<Building> mBuilding;
 
+    /** Stores reference to the game state. */
+    private Reference<GameState> mGameState;
+
     /**
      * Create a new SyncStat, providing the method that will be used to calculate the value of the
      * stat for given levels, and the {@link Building} the stat relates to.
@@ -133,9 +136,14 @@ public class SyncStat extends SyncInt {
 
         StatConfig cfg = getStatConfig();
 
+        GameState state = getGameState();
+
+        float inflation = state == null ? 1 : state.getGlobalInflation();
+
         float levelMul = cfg == null ? 3 : cfg.getCost().getSelfLevelMultiplier();
 
-        return Math.round((getLevel() * levelMul) + mBuilding.get().getStatBaseCost());
+        return Math.round(
+                ((getLevel() * levelMul) + mBuilding.get().getStatBaseCost()) * inflation);
     }
 
     /**
@@ -166,7 +174,7 @@ public class SyncStat extends SyncInt {
             return true;
         }
 
-        return cfg.getValue().getMulLevel() != 0;
+        return cfg.getValue().getMulLevel() == 0;
     }
 
     /**
@@ -217,21 +225,38 @@ public class SyncStat extends SyncInt {
             return mConfig;
         }
 
+        GameState state = getGameState();
+
+        mConfig = mConfigChooser.getConfig(state.getConfig());
+
+        return mConfig;
+    }
+
+    /**
+     * Get the global game state.
+     *
+     * <p>This will try to retrieve the state from active scene, if the stored reference is invalid.
+     *
+     * @return global game state, {@code null} if does not exist.
+     */
+    private GameState getGameState() {
+        if (Reference.isValid(mGameState)) {
+            return mGameState.get();
+        }
+
         Scene activeScene = Scene.getActiveScene();
 
         if (activeScene == null) {
             return null;
         }
 
-        GameState state = activeScene.getSingleton(GameState.class);
+        mGameState = activeScene.getSingletonRef(GameState.class);
 
-        if (state == null) {
+        if (!Reference.isValid(mGameState)) {
             return null;
         }
 
-        mConfig = mConfigChooser.getConfig(state.getConfig());
-
-        return mConfig;
+        return mGameState.get();
     }
 
     /** Increase the level of the stat and calculate the new value. */

@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnStart;
@@ -30,7 +29,6 @@ import org.dragonskulle.ui.UIText;
  *
  * @author Oscar L
  */
-@Log
 @Accessors(prefix = "m")
 public class UIBuildingOptions extends Component implements IOnStart, IFixedUpdate {
     private List<BuildingDescriptor> mBuildingsCanPlace;
@@ -162,7 +160,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
     private void updateDescription(BuildingDescriptor descriptor) {
         if (!Reference.isValid(mDescription)) return;
         UIDescription description = mDescription.get();
-        description.update(descriptor);
+        description.update(descriptor, getPlayer());
     }
 
     @Override
@@ -180,7 +178,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
         if (mSelectedBuildingDescriptor == null) return;
 
         UIButton button = mBuyButton.get();
-        int cost = mSelectedBuildingDescriptor.getCost();
+        int cost = mSelectedBuildingDescriptor.getCost(player.getInflation());
 
         if (!Reference.isValid(button.getLabelText())) return;
         UIText label = button.getLabelText().get();
@@ -213,7 +211,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
             if (player == null) return;
 
             // Ensure the player can afford to build.
-            int cost = mSelectedBuildingDescriptor.getCost();
+            int cost = mSelectedBuildingDescriptor.getCost(player.getInflation());
             if (cost > player.getTokens().get()) return;
 
             player.getClientBuildRequest()

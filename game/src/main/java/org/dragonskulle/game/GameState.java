@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import org.dragonskulle.components.IOnAwake;
+import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.network.components.NetworkableComponent;
@@ -15,6 +17,7 @@ import org.dragonskulle.network.components.requests.ServerEvent;
 import org.dragonskulle.network.components.requests.ServerEvent.EventRecipients;
 import org.dragonskulle.network.components.requests.ServerEvent.EventTimeframe;
 import org.dragonskulle.network.components.sync.INetSerializable;
+import org.dragonskulle.network.components.sync.SyncFloat;
 import org.dragonskulle.network.components.sync.SyncInt;
 
 /**
@@ -23,7 +26,7 @@ import org.dragonskulle.network.components.sync.SyncInt;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class GameState extends NetworkableComponent {
+public class GameState extends NetworkableComponent implements IOnAwake {
     private static class GameEndEventData implements INetSerializable {
         private int mWinnerId;
 
@@ -45,6 +48,7 @@ public class GameState extends NetworkableComponent {
     @Getter private GameConfig mConfig = new GameConfig();
     @Getter private final SyncInt mNumPlayers = new SyncInt(0);
     @Getter private final SyncInt mNumCapitalsStanding = new SyncInt(0);
+    @Getter private final SyncFloat mStartTime = new SyncFloat();
 
     @Getter private boolean mInGame = true;
 
@@ -71,6 +75,11 @@ public class GameState extends NetworkableComponent {
     }
 
     @Override
+    public void onAwake() {
+        mStartTime.set(Engine.getInstance().getCurTime());
+    }
+
+    @Override
     public void onDestroy() {}
 
     public void endGame(int winnerId) {
@@ -81,5 +90,16 @@ public class GameState extends NetworkableComponent {
         if (Reference.isValid(e)) {
             mGameEndListeners.add(e);
         }
+    }
+
+    /**
+     * Retrieve current global inflation level.
+     *
+     * @return float representing inflation. Value of 1 means no inflation, values lower than 1
+     *     represent deflation.
+     */
+    public float getGlobalInflation() {
+        float deltaTime = getNetworkManager().getServerTime() - mStartTime.get();
+        return (float) Math.pow(mConfig.getGlobal().getInflation(), deltaTime);
     }
 }

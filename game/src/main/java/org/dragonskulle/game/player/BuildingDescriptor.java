@@ -48,6 +48,16 @@ public class BuildingDescriptor {
         this.mName = mName;
     }
 
+    /**
+     * Get building cost, accounting for inflation.
+     *
+     * @param inflation current player inflation.
+     * @return cost that accounts for inflation.
+     */
+    public int getCost(float inflation) {
+        return Math.round(mCost * inflation);
+    }
+
     @Override
     public String toString() {
         return String.format(

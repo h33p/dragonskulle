@@ -719,7 +719,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return Whether the attempt to build was successful.
      */
     private boolean buildAttempt(HexagonTile tile, BuildingDescriptor descriptor) {
-        if (!buildCheck(tile, descriptor.getCost())) {
+
+        float inflation = getInflation();
+
+        if (!buildCheck(tile, descriptor.getCost(inflation))) {
             log.info("Unable to pass build check.");
             return false;
         }
@@ -736,7 +739,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         building.getTokenGeneration().setLevel(descriptor.getTokenGenerationLevel());
         building.setSellPrice(descriptor.getSellPrice());
         // Subtract the cost.
-        mTokens.subtract(descriptor.getCost());
+        mTokens.subtract(descriptor.getCost(inflation));
         log.warning("Added building.");
         return true;
     }
@@ -1187,6 +1190,29 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     public void setOwnsCapital(boolean hasCapital) {
         mOwnsCapital.set(hasCapital);
+    }
+
+    /**
+     * Retrieve current player inflation.
+     *
+     * <p>This method will essentially return {@code globalInflation * buildingInflation}, if game
+     * state exists.
+     *
+     * @return player inflation. Defaults to 1, if game state is not valid.
+     */
+    public float getInflation() {
+        float inflation = 1f;
+
+        if (Reference.isValid(mGameState)) {
+            GameState state = mGameState.get();
+            inflation *= state.getGlobalInflation();
+            inflation *=
+                    Math.pow(
+                            mOwnedBuildings.size(),
+                            state.getConfig().getPlayer().getInflationPerBuilding());
+        }
+
+        return inflation;
     }
 
     /**
