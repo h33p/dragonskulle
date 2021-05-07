@@ -633,6 +633,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         if (tile == null || getNetworkObject() == null) {
             return false;
         }
+
+        if (tile.getClaimantId() == null) {
+            return false;
+        }
         return tile.getClaimantId() == getNetworkObject().getOwnerId();
     }
 
