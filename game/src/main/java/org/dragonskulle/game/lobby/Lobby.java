@@ -671,7 +671,7 @@ public class Lobby extends Component implements IFrameUpdate {
             playerObj.addComponent(new ProbabilisticAiPlayer());
 
             // Randomly select which AI to use
-            if (random.nextFloat() > 0.5) {
+            if (random.nextFloat() > 0.1) {
                 playerObj.addComponent(new AimerAi());
             }
         }
