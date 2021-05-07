@@ -41,7 +41,6 @@ const ConfigSchema = new mongoose.Schema(
     },
     cost : {
       selfLevelMultiplier : Float,
-      combinedLevelMultiplier : Float
     }
   },
   buildDistanceStat : {
@@ -57,7 +56,6 @@ const ConfigSchema = new mongoose.Schema(
     },
     cost : {
       selfLevelMultiplier : Float,
-      combinedLevelMultiplier : Float
     }
   },
   claimDistanceStat : {
@@ -73,7 +71,6 @@ const ConfigSchema = new mongoose.Schema(
     },
     cost : {
       selfLevelMultiplier : Float,
-      combinedLevelMultiplier : Float
     }
   },
   defenceStat : {
@@ -89,7 +86,6 @@ const ConfigSchema = new mongoose.Schema(
     },
     cost : {
       selfLevelMultiplier : Float,
-      combinedLevelMultiplier : Float
     }
   },
   generationStat : {
@@ -105,7 +101,6 @@ const ConfigSchema = new mongoose.Schema(
     },
     cost : {
       selfLevelMultiplier : Float,
-      combinedLevelMultiplier : Float
     }
   },
   viewDistanceStat : {
@@ -121,7 +116,6 @@ const ConfigSchema = new mongoose.Schema(
     },
     cost : {
       selfLevelMultiplier : Float,
-      combinedLevelMultiplier : Float
     }
   }
 }, { timestamps: false }
