@@ -2,13 +2,12 @@
 package org.dragonskulle.game;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
-import java.util.List;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.player.BuildingDescriptor;
-import org.dragonskulle.game.player.PredefinedBuildings;
 import org.junit.Test;
 
 /**
@@ -18,51 +17,19 @@ import org.junit.Test;
  */
 public class CostTest {
 
-    /** This will check that there is different costs for different predefined Buildings */
+    /**
+     * This will check that there is different stats and costs for a made up predefined Buildings
+     */
     @Test
     public void buildingCost() {
-        List<BuildingDescriptor> actualBuildings = PredefinedBuildings.getAll();
+        BuildingDescriptor building =
+                new BuildingDescriptor(3, 7, 2, 75, 25, "ui/2_stars.png", "Town");
 
-        // Camp
-        assertEquals(20, actualBuildings.get(0).getCost());
-        
-        // Town
-        assertEquals(75, actualBuildings.get(1).getCost());
-        
-        // City
-        assertEquals(200, actualBuildings.get(2).getCost());
-        
-        // Barracks
-        assertEquals(225, actualBuildings.get(3).getCost());
-        
-        // Castle
-        assertEquals(225, actualBuildings.get(4).getCost());
-        
-        // Merchants
-        assertEquals(225, actualBuildings.get(5).getCost());
-        
-        // Military Complex
-        assertEquals(500, actualBuildings.get(6).getCost());
-        
-        // Fortress
-        assertEquals(500, actualBuildings.get(7).getCost());
-        
-        // Guild
-        assertEquals(500, actualBuildings.get(8).getCost());
-    }
-
-    /** This will check that the sell price is right */
-    @Test
-    public void sellCost() {
-        List<BuildingDescriptor> actualBuildings = PredefinedBuildings.getAll();
-
-        assertEquals(1, actualBuildings.get(0).getSellPrice());
-        assertEquals(2, actualBuildings.get(1).getSellPrice());
-        assertEquals(2, actualBuildings.get(2).getSellPrice());
-        assertEquals(2, actualBuildings.get(3).getSellPrice());
-        assertEquals(2, actualBuildings.get(4).getSellPrice());
-        assertEquals(2, actualBuildings.get(5).getSellPrice());
-        assertEquals(2, actualBuildings.get(6).getSellPrice());
+        assertEquals(3, building.getAttack());
+        assertEquals(7, building.getDefence());
+        assertEquals(2, building.getTokenGenerationLevel());
+        assertEquals(75, building.getCost());
+        assertEquals(25, building.getSellPrice());
     }
 
     /** This will test attacking cost */
@@ -73,7 +40,8 @@ public class CostTest {
         building.afterStatChange();
 
         // Lvl 1 Attack Lvl 1 Defence Lvl 1 TGen
-        assertEquals(27, building.getAttackCost());
+        int lvl1All = building.getAttackCost();
+
         ArrayList<SyncStat> stats = building.getUpgradeableStats();
 
         SyncStat attack = stats.get(0);
@@ -81,11 +49,8 @@ public class CostTest {
 
         building.afterStatChange();
 
-        // Lvl 2 Attack Lvl 1 Defence Lvl 1 TGen
-        assertEquals(30, building.getAttackCost());
-
-        attack.increaseLevel();
-        attack.increaseLevel();
+        int lvl2Attack = building.getAttackCost();
+        assertTrue(lvl2Attack > lvl1All);
 
         SyncStat defence = stats.get(1);
 
@@ -94,13 +59,15 @@ public class CostTest {
 
         building.afterStatChange();
 
-        // Lvl 4 Attack Lvl 3 Defence Lvl 1 TGen
-        assertEquals(42, building.getAttackCost());
+        int upgradeDefence = building.getAttackCost();
+
+        assertTrue(upgradeDefence > lvl2Attack);
 
         building.setCapital(true);
 
-        // Lvl 4 Attack Lvl 3 Defence Lvl 1 TGen Also Capital
-        assertEquals(52, building.getAttackCost());
+        int setCapital = building.getAttackCost();
+
+        assertTrue(setCapital > upgradeDefence);
     }
 
     /** This will test that the cost increases when stats are upgraded */
@@ -113,17 +80,19 @@ public class CostTest {
         ArrayList<SyncStat> stats = building.getUpgradeableStats();
 
         // Lvl 1 Attack Lvl 1 Defence Lvl 1 TGen
-        assertEquals(4, stats.get(0).getCost());
+        int lvl1All = stats.get(0).getCost();
         stats.get(0).increaseLevel();
         building.afterStatChange();
 
         // Lvl 2 Attack Lvl 1 Defence Lvl 1 TGen
-        assertEquals(9, stats.get(0).getCost());
+        int lvl2Attack = stats.get(0).getCost();
+        assertTrue(lvl2Attack > lvl1All);
         stats.get(1).increaseLevel();
         stats.get(1).increaseLevel();
         building.afterStatChange();
 
         // Lvl 2 Attack Lvl 3 Defence Lvl 1 TGen
-        assertEquals(18, stats.get(0).getCost());
+        int lvl3Defence = stats.get(0).getCost();
+        assertTrue(lvl3Defence > lvl2Attack);
     }
 }
