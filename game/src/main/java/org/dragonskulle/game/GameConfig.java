@@ -315,27 +315,23 @@ public class GameConfig implements ISyncVar {
     @Accessors(prefix = "m")
     public static class StatCostConfig implements INetSerializable {
         private float mSelfLevelMultiplier;
-        private float mCombinedLevelMultiplier;
 
-        public StatCostConfig(float selfLevelMultiplier, float combinedLevelMultiplier) {
+        public StatCostConfig(float selfLevelMultiplier) {
             mSelfLevelMultiplier = selfLevelMultiplier;
-            mCombinedLevelMultiplier = combinedLevelMultiplier;
         }
 
         public StatCostConfig() {
-            this(0.5f, 0.5f);
+            this(3f);
         }
 
         @Override
         public void serialize(DataOutput stream, int clientId) throws IOException {
             stream.writeFloat(mSelfLevelMultiplier);
-            stream.writeFloat(mCombinedLevelMultiplier);
         }
 
         @Override
         public void deserialize(DataInput stream) throws IOException {
             mSelfLevelMultiplier = stream.readFloat();
-            mCombinedLevelMultiplier = stream.readFloat();
         }
     }
 
@@ -353,12 +349,11 @@ public class GameConfig implements ISyncVar {
                 float maxValue,
                 TileType bonusTile,
                 float bonusMultiplier,
-                float selfLevelMultiplier,
-                float combinedLevelMultiplier) {
+                float selfLevelMultiplier) {
             mValue =
                     new StatValueConfig(
                             baseValue, mulLevel, minValue, maxValue, bonusTile, bonusMultiplier);
-            mCost = new StatCostConfig(selfLevelMultiplier, combinedLevelMultiplier);
+            mCost = new StatCostConfig(selfLevelMultiplier);
         }
 
         public StatConfig(
@@ -399,11 +394,16 @@ public class GameConfig implements ISyncVar {
     private ProbabilisticAiConfig mProbabilisticAi = new ProbabilisticAiConfig();
     private AiAimerConfig mAiAimer = new AiAimerConfig();
 
+    // The attack value is identical to the current level number.
     private StatConfig mAttackStat = new StatConfig(0, 1, 0, 100, null, 0);
+    // Regardless of the level, the build distance will always be the same.
     private StatConfig mBuildDistanceStat = new StatConfig(2, 0, 0, 100, null, 0);
+    // Regardless of the level, the claim distance will always be the same.
     private StatConfig mClaimDistanceStat = new StatConfig(1, 0, 0, 100, null, 0);
+    // The defence value is identical to the current level -1.
     private StatConfig mDefenceStat = new StatConfig(-1, 1, 0, 100, TileType.MOUNTAIN, 0.5f);
     private StatConfig mGenerationStat = new StatConfig(-1, 1, 0, 100, TileType.WATER, 1f);
+    // Regardless of the level, the view distance will always be the same.
     private StatConfig mViewDistanceStat = new StatConfig(3, 0, 0, 3, null, 0);
 
     @Override

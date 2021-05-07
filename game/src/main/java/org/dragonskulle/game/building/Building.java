@@ -1026,7 +1026,7 @@ public class Building extends NetworkableComponent
 
         for (SyncStat stat : mStats.values()) {
             StatType type = stat.getType();
-            if (type != null && type.isFixedValue() == false) {
+            if (type != null && stat.isFixed() == false) {
                 stats.add(stat);
             }
         }

@@ -3,11 +3,19 @@ package org.dragonskulle.game.building.stat;
 
 import java.io.DataInput;
 import java.io.IOException;
+import java.util.Collection;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.core.Scene;
+import org.dragonskulle.game.GameConfig;
+import org.dragonskulle.game.GameConfig.StatConfig;
+import org.dragonskulle.game.GameConfig.StatValueConfig;
+import org.dragonskulle.game.GameState;
 import org.dragonskulle.game.building.Building;
+import org.dragonskulle.game.map.HexagonTile;
+import org.dragonskulle.game.map.HexagonTile.TileType;
 import org.dragonskulle.network.components.sync.SyncInt;
 
 /**
@@ -30,18 +38,21 @@ public class SyncStat extends SyncInt {
     private static final int sErrorCost = 9999;
 
     /** An interface for getting the value of a stat at a given level. */
-    public static interface IValueCalculator {
-        int getValue(int level);
+    public static interface IConfigChooser {
+        StatConfig getConfig(GameConfig cfg);
     }
 
-    /** Store the function used to calculate the value of the stat. */
-    private IValueCalculator mValueCalculator;
+    /** Used to retrieve stat config. */
+    private IConfigChooser mConfigChooser;
+
+    /** Used to calculate stat values. */
+    private StatConfig mConfig;
 
     /** Store the type of the stat for ease of access. */
     @Getter private StatType mType;
 
     /** Stores the building the stat is related to. */
-    private Reference<Building> mBuilding = new Reference<Building>(null);
+    private Reference<Building> mBuilding;
 
     /**
      * Create a new SyncStat, providing the method that will be used to calculate the value of the
@@ -66,20 +77,48 @@ public class SyncStat extends SyncInt {
         // Store the type.
         mType = type;
         // Get the method used for calculating value.
-        mValueCalculator = type.getValueCalculator();
+        mConfigChooser = type.getConfigChooser();
     }
 
     /**
      * Get the value of the stat at the current level.
      *
-     * @return The value of the stat, or {@code -1} on error.
+     * @return The value of the stat, or {@code 0} on error.
      */
     public int getValue() {
-        if (mValueCalculator == null) {
+        StatConfig cfg = getStatConfig();
+
+        if (cfg == null) {
             log.warning("mValueCalculator is null.");
             return 0;
         }
-        return mValueCalculator.getValue(getLevel());
+
+        int bonusTiles = 0;
+
+        TileType target = cfg.getValue().getBonus().getBonusTile();
+
+        if (Reference.isValid(mBuilding)) {
+            Collection<HexagonTile> claimedTiles = mBuilding.get().getClaimedTiles();
+
+            if (target != null && claimedTiles != null) {
+                for (HexagonTile tile : claimedTiles) {
+                    if (tile.getTileType() == target) {
+                        bonusTiles++;
+                    }
+                }
+            }
+        }
+
+        StatValueConfig value = cfg.getValue();
+
+        float mainValue =
+                Math.min(
+                        value.getMaxValue(),
+                        Math.max(
+                                value.getMinValue(),
+                                value.getBaseValue() + value.getMulLevel() * getLevel()));
+
+        return Math.round(mainValue + value.getBonus().getMultiplier() * bonusTiles);
     }
 
     /**
@@ -92,7 +131,11 @@ public class SyncStat extends SyncInt {
             return sErrorCost;
         }
 
-        return (getLevel() * 3) + mBuilding.get().getStatBaseCost();
+        StatConfig cfg = getStatConfig();
+
+        float levelMul = cfg == null ? 3 : cfg.getCost().getSelfLevelMultiplier();
+
+        return Math.round((getLevel() * levelMul) + mBuilding.get().getStatBaseCost());
     }
 
     /**
@@ -117,7 +160,13 @@ public class SyncStat extends SyncInt {
      * @return true if fixed
      */
     public boolean isFixed() {
-        return mType.isFixedValue();
+        StatConfig cfg = getStatConfig();
+
+        if (cfg == null) {
+            return true;
+        }
+
+        return cfg.getValue().getMulLevel() != 0;
     }
 
     /**
@@ -153,6 +202,36 @@ public class SyncStat extends SyncInt {
             return LEVEL_MAX;
         }
         return level;
+    }
+
+    /**
+     * Get the stat's global config.
+     *
+     * <p>This method will try to retrieve the config from {@link GameState}, if the stored value is
+     * {@code null}.
+     *
+     * @return stat's configuration, {@code null} if does not exist.
+     */
+    private StatConfig getStatConfig() {
+        if (mConfig != null) {
+            return mConfig;
+        }
+
+        Scene activeScene = Scene.getActiveScene();
+
+        if (activeScene == null) {
+            return null;
+        }
+
+        GameState state = activeScene.getSingleton(GameState.class);
+
+        if (state == null) {
+            return null;
+        }
+
+        mConfig = mConfigChooser.getConfig(state.getConfig());
+
+        return mConfig;
     }
 
     /** Increase the level of the stat and calculate the new value. */
