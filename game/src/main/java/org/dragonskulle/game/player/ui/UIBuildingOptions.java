@@ -169,7 +169,6 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
     private void ensurePlayerValidForDescription() {
         if (!Reference.isValid(mDescription)) return;
         UIBuildingDescription description = mDescription.get();
-        log.info("UPD PL");
         description.updatePlayer(getPlayer());
     }
 

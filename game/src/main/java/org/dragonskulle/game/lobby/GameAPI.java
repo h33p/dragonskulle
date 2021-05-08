@@ -168,23 +168,6 @@ public class GameAPI {
     }
 
     /**
-     * Attempt to get current game configuration values via the API.
-     *
-     * @param callback Method to call after the request is completed.
-     */
-    public static void postConfigAsync(String config, IAsyncCallback callback) {
-        if (sConfigUrl == null) {
-            callback.call(null, false);
-            return;
-        }
-
-        String contentType = "application/json";
-        AsyncRequest request = new AsyncRequest(sConfigUrl, "POST", callback, contentType, config);
-
-        request.start();
-    }
-
-    /**
      * Add a new host to the server list asynchronously via the API.
      *
      * @param ip IP address of the host

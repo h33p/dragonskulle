@@ -95,7 +95,7 @@ public class Building extends NetworkableComponent
 
     /**
      * Action lock. This value is only needed to be set by the server, and it is meant to ensure
-     * there are no race conditions when building becoems unlocked by the action lock, but the
+     * there are no race conditions when building becomes unlocked by the action lock, but the
      * action was still not processed.
      */
     @Getter @Setter private boolean mServerActionLocked = false;
