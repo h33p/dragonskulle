@@ -416,7 +416,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             case DEFAULT_SCREEN:
                 effects.setHighlightOverlay(
                         (fx) -> {
-                            highlightSelectedTile(fx, StandardHighlightType.VALID);
+                            highlightSelectedTile(fx, StandardHighlightType.SELECT);
 
                             HexagonMap map = player.getMap();
 
@@ -426,8 +426,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
                             fx.pulseHighlight(
                                     map.cursorToTile(),
-                                    StandardHighlightType.VALID.asSelection(),
-                                    0.6f,
+                                    StandardHighlightType.SELECT.asSelection(),
+                                    0.3f,
                                     2f,
                                     0.05f);
                         });
@@ -459,7 +459,16 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 effects.setHighlightOverlay(
                         (fx) -> {
                             highlightBuildableTiles(fx, StandardHighlightType.VALID);
-                            highlightSelectedTile(fx, StandardHighlightType.PLACE);
+                            if (mHexChosen == null || effects == null) return;
+
+                            boolean valid = mHexChosen.isBuildable(mPlayer.get());
+
+                            StandardHighlightType hl =
+                                    valid
+                                            ? StandardHighlightType.SELECT
+                                            : StandardHighlightType.SELECT_INVALID;
+
+                            fx.highlightTile(mHexChosen, hl.asSelection());
                         });
                 break;
             default:

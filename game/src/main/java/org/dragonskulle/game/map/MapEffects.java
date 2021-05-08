@@ -13,6 +13,7 @@ import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.building.Building;
+import org.dragonskulle.game.map.HexagonTile.TileType;
 import org.dragonskulle.game.materials.HighlightControls;
 import org.dragonskulle.game.player.Player;
 import org.dragonskulle.utils.MathUtils;
@@ -33,7 +34,8 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
         INVALID(1),
         PLAIN(2),
         ATTACK(3),
-        PLACE(4);
+        SELECT(4),
+        SELECT_INVALID(5);
 
         @Accessors(prefix = "m")
         @Getter
@@ -53,8 +55,10 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
                     return PLAIN_MATERIAL;
                 case ATTACK:
                     return ATTACK_MATERIAL;
-                case PLACE:
-                    return PLACE_MATERIAL;
+                case SELECT:
+                    return SELECT_MATERIAL;
+                case SELECT_INVALID:
+                    return SELECT_INVALID_MATERIAL;
                 default:
                     return null;
             }
@@ -116,7 +120,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
          */
         private void handle(float curtime, Vector4f out) {
             float periods = (curtime - mStartTime) * mInvPeriod;
-            float lerp = (float) Math.sin(Math.PI * (periods - 0.5f)) * 0.5f + 0.5f;
+            float lerp = (float) Math.sin(Math.PI * periods) * 0.5f + 0.5f;
             out.lerp(mTargetColour, MathUtils.lerp(mMinLerp, 1, lerp));
         }
     }
@@ -136,10 +140,10 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     public static final Vector4fc PLAIN_MATERIAL = highlightSelectionFromColour(0.7f, 0.94f, 0.98f);
     public static final Vector4fc ATTACK_MATERIAL =
             highlightSelectionFromColour(0.9f, 0.3f, 0.3f, 0.5f);
-    public static final Vector4fc BUILD_MATERIAL =
-            highlightSelectionFromColour(0.415f, 0.482f, 0.768f);
     public static final Vector4fc FOG_MATERIAL = highlightSelectionFromColour(0.1f, 0.1f, 0.13f);
-    public static final Vector4fc PLACE_MATERIAL = highlightSelectionFromColour(0.1f, 0.9f, 0.7f);
+    public static final Vector4fc SELECT_MATERIAL = highlightSelectionFromColour(0.1f, 0.9f, 0.7f);
+    public static final Vector4fc SELECT_INVALID_MATERIAL =
+            highlightSelectionFromColour(0.7f, 0.9f, 0.1f);
     public static final Vector4fc CLEARED_MATERIAL = new Vector4f(0f);
 
     private Reference<HexagonMap> mMapReference = null;
@@ -185,13 +189,14 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
      * @param selection type of highlight to use
      */
     public void highlightTile(HexagonTile tile, Vector4fc selection) {
-        highlightTile(tile, selection, true);
-    }
-
-    private void highlightTile(HexagonTile tile, Vector4fc selection, boolean removeOld) {
 
         if (tile == null || selection == null) {
             return;
+        }
+
+        // Only allow fog to have fog highlight
+        if (tile.getTileType() == TileType.FOG) {
+            selection = FOG_MATERIAL;
         }
 
         if (!ensureMapReference()) {
