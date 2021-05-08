@@ -129,10 +129,13 @@ public class GameAPI {
                 if (mCallback != null) {
                     boolean success = con.getResponseCode() == HttpURLConnection.HTTP_OK;
                     mCallback.call(builder.toString(), success);
+                    return;
                 }
             } catch (IOException e) {
                 log.warning(String.format("%s request to %s failed", mMethod, mUrl.toString()));
+                e.printStackTrace();
             }
+            mCallback.call("", false);
         }
     }
 
@@ -161,6 +164,23 @@ public class GameAPI {
             return;
         }
         AsyncRequest request = new AsyncRequest(sConfigUrl, "GET", callback);
+        request.start();
+    }
+
+    /**
+     * Attempt to get current game configuration values via the API.
+     *
+     * @param callback Method to call after the request is completed.
+     */
+    public static void postConfigAsync(String config, IAsyncCallback callback) {
+        if (sConfigUrl == null) {
+            callback.call(null, false);
+            return;
+        }
+
+        String contentType = "application/json";
+        AsyncRequest request = new AsyncRequest(sConfigUrl, "POST", callback, contentType, config);
+
         request.start();
     }
 

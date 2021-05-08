@@ -76,7 +76,7 @@ public class GameConfig implements ISyncVar {
                                 try (FileOutputStream out =
                                         new FileOutputStream(CACHED_CONFIG_PATH)) {
                                     try (PrintStream pout = new PrintStream(out)) {
-                                        pout.print(data);
+                                        pout.println(sDefaultConfig.toJson());
                                     }
                                 } catch (IOException e) {
                                     e.printStackTrace();

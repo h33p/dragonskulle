@@ -21,7 +21,7 @@ export default function handler(req, res) {
             return new Promise((resolve, _reject) => {
                 connectToDatabase()
                     .then(() => {
-                        Config.findByIdAndUpdate("60966c3c0ff8091468b5561c", {
+                        Config.findByIdAndUpdate("6096a0f2dbbbaf61bb4836e8", {
                             global: req.body.global,
                             attackStat: req.body.attackStat,
                             buildDistanceStat: req.body.buildDistanceStat,
