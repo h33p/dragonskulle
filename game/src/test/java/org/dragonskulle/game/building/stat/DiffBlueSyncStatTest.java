@@ -2,12 +2,10 @@
 package org.dragonskulle.game.building.stat;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import org.dragonskulle.core.GameObject;
 import org.dragonskulle.game.building.Building;
 import org.junit.Test;
 
@@ -102,5 +100,4 @@ public class DiffBlueSyncStatTest {
         assertEquals(1094795585, syncStat.get());
         assertEquals(-1010580540, syncStat.getCost());
     }
-
 }

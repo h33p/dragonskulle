@@ -2,17 +2,12 @@
 package org.dragonskulle.game.player;
 
 import static org.dragonskulle.network.testing.NetworkedTestContext.TIMEOUT;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import org.dragonskulle.game.App;
 import org.dragonskulle.game.AppTest;
 import org.dragonskulle.game.building.Building;
-import org.dragonskulle.game.building.stat.StatType;
-import org.dragonskulle.game.player.network_data.AttackData;
 import org.dragonskulle.network.components.ClientNetworkManager;
 import org.dragonskulle.network.testing.NetworkedTestContext;
 import org.junit.Test;

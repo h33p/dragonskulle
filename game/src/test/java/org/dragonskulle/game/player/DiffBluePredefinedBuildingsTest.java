@@ -14,5 +14,4 @@ public class DiffBluePredefinedBuildingsTest {
         assertTrue(PredefinedBuildings.getPurchasable(1).isEmpty());
         assertEquals(1, PredefinedBuildings.getPurchasable(20).size());
     }
-
 }

@@ -4,11 +4,7 @@ package org.dragonskulle.game.building;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 
-import java.util.List;
-import org.dragonskulle.core.GameObject;
 import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.junit.Test;
@@ -36,6 +32,7 @@ public class DiffBlueBuildingTest {
         assertEquals(1, claimDistance.getValue());
         assertEquals(StatType.CLAIM_DISTANCE, claimDistance.getType());
     }
+
     @Test
     public void testAfterStatChange() {
         Building building = new Building();
