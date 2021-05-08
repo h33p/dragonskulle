@@ -35,7 +35,7 @@ public class ServerTest {
                 new GameObject(
                         "cube",
                         (handle) -> {
-                            handle.addComponent(new NetworkedTransform());
+                            handle.addComponent(new NetworkedTransformTestComponent());
                         }),
                 new GameObject(
                         "test_comp",
