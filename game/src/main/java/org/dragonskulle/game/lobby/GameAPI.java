@@ -18,7 +18,7 @@ import lombok.extern.java.Log;
 @Log
 public class GameAPI {
 
-    private static final String API_URL = "https://dragonskulle.vercel.app/api/";
+    private static final String API_URL = "http://blaz.is:3000/api/";
     private static final String USER_AGENT = "HexWars/0.1";
     private static URL sHostsUrl;
     private static URL sConfigUrl;

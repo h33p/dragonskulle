@@ -202,7 +202,8 @@ public class ServerNetworkManager {
     private final AtomicInteger mNetworkObjectCounter = new AtomicInteger(0);
     /** Describes the current state of the game. */
     @Getter private ServerGameState mGameState = ServerGameState.LOBBY;
-
+    /** Whether the server scene should be loaded as a presentation scene. */
+    private boolean mShouldPresent;
     /**
      * The Network objects - this can be moved to game instance but no point until game has been
      * merged in.
@@ -236,9 +237,10 @@ public class ServerNetworkManager {
         mGameEndEventHandler = gameEndEventHandler;
     }
 
-    public void start() {
+    public void start(boolean shouldPresent) {
         if (mGameState == ServerGameState.LOBBY) {
             mGameState = ServerGameState.STARTING;
+            mShouldPresent = shouldPresent;
         }
     }
 
@@ -249,7 +251,7 @@ public class ServerNetworkManager {
 
         mManager.createGameScene(true);
 
-        if (engine.getPresentationScene() == Scene.getActiveScene()) {
+        if (engine.getPresentationScene() == Scene.getActiveScene() && mShouldPresent) {
             engine.loadPresentationScene(mManager.getGameScene());
         } else {
             engine.activateScene(mManager.getGameScene());
