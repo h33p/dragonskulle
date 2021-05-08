@@ -15,31 +15,11 @@ import org.junit.Test;
 
 public class DiffBlueSceneTest {
     @Test
-    public void testConstructor() {
-        Scene actualScene = new Scene("Name");
-        assertTrue(actualScene.getComponents().isEmpty());
-        assertEquals("Name", actualScene.getName());
-        assertTrue(actualScene.getGameObjects().isEmpty());
-    }
-
-    @Test
-    public void testFindRootObject() {
-        assertNull((new Scene("Name")).findRootObject("Name"));
-    }
-
-    @Test
     public void testFindRootObject2() {
         Scene scene = new Scene("Name");
         GameObject gameObject = new GameObject("Name");
         scene.addRootObject(gameObject);
         assertSame(gameObject, scene.findRootObject("Name"));
-    }
-
-    @Test
-    public void testFindRootObject3() {
-        Scene scene = new Scene("Name");
-        scene.addRootObject(new GameObject("org.dragonskulle.components.Transform"));
-        assertNull(scene.findRootObject("Name"));
     }
 
     @Test
@@ -52,87 +32,22 @@ public class DiffBlueSceneTest {
     }
 
     @Test
-    public void testFindRootObject5() {
-        Scene scene = new Scene("Name");
-        GameObject gameObject = new GameObject("Name");
-        scene.addRootObject(gameObject);
-        scene.addRootObject(null);
-        assertSame(gameObject, scene.findRootObject("Name"));
-    }
-
-    @Test
     public void testRegisterSingleton() {
         Scene scene = new Scene("Name");
-        assertTrue(scene.registerSingleton(new AudioListener()));
-    }
-
-    @Test
-    public void testGetSingleton() {
-        Scene scene = new Scene("Name");
-        assertNull(scene.<Component>getSingleton(Component.class));
-    }
-
-    @Test
-    public void testGetSingletonRef() {
-        Scene scene = new Scene("Name");
-        assertNull(scene.<Component>getSingletonRef(Component.class));
+        scene.registerSingleton(new AudioListener());
+        assertTrue(Reference.isValid(
+                scene.getSingletonRef(AudioListener.class)));
     }
 
     @Test
     public void testUnregisterSingleton() {
         Scene scene = new Scene("Name");
-        assertNull(scene.unregisterSingleton(Object.class));
+        scene.registerSingleton(new AudioListener());
+        assertTrue(Reference.isValid(
+                scene.getSingletonRef(AudioListener.class)));
+        scene.unregisterSingleton(AudioListener.class);
+        assertFalse(Reference.isValid(
+                scene.getSingletonRef(AudioListener.class)));
     }
 
-    @Test
-    public void testUpdateComponentsList() {
-        Scene scene = new Scene("Name");
-        scene.updateComponentsList();
-        assertTrue(scene.getComponents().isEmpty());
-    }
-
-    @Test
-    public void testUpdateComponentsList2() {
-        Scene scene = new Scene("Name");
-        scene.addRootObject(new GameObject("Name"));
-        scene.updateComponentsList();
-        assertTrue(scene.getComponents().isEmpty());
-    }
-
-    @Test
-    public void testUpdateComponentsList3() {
-        GameObject gameObject = new GameObject("Name");
-        gameObject.addChild(new GameObject("Name"));
-
-        Scene scene = new Scene("Name");
-        scene.addRootObject(gameObject);
-        scene.updateComponentsList();
-        assertTrue(scene.getComponents().isEmpty());
-    }
-
-    @Test
-    public void testGetEnabledComponents() {
-        assertTrue((new Scene("Name")).getEnabledComponents().isEmpty());
-    }
-
-    @Test
-    public void testGetNotAwakeComponents() {
-        assertTrue((new Scene("Name")).getNotAwakeComponents().isEmpty());
-    }
-
-    @Test
-    public void testGetEnabledButNotStartedComponents() {
-        assertTrue((new Scene("Name")).getEnabledButNotStartedComponents().isEmpty());
-    }
-
-    @Test
-    public void testEquals() {
-        assertFalse((new Scene("Name")).equals("42"));
-    }
-
-    @Test
-    public void testEquals2() {
-        Scene scene = new Scene("Name");
-        assertTrue(scene.equals(new Scene("Name")));
-    }
 }

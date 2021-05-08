@@ -18,27 +18,4 @@ public class DiffBlueWaveSoundTest {
                 WaveSound.loadWave(
                         Paths.get(System.getProperty("java.io.tmpdir"), "test.txt").toFile()));
     }
-
-    @Test
-    public void testConstructor() throws UnsupportedEncodingException {
-        byte[] bytes = "AAAAAAAAAAAAAAAAAAAAAAAA".getBytes("UTF-8");
-        new WaveSound(bytes);
-        assertEquals(24, bytes.length);
-    }
-
-    @Test
-    public void testConstructor2() throws UnsupportedEncodingException {
-        byte[] bytes = "AAAAAAAA".getBytes("UTF-8");
-        new WaveSound(bytes);
-        assertEquals(8, bytes.length);
-        assertArrayEquals("AAAAAAAA".getBytes("UTF-8"), bytes);
-        assertEquals('A', bytes[0]);
-        assertEquals('A', bytes[1]);
-        assertEquals('A', bytes[2]);
-        assertEquals('A', bytes[3]);
-        assertEquals('A', bytes[4]);
-        assertEquals('A', bytes[5]);
-        assertEquals('A', bytes[6]);
-        assertEquals('A', bytes[7]);
-    }
 }
