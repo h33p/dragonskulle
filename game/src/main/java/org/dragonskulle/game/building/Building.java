@@ -42,7 +42,7 @@ import org.dragonskulle.game.misc.ArcPath.IPathUpdater;
 import org.dragonskulle.game.player.Player;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
-import org.dragonskulle.network.components.sync.SyncBool;
+import org.dragonskulle.network.components.sync.AfterSyncBool;
 import org.dragonskulle.network.components.sync.SyncFloat;
 import org.dragonskulle.network.components.sync.SyncInt;
 import org.joml.Vector2f;
@@ -81,7 +81,7 @@ public class Building extends NetworkableComponent
     @Getter private final SyncStat mClaimDistance = new SyncStat(this);
 
     /** Whether the building is a capital. */
-    private final SyncBool mIsCapital = new SyncBool(false);
+    private final AfterSyncBool mIsCapital = new AfterSyncBool(false);
 
     /**
      * Whether actions on this building (sell, upgrade, attack, etc. etc.) are locked.
@@ -147,7 +147,7 @@ public class Building extends NetworkableComponent
 
     /**
      * This is used as a flag to determine when any of the stats have changed, thus requiring a
-     * visible update to UI. It is enabled in {@code afterStatChange} and has to be manually
+     * visible update to UI. It is enabled in {@link this#afterStatChange} and has to be manually
      * disabled once the needed update is finished.
      */
     @Getter
@@ -203,6 +203,7 @@ public class Building extends NetworkableComponent
         initiliseStat(mViewDistance, StatType.VIEW_DISTANCE);
         initiliseStat(mBuildDistance, StatType.BUILD_DISTANCE);
         initiliseStat(mClaimDistance, StatType.CLAIM_DISTANCE);
+        mIsCapital.setAfterSync(this::assignMesh);
     }
 
     @Override

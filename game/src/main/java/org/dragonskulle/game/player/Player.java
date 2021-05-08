@@ -887,7 +887,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                 defender.getOwner().setOwnsCapital(false);
                 defender.afterStatChange();
             }
-
             defender.getNetworkObject().setOwnerId(getNetworkObject().getOwnerId());
         }
         log.info("Done");
