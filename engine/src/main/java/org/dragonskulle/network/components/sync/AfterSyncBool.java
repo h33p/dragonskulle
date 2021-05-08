@@ -1,3 +1,4 @@
+/* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.components.sync;
 
 import java.io.DataInputStream;
@@ -12,16 +13,11 @@ import lombok.experimental.Accessors;
  */
 @Accessors(prefix = "m")
 public class AfterSyncBool extends SyncBool {
-    @Setter
-    private transient IAfterSync mAfterSync;
+    @Setter private transient IAfterSync mAfterSync;
 
-    /**
-     * Used when you want to run a function, after a specific {@link BaseSyncVar} has updated.
-     */
+    /** Used when you want to run a function, after a specific {@link BaseSyncVar} has updated. */
     public interface IAfterSync {
-        /**
-         * Run the function.
-         */
+        /** Run the function. */
         void run();
     }
 
