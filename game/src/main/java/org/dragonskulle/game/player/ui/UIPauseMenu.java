@@ -4,12 +4,14 @@ package org.dragonskulle.game.player.ui;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
+import org.dragonskulle.audio.components.AudioSource;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.game.GameUIAppearance;
 import org.dragonskulle.game.input.GameActions;
 import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.network.components.NetworkManager;
@@ -31,11 +33,15 @@ import org.joml.Vector4f;
 @Accessors(prefix = "m")
 public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
 
+    private final Reference<AudioSource> mEndGameJukeBox;
+
     public interface IHandleEvent {
         void handle();
     }
 
-    /** The possible states the settings menu can be in. */
+    /**
+     * The possible states the settings menu can be in.
+     */
     private static enum State {
         MENU,
         SETTINGS,
@@ -43,45 +49,72 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
         QUIT_CONFIRM
     }
 
-    /** The current state the pause menu is in. */
+    /**
+     * The current state the pause menu is in.
+     */
     private State mCurrentState = State.MENU;
 
     private State mQuitBackState = State.MENU;
 
-    /** The {@link NetworkManager} being used. */
+    /**
+     * The {@link NetworkManager} being used.
+     */
     private Reference<NetworkManager> mNetworkManager;
-    /** The camera being used. */
+    /**
+     * The camera being used.
+     */
     private GameObject mCamera;
 
-    /** Stores whether the menu is currently paused or not. */
-    @Getter private boolean mPaused;
+    /**
+     * Stores whether the menu is currently paused or not.
+     */
+    @Getter
+    private boolean mPaused;
 
-    /** Contains the pause menu. */
+    /**
+     * Contains the pause menu.
+     */
     private GameObject mMenuContainer;
-    /** Contains the settings menu. */
+    /**
+     * Contains the settings menu.
+     */
     private GameObject mSettingsContainer;
-    /** Contains the end game menu. */
+    /**
+     * Contains the end game menu.
+     */
     private GameObject mEndGameContainer;
-    /** Contains the quit confirmation menu. */
+    /**
+     * Contains the quit confirmation menu.
+     */
     private GameObject mQuitConfirmContainer;
-    /** Used to grey out the background. */
+    /**
+     * Used to grey out the background.
+     */
     private UIRenderable mBackground;
-    /** TextUtils displayed at the end screen. */
+    /**
+     * TextUtils displayed at the end screen.
+     */
     private UITextRect mEndGameRect;
 
-    /** Stores the {@link Screen} the {@link HumanPlayer} was previously on. */
+    /**
+     * Stores the {@link Screen} the {@link HumanPlayer} was previously on.
+     */
     private Screen mPreviousScreen;
 
-    /** Holds {@link Reference} to the {@link HumanPlayer} in game. */
+    /**
+     * Holds {@link Reference} to the {@link HumanPlayer} in game.
+     */
     private Reference<HumanPlayer> mHumanPlayer;
 
     /**
      * Create a pause menu.
      *
+     * @param jukebox        the audio source which can be used all the time
      * @param networkManager The {@link NetworkManager} being used.
-     * @param camera The camera {@link GameObject} being used.
+     * @param camera         The camera {@link GameObject} being used.
      */
-    public UIPauseMenu(NetworkManager networkManager, GameObject camera) {
+    public UIPauseMenu(NetworkManager networkManager, GameObject camera, Reference<AudioSource> jukebox) {
+        mEndGameJukeBox = jukebox;
         mNetworkManager = networkManager.getReference(NetworkManager.class);
         mCamera = camera;
     }
@@ -105,7 +138,9 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
         }
     }
 
-    /** Toggle the main pause menu visibility. */
+    /**
+     * Toggle the main pause menu visibility.
+     */
     private void togglePause() {
         setPaused(!mPaused);
     }
@@ -141,7 +176,9 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
         hideMenu(pause, mHumanPlayer.get());
     }
 
-    /** Generate the contents of {@link #mMenuContainer}. */
+    /**
+     * Generate the contents of {@link #mMenuContainer}.
+     */
     private void generateMenu() {
         UITextRect title = new UITextRect("Paused");
 
@@ -278,13 +315,17 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
      * <p>This is a supermethod for {@link #endGame()}, that accepts an optional label to be
      * displayed in the end screen.
      *
-     * @param label label to display on the end screen.
+     * @param didWin true if the player won. It is used to determine which prompt to show and what sound to play.
      */
-    public void endGame(String label) {
+    public void endGame(boolean didWin) {
+        String label = didWin ? "You win!" : "You lose!";
+
         if (Reference.isValid(mEndGameRect.getLabelText())) {
             mEndGameRect.getLabelText().get().setText(label);
         }
-
+        if (Reference.isValid(mEndGameJukeBox)) {
+            mEndGameJukeBox.get().playSound(didWin ? GameUIAppearance.AudioEvent.ON_WIN_SOUND.getPath() : GameUIAppearance.AudioEvent.ON_LOSE_SOUND.getPath());
+        }
         endGame();
     }
 

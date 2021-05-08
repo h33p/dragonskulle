@@ -41,6 +41,7 @@ import org.dragonskulle.input.Actions;
 import org.dragonskulle.input.Cursor;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
+import org.dragonskulle.network.components.requests.ServerEvent;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIManager;
 import org.dragonskulle.utils.MathUtils;
@@ -318,12 +319,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
                                     if (Reference.isValid(mPlayer)) {
                                         int id = mPlayer.get().getNetworkObject().getOwnerId();
-
-                                        String res = id == winnerId ? "You win!" : "You lose!";
-                                        GameUIAppearance.AudioEvent onGameEndSound = id == winnerId ? GameUIAppearance.AudioEvent.ON_WIN_SOUND : GameUIAppearance.AudioEvent.ON_LOSE_SOUND;
-
-                                        GameUIAppearance.getSource().playSound(onGameEndSound.getPath());
-                                        pauseMenu.get().endGame(res);
+                                        boolean didWin = id == winnerId;
+                                        player.playLocalSound(didWin ? GameUIAppearance.AudioEvent.ON_WIN_SOUND : GameUIAppearance.AudioEvent.ON_LOSE_SOUND);
+                                        pauseMenu.get().endGame(didWin);
                                     }
                                 });
 

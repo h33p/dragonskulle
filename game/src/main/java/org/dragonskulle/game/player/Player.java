@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
+import org.dragonskulle.audio.components.AudioSource;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.TransformHex;
@@ -169,6 +170,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private transient ServerEvent<GameState.InvokeAudioEvent> mOwnerAudioEvent;
     @Getter
     private transient ServerEvent<GameState.InvokeAudioEvent> mGlobalAudioEvent;
+    private Reference<AudioSource> mJukebox;
 
     /**
      * The base constructor for player.
@@ -235,12 +237,15 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         mPlayerHighlightSelection =
                 MapEffects.highlightSelectionFromColour(col.x(), col.y(), col.z());
 
+        AudioSource src = new AudioSource();
+        mJukebox = src.getReference(AudioSource.class);
+
         // TODO Get all Players & add to list
         updateTokens(TOKEN_TIME);
     }
 
     /**
-     * Used as a queue for tiles to be flood filled
+     * Used as a queue for tiles to be flood filled.
      */
     private final Deque<HexagonTile> mFillTiles = new ArrayDeque<>();
 
@@ -1079,22 +1084,26 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
     }
 
-    private void playSound(AudioEvent sound, ServerEvent.EventRecipients recipients) {
+    protected void playSound(AudioEvent sound, ServerEvent.EventRecipients recipients) {
         log.info("should play sound " + sound);
-        if (Reference.isValid(mGameState)) {
-            switch (recipients) {
-                case OWNER:
-                    mOwnerAudioEvent.invoke(
-                            new GameState.InvokeAudioEvent(sound)
-                    );
-                    break;
-                case ACTIVE_CLIENTS:
-                case ALL_CLIENTS:
-                    mGlobalAudioEvent.invoke(
-                            new GameState.InvokeAudioEvent(sound)
-                    );
-                    break;
-            }
+        switch (recipients) {
+            case OWNER:
+                mOwnerAudioEvent.invoke(
+                        new GameState.InvokeAudioEvent(sound)
+                );
+                break;
+            case ACTIVE_CLIENTS:
+            case ALL_CLIENTS:
+                mGlobalAudioEvent.invoke(
+                        new GameState.InvokeAudioEvent(sound)
+                );
+                break;
+        }
+    }
+
+    protected void playLocalSound(AudioEvent sound) {
+        if (Reference.isValid(mJukebox)) {
+            mJukebox.get().playSound(sound.getPath());
         }
     }
 

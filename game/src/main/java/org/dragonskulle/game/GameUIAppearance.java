@@ -29,8 +29,8 @@ public class GameUIAppearance {
         BUILDING_SOUND("building_upgrade.wav"),
         BUILDING_SELL_SOUND("building_sell.wav"),
         ATTACK_SUCCESS_SOUND("attack_success.wav"),
-        ATTACK_FAILURE_SOUND("attack_failed.wav"), //todo
-        ATTACK_INVOKED_SOUND("stock_event.wav"), //todo
+        ATTACK_FAILURE_SOUND("attack_failed.wav"),
+        ATTACK_INVOKED_SOUND("attack_launched.wav"),
         ON_GAME_START("game_start.wav"), //todo
         ON_WIN_SOUND("victory.wav"), //todo
         ON_LOSE_SOUND("on_lose.wav"), //todo

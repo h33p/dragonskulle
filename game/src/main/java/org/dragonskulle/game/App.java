@@ -2,6 +2,7 @@
 package org.dragonskulle.game;
 
 import java.util.Scanner;
+
 import lombok.extern.java.Log;
 import org.dragonskulle.assets.GLTF;
 import org.dragonskulle.audio.AudioManager;
@@ -150,13 +151,24 @@ public class App implements NativeResource {
                         });
         mainScene.addRootObject(audioObject);
 
+        AudioSource asrc = new AudioSource();
+        GameObject jukebox =
+                new GameObject(
+                        "jukebox",
+                        (audio) -> {
+                            AudioListener listener = new AudioListener();
+                            audio.addComponent(listener);
+                            audio.addComponent(asrc);
+                        });
+        mainScene.addRootObject(jukebox);
+
         // Pause menu
         GameObject pauseMenu =
                 new GameObject(
                         "pause menu",
                         new TransformUI(),
                         (menu) -> {
-                            menu.addComponent(new UIPauseMenu(networkManager, camera));
+                            menu.addComponent(new UIPauseMenu(networkManager, camera, asrc.getReference(AudioSource.class)));
                         });
 
         mainScene.addRootObject(pauseMenu);
@@ -168,7 +180,7 @@ public class App implements NativeResource {
      * Creates the main scene.
      *
      * @param networkManager the network manager
-     * @param asServer true, if to create as server
+     * @param asServer       true, if to create as server
      * @return the scene created
      */
     private static Scene createMainScene(NetworkManager networkManager, boolean asServer) {
@@ -375,19 +387,19 @@ public class App implements NativeResource {
         // TODO: actually make a fully fledged console
         // TODO: join it at the end
         new Thread(
-                        () -> {
-                            Scanner in = new Scanner(System.in);
+                () -> {
+                    Scanner in = new Scanner(System.in);
 
-                            String line;
+                    String line;
 
-                            while ((line = in.nextLine()) != null) {
-                                try {
-                                    log.info("Address set successfully!");
-                                } catch (Exception e) {
-                                    log.info("Failed to set IP and port!");
-                                }
-                            }
-                        })
+                    while ((line = in.nextLine()) != null) {
+                        try {
+                            log.info("Address set successfully!");
+                        } catch (Exception e) {
+                            log.info("Failed to set IP and port!");
+                        }
+                    }
+                })
                 .start();
 
         // Run the game

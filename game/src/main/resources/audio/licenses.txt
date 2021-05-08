@@ -3,3 +3,5 @@ building_upgrade: https://freesound.org/people/InspectorJ/sounds/400991/
 attack_success: https://freesound.org/people/Debsound/sounds/437602/
 victory: https://samplefocus.com/samples/flawless-victory#_=_
 game_start: https://samplefocus.com/samples/round-1-fight
+attack_launched: https://soundbible.com/909-Cannon.html
+attack_failed: https://freesound.org/people/adcbicycle/sounds/13900/
