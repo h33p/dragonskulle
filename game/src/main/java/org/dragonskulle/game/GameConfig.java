@@ -196,32 +196,32 @@ public class GameConfig implements ISyncVar {
     public static class AiAimerConfig implements INetSerializable {
         /** Whether to use the A* route. */
         private float mPlayAStar;
-        /** The chance to aim at a capital. */
-        private float mAimAtCapital;
+        /** The number of attempts before it will always aim for a Capital */
+        private int mMaxAttempts;
         /** This is the number of tries we should do before resetting. */
         private int mTries;
 
-        public AiAimerConfig(float playAStar, float aimAtCapital, int tries) {
+        public AiAimerConfig(float playAStar, int maxAttempts, int tries) {
             mPlayAStar = playAStar;
-            mAimAtCapital = aimAtCapital;
+            mMaxAttempts = maxAttempts;
             mTries = tries;
         }
 
         public AiAimerConfig() {
-            this(0.9f, 0.01f, 20);
+            this(0.75f, 50, 5);
         }
 
         @Override
         public void serialize(DataOutput stream, int clientId) throws IOException {
             stream.writeFloat(mPlayAStar);
-            stream.writeFloat(mAimAtCapital);
+            stream.writeInt(mMaxAttempts);
             stream.writeInt(mTries);
         }
 
         @Override
         public void deserialize(DataInput stream) throws IOException {
             mPlayAStar = stream.readFloat();
-            mAimAtCapital = stream.readFloat();
+            mMaxAttempts = stream.readInt();
             mTries = stream.readInt();
         }
     }

@@ -672,7 +672,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return {@code true} if the Player owns the tile
      */
     public boolean hasClaimedTile(HexagonTile tile) {
-        if (tile == null) {
+        if (tile == null || getNetworkObject() == null) {
+            return false;
+        }
+
+        if (tile.getClaimantId() == null) {
             return false;
         }
         return tile.getClaimantId() == getNetworkObject().getOwnerId();

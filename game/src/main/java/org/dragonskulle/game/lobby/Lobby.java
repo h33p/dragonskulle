@@ -3,7 +3,6 @@ package org.dragonskulle.game.lobby;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -16,7 +15,6 @@ import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.GameState;
 import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.game.player.ai.AimerAi;
-import org.dragonskulle.game.player.ai.ProbabilisticAiPlayer;
 import org.dragonskulle.game.player.ui.UIPauseMenu;
 import org.dragonskulle.network.ServerClient;
 import org.dragonskulle.network.UPnP;
@@ -662,18 +660,11 @@ public class Lobby extends Component implements IFrameUpdate {
 
         // Add the AI
         for (int i = -1; i >= -1 * numOfAi; i--) {
-            Random random = new Random();
-
             Reference<NetworkObject> player =
                     manager.getServerManager()
                             .spawnNetworkObject(i, manager.findTemplateByName("player"));
             GameObject playerObj = player.get().getGameObject();
-            playerObj.addComponent(new ProbabilisticAiPlayer());
-
-            // Randomly select which AI to use
-            if (random.nextFloat() > 0.5) {
-                playerObj.addComponent(new AimerAi());
-            }
+            playerObj.addComponent(new AimerAi());
         }
     }
 
