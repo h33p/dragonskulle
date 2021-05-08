@@ -183,6 +183,9 @@ public class NetworkObject extends Component {
      */
     void beforeNetSerialize() {
         for (Reference<NetworkableComponent> comp : mNetworkableComponents) {
+            if (!Reference.isValid(comp)) {
+                continue;
+            }
             NetworkableComponent nc = comp.get();
             nc.beforeNetSerialize();
         }

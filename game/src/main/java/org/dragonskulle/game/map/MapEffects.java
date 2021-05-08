@@ -143,7 +143,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     public static final Vector4fc FOG_MATERIAL = highlightSelectionFromColour(0.1f, 0.1f, 0.13f);
     public static final Vector4fc SELECT_MATERIAL = highlightSelectionFromColour(0.1f, 0.9f, 0.7f);
     public static final Vector4fc SELECT_INVALID_MATERIAL =
-            highlightSelectionFromColour(0.7f, 0.9f, 0.1f);
+            highlightSelectionFromColour(0.9f, 0.1f, 0.7f);
     public static final Vector4fc CLEARED_MATERIAL = new Vector4f(0f);
 
     private Reference<HexagonMap> mMapReference = null;

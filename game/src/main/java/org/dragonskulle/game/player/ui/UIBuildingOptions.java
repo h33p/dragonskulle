@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnStart;
@@ -16,21 +15,18 @@ import org.dragonskulle.game.GameUIAppearance;
 import org.dragonskulle.game.player.BuildingDescriptor;
 import org.dragonskulle.game.player.Player;
 import org.dragonskulle.game.player.PredefinedBuildings;
-import org.dragonskulle.game.player.network_data.BuildData;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIFlatImage;
 import org.dragonskulle.ui.UIManager;
 import org.dragonskulle.ui.UIManager.IUIBuildHandler;
-import org.dragonskulle.ui.UIText;
 
 /**
  * The UI Component to display the pre-defined placeable buildings.
  *
  * @author Oscar L
  */
-@Log
 @Accessors(prefix = "m")
 public class UIBuildingOptions extends Component implements IOnStart, IFixedUpdate {
     private List<BuildingDescriptor> mBuildingsCanPlace;
@@ -40,8 +36,6 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
     @Getter private final UIShopSection mParent;
     private Reference<Player> mPlayerReference;
     @Getter @Setter private int mTokens = 0;
-
-    private Reference<UIButton> mBuyButton;
 
     private Reference<UIDescription> mDescription;
 
@@ -65,9 +59,15 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
     @Override
     public void onStart() {
         // Add the buy button.
-        GameObject buttonObject = new GameObject("build_button", new TransformUI());
-        UIButton button = new UIButton("Build", this::buildOnClick);
-        mBuyButton = button.getReference(UIButton.class);
+        GameObject buttonObject = new GameObject("cancel_button", new TransformUI());
+        UIButton button =
+                new UIButton(
+                        "Cancel",
+                        (__, ___) ->
+                                getParent()
+                                        .getParent()
+                                        .mNotifyScreenChange
+                                        .call(Screen.DEFAULT_SCREEN));
         buttonObject.addComponent(button);
         TransformUI transformUI = buttonObject.getTransform(TransformUI.class);
         transformUI.setParentAnchor(0.16f, 1.09f, 0.86f, 1.09f + 0.25f);
@@ -160,6 +160,9 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
      * @param descriptor The descriptor to be shown.
      */
     private void updateDescription(BuildingDescriptor descriptor) {
+
+        getParent().getParent().getSetPredefinedBuildingChosen().setPredefinedBuilding(descriptor);
+
         if (!Reference.isValid(mDescription)) return;
         UIDescription description = mDescription.get();
         description.update(descriptor);
@@ -168,30 +171,6 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
     @Override
     public void fixedUpdate(float deltaTime) {
         updateTokens();
-        updateBuyButton();
-    }
-
-    /** Enable and disable the buy button. */
-    private void updateBuyButton() {
-        Player player = getPlayer();
-        if (player == null) return;
-
-        if (!Reference.isValid(mBuyButton)) return;
-        if (mSelectedBuildingDescriptor == null) return;
-
-        UIButton button = mBuyButton.get();
-        int cost = mSelectedBuildingDescriptor.getCost();
-
-        if (!Reference.isValid(button.getLabelText())) return;
-        UIText label = button.getLabelText().get();
-
-        if (player.getTokens().get() >= cost) {
-            button.setEnabled(true);
-            label.setText("Build");
-        } else {
-            button.setEnabled(false);
-            label.setText("[TOO EXPENSIVE]");
-        }
     }
 
     /** Update the local tokens. */
@@ -199,33 +178,6 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
         Player player = getPlayer();
         if (player == null) return;
         setTokens(player.getTokens().get());
-    }
-
-    /**
-     * The onClick handler for the build button.
-     *
-     * @param __ ignored
-     * @param ___ ignored
-     */
-    private void buildOnClick(UIButton __, float ___) {
-        if (getParent().getParent().mGetHexChosen.getHex() != null) {
-            Player player = getParent().getParent().mGetPlayer.getPlayer();
-            if (player == null) return;
-
-            // Ensure the player can afford to build.
-            int cost = mSelectedBuildingDescriptor.getCost();
-            if (cost > player.getTokens().get()) return;
-
-            player.getClientBuildRequest()
-                    .invoke(
-                            new BuildData(
-                                    getParent().getParent().mGetHexChosen.getHex(),
-                                    PredefinedBuildings.getIndex(mSelectedBuildingDescriptor)));
-
-            getParent().markDidBuild(true);
-
-            getParent().getParent().mNotifyScreenChange.call(Screen.BUILDING_SELECTED_SCREEN);
-        }
     }
 
     /**
