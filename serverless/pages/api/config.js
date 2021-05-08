@@ -21,18 +21,16 @@ export default function handler(req, res) {
             return new Promise((resolve, _reject) => {
                 connectToDatabase()
                     .then(() => {
-                        Config.findByIdAndUpdate("609532b3b8079d5af4cb32b8", {
+                        Config.findByIdAndUpdate("60966c3c0ff8091468b5561c", {
                             global: req.body.global,
-                            player: req.body.player,
-                            ai: req.body.ai,
-                            probabilisticAi: req.body.probabilisticAi,
-                            aiAimer: req.body.aiAimer,
                             attackStat: req.body.attackStat,
                             buildDistanceStat: req.body.buildDistanceStat,
                             claimDistanceStat: req.body.claimDistanceStat,
                             defenceStat: req.body.defenceStat,
                             generationStat: req.body.generationStat,
-                            viewDistanceStat: req.body.viewDistanceStat
+                            viewDistanceStat: req.body.viewDistanceStat,
+                            player: req.body.player,
+                            ai: req.body.ai
                         }, { upsert: true }, (err, entry) => {
                             if (err) {
                                 console.error(err)
