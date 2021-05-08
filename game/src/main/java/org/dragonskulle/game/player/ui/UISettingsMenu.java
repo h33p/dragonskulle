@@ -208,7 +208,7 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
                         0.01f,
                         (__, value) -> { // on slider change
                             settingsInstance.saveValue(Cursor.SETTINGS_STRING, value);
-                            Cursor.setCustomCursor(CursorType.DEFAULT);
+                            Cursor.setCustomCursor(UIAppearance.getHoverCursor());
                         },
                         (__, ___) -> settingsInstance.save() // on button release
                         );

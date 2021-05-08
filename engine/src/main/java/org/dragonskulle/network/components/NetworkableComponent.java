@@ -8,7 +8,6 @@ import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.Component;
-import org.dragonskulle.core.Reference;
 import org.dragonskulle.network.components.requests.ClientRequest;
 import org.dragonskulle.network.components.requests.ServerEvent;
 import org.dragonskulle.network.components.sync.ISyncVar;
@@ -22,13 +21,7 @@ import org.dragonskulle.network.components.sync.ISyncVar;
 @Accessors(prefix = "m")
 public abstract class NetworkableComponent extends Component {
 
-    /** A reference to itself. */
-    private final Reference<NetworkableComponent> mReference = new Reference<>(this);
-
     @Getter private NetworkObject mNetworkObject = null;
-
-    public static final int MASK_LENGTH_OFFSET = 0;
-    public static final int MASK_OFFSET = MASK_LENGTH_OFFSET + 1;
 
     /** Instantiates a new Networkable component. */
     public NetworkableComponent() {}
@@ -43,14 +36,14 @@ public abstract class NetworkableComponent extends Component {
      * @param outRequests the requests it can deal with
      * @param outEvents the events it can deal with
      */
-    public void initialize(
+    public void initialise(
             NetworkObject networkObject,
             List<ClientRequest<?>> outRequests,
             List<ServerEvent<?>> outEvents) {
 
         mNetworkObject = networkObject;
 
-        onNetworkInitialize();
+        onNetworkInitialise();
 
         mFields =
                 Arrays.stream(this.getClass().getDeclaredFields())
@@ -94,10 +87,10 @@ public abstract class NetworkableComponent extends Component {
         onConnectedSyncvars();
     }
 
-    /** Event called whenever object is spawned and is being initialized by the network manager. */
-    protected void onNetworkInitialize() {}
+    /** Event called whenever object is spawned and is being initialised by the network manager. */
+    protected void onNetworkInitialise() {}
 
-    /** Event called after {@link onNetworkInitialize}, when all syncvars have been initialized. */
+    /** Event called after {@link onNetworkInitialise}, when all syncvars have been initialised. */
     protected void onConnectedSyncvars() {}
 
     /** Event called before serialization takes place. */
@@ -143,15 +136,6 @@ public abstract class NetworkableComponent extends Component {
         fieldsString.append("\n}");
 
         return "NetworkableComponent{" + ", fields=" + fieldsString + '}';
-    }
-
-    /**
-     * Gets a reference to this component.
-     *
-     * @return the reference
-     */
-    public Reference<NetworkableComponent> getNetReference() {
-        return this.mReference;
     }
 
     /**

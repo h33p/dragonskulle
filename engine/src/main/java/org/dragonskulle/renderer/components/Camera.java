@@ -2,6 +2,7 @@
 package org.dragonskulle.renderer.components;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
@@ -29,23 +30,23 @@ public class Camera extends Component implements IFrameUpdate {
     }
 
     /* Controls camera projection mode */
-    public Projection mProjection = Projection.PERSPECTIVE;
+    @Getter @Setter private Projection mProjection = Projection.PERSPECTIVE;
     /* Controls field of view in perspective mode */
-    public float mFov = 70.f;
+    @Getter @Setter private float mFov = 70.f;
     /* Controls how wide the screen is in orthographic mode */
-    public float mOrthographicSize = 10.f;
+    @Getter @Setter private float mOrthographicSize = 10.f;
     /**
      * Controls how close the nearest objects can be to the camera to render.
      *
      * <p>Note the too small value for nearPlane may lead to visual artifacting
      */
-    public float mNearPlane = 0.1f;
+    @Getter @Setter private float mNearPlane = 0.1f;
     /**
      * Controls how far the furthest objects can be from the camera to render.
      *
      * <p>Note that too large value for farPlane may lead to visual artifacting
      */
-    public float mFarPlane = 100.f;
+    @Getter @Setter private float mFarPlane = 100.f;
 
     /* Current projection matrix */
     private Matrix4f mProj = new Matrix4f();
@@ -54,6 +55,12 @@ public class Camera extends Component implements IFrameUpdate {
     /* Current screen aspect ratio */
     private float mAspectRatio = 1.f;
 
+    /**
+     * View direction allows to override which way the camera looks at.
+     *
+     * <p>Our engine defaults to +Y forward, since that is the forward transformation direction, but
+     * glTF uses a different view direction.
+     */
     @Getter private final Vector3f mViewDirection = new Vector3f(0f, 1f, 0f);
 
     private Matrix4f mToView = new Matrix4f();

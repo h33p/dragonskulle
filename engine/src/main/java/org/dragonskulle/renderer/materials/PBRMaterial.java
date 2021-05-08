@@ -5,7 +5,6 @@ import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32A32_SFLOAT;
 import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32_SFLOAT;
 import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32_SFLOAT;
 
-import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +36,7 @@ import org.joml.Vector4f;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial, Serializable {
+public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial {
 
     private static final Map<Integer, ShaderSet> sShaderSets = new TreeMap<Integer, ShaderSet>();
 
