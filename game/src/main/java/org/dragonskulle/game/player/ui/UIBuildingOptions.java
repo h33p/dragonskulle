@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnStart;
@@ -30,6 +31,7 @@ import org.dragonskulle.ui.UIText;
  * @author Oscar L
  */
 @Accessors(prefix = "m")
+@Log
 public class UIBuildingOptions extends Component implements IOnStart, IFixedUpdate {
     private List<BuildingDescriptor> mBuildingsCanPlace;
     @Setter private BuildingDescriptor mSelectedBuildingDescriptor = PredefinedBuildings.BASE;
@@ -167,6 +169,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
     private void ensurePlayerValidForDescription() {
         if (!Reference.isValid(mDescription)) return;
         UIBuildingDescription description = mDescription.get();
+        log.info("UPD PL");
         description.updatePlayer(getPlayer());
     }
 
@@ -186,7 +189,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
         if (mSelectedBuildingDescriptor == null) return;
 
         UIButton button = mBuyButton.get();
-        int cost = mSelectedBuildingDescriptor.getCost(player.getInflation());
+        int cost = mSelectedBuildingDescriptor.getTotalCost(player);
 
         if (!Reference.isValid(button.getLabelText())) return;
         UIText label = button.getLabelText().get();
@@ -219,7 +222,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
             if (player == null) return;
 
             // Ensure the player can afford to build.
-            int cost = mSelectedBuildingDescriptor.getCost(player.getInflation());
+            int cost = mSelectedBuildingDescriptor.getTotalCost(player);
             if (cost > player.getTokens().get()) return;
 
             player.getClientBuildRequest()
@@ -241,12 +244,13 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
      */
     private Player getPlayer() {
         if (!Reference.isValid(mPlayerReference)) {
-            // Attempt to get a valid reference.
-            mPlayerReference =
-                    getParent().getParent().mGetPlayer.getPlayer().getReference(Player.class);
 
-            // If the reference is still invalid, return null.
-            if (!Reference.isValid(mPlayerReference)) return null;
+            Player player = getParent().getParent().mGetPlayer.getPlayer();
+
+            if (player == null) return null;
+
+            // Attempt to get a valid reference.
+            mPlayerReference = player.getReference(Player.class);
         }
 
         // Return the Player.

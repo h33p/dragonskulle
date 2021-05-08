@@ -767,9 +767,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     private boolean buildAttempt(HexagonTile tile, BuildingDescriptor descriptor) {
 
-        float inflation = getInflation();
-
-        if (!buildCheck(tile, descriptor.getCost(inflation))) {
+        if (!buildCheck(tile, descriptor.getTotalCost(this))) {
             log.info("Unable to pass build check.");
             return false;
         }
@@ -780,13 +778,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
-        // TODO set to late update as this wont work fun times yay
         building.getAttack().setLevel(descriptor.getAttack());
         building.getDefence().setLevel(descriptor.getDefence());
         building.getTokenGeneration().setLevel(descriptor.getTokenGenerationLevel());
-        building.setSellPrice(descriptor.getSellPrice());
+        building.setSellPrice(descriptor.getSellPrice(this));
         // Subtract the cost.
-        mTokens.subtract(descriptor.getCost(inflation));
+        mTokens.subtract(descriptor.getTotalCost(this));
         log.warning("Added building.");
         return true;
     }
@@ -1270,6 +1267,16 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         return inflation;
+    }
+
+    public float getGlobalInflation() {
+        GameState state = getGameState();
+
+        if (state != null) {
+            return state.getGlobalInflation();
+        }
+
+        return 1;
     }
 
     /**

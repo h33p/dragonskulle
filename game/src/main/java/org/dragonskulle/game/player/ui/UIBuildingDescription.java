@@ -72,11 +72,11 @@ public class UIBuildingDescription extends Component implements IOnAwake, IFixed
         return component.getReference(UITextRect.class);
     }
 
-    private void updateField(Reference<UITextRect> box, String text) {
-        if (!Reference.isValid(box)) return;
+    private boolean updateField(Reference<UITextRect> box, String text) {
+        if (!Reference.isValid(box)) return false;
 
         Reference<UIText> label = box.get().getLabelText();
-        if (!Reference.isValid(label)) return;
+        if (!Reference.isValid(label)) return false;
 
         label.get().setText(text);
 
@@ -84,6 +84,8 @@ public class UIBuildingDescription extends Component implements IOnAwake, IFixed
 
         // The initial label text has been set.
         mInitialised = true;
+
+        return true;
     }
 
     /**
@@ -138,17 +140,17 @@ public class UIBuildingDescription extends Component implements IOnAwake, IFixed
 
     /** Update cost shown in the UI, based on base price and inflation. */
     private void updateCost() {
-        float inflation = Reference.isValid(mPlayerRef) ? mPlayerRef.get().getInflation() : 1;
 
-        int curCost = mDescriptor.getCost(inflation);
+        int curCost =
+                mDescriptor.getTotalCost(Reference.isValid(mPlayerRef) ? mPlayerRef.get() : null);
 
         if (curCost == mPrevCost) {
             return;
         }
 
-        mPrevCost = curCost;
-
-        updateField(mCostRef, TextUtils.constructField("COST", curCost, TEXT_LENGTH));
+        if (updateField(mCostRef, TextUtils.constructField("COST", curCost, TEXT_LENGTH))) {
+            mPrevCost = curCost;
+        }
     }
 
     @Override
