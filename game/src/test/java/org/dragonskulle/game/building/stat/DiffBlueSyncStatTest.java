@@ -15,47 +15,11 @@ import org.junit.Test;
 
 public class DiffBlueSyncStatTest {
     @Test
-    public void testConstructor() {
-        SyncStat actualSyncStat = new SyncStat(new Building());
-        assertEquals(1, actualSyncStat.get());
-        assertEquals(3, actualSyncStat.getCost());
-    }
-
-    @Test
-    public void testConstructor2() {
-        Building building = new Building();
-        building.setGameObject(new GameObject("Name"));
-        SyncStat actualSyncStat = new SyncStat(building);
-        assertEquals(1, actualSyncStat.get());
-        assertEquals(3, actualSyncStat.getCost());
-    }
-
-    @Test
     public void testInitialise() {
         SyncStat syncStat = new SyncStat(new Building());
         syncStat.initialise(StatType.ATTACK);
         assertEquals(1, syncStat.getValue());
         assertEquals(StatType.ATTACK, syncStat.getType());
-    }
-
-    @Test
-    public void testGetValue() {
-        assertEquals(0, (new SyncStat(new Building())).getValue());
-    }
-
-    @Test
-    public void testGetCost() {
-        assertEquals(3, (new SyncStat(new Building())).getCost());
-    }
-
-    @Test
-    public void testIsMaxLevel() {
-        assertFalse((new SyncStat(new Building())).isMaxLevel());
-    }
-
-    @Test
-    public void testGetLevel() {
-        assertEquals(1, (new SyncStat(new Building())).getLevel());
     }
 
     @Test
@@ -139,8 +103,4 @@ public class DiffBlueSyncStatTest {
         assertEquals(-1010580540, syncStat.getCost());
     }
 
-    @Test
-    public void testGet() {
-        assertEquals(1, (new SyncStat(new Building())).get());
-    }
 }

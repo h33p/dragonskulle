@@ -15,11 +15,4 @@ public class DiffBluePredefinedBuildingsTest {
         assertEquals(1, PredefinedBuildings.getPurchasable(20).size());
     }
 
-    @Test
-    public void testGetIndex() {
-        assertEquals(
-                -1,
-                PredefinedBuildings.getIndex(
-                        new BuildingDescriptor(1, 1, 1, 1, 1, "M Icon Path", "M Name")));
-    }
 }

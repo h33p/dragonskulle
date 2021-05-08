@@ -22,19 +22,4 @@ public class DiffBlueGraphTest {
         assertEquals(123, getResult.getNodeId());
         assertNull(getResult.getHexTile().get());
     }
-
-    @Test
-    public void testGetConnection() {
-        assertTrue((new Graph()).getConnection(10).isEmpty());
-    }
-
-    @Test
-    public void testGetNodeHeuristic() {
-        assertEquals(Integer.MAX_VALUE, (new Graph()).getNodeHeuristic(1));
-    }
-
-    @Test
-    public void testGetNode() {
-        assertNull((new Graph()).getNode(1));
-    }
 }

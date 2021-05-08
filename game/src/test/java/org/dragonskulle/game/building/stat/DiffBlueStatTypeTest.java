@@ -14,11 +14,6 @@ public class DiffBlueStatTypeTest {
     @Rule public ExpectedException thrown = ExpectedException.none();
 
     @Test
-    public void testFromNiceName2() {
-        assertEquals(StatType.ATTACK, StatType.fromNiceName("ATTACK"));
-    }
-
-    @Test
     public void testGetFromID() {
         assertEquals(StatType.BUILD_DISTANCE, StatType.getFromID(1));
         assertNull(StatType.getFromID(123));

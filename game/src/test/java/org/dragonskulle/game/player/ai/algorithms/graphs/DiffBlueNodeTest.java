@@ -12,14 +12,6 @@ import org.junit.Test;
 
 public class DiffBlueNodeTest {
     @Test
-    public void testConstructor() {
-        Node actualNode = new Node(1, null);
-        assertTrue(actualNode.getConnections().isEmpty());
-        assertEquals(1, actualNode.getNodeId());
-        assertNull(actualNode.getHexTile().get());
-    }
-
-    @Test
     public void testAddConnection() {
         Node node = new Node(1, null);
         node.addConnection(2, 3);

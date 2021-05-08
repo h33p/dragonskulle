@@ -17,48 +17,10 @@ import org.junit.Test;
 
 public class DiffBlueBuildingTest {
     @Test
-    public void testGetShopStatTypes() {
-        List<StatType> actualShopStatTypes = Building.getShopStatTypes();
-        assertEquals(3, actualShopStatTypes.size());
-        assertEquals(StatType.ATTACK, actualShopStatTypes.get(0));
-        assertEquals(StatType.DEFENCE, actualShopStatTypes.get(1));
-        assertEquals(StatType.TOKEN_GENERATION, actualShopStatTypes.get(2));
-    }
-
-    @Test
-    public void testGetNumberOfShopStatTypes() {
-        assertEquals(3, Building.getNumberOfShopStatTypes());
-    }
-
-    @Test
     public void testSetStatsRequireVisualUpdate() {
         Building building = new Building();
         building.setStatsRequireVisualUpdate();
         assertEquals(1, building.getStatUpdateCount());
-    }
-
-    @Test
-    public void testConstructor() {
-        Building actualBuilding = new Building();
-        assertTrue(actualBuilding.mStats.isEmpty());
-        assertEquals(2, actualBuilding.getSellPrice());
-        assertEquals(0, actualBuilding.getStatBaseCost());
-        assertEquals(0, actualBuilding.getStatUpdateCount());
-        assertNull(actualBuilding.getTile());
-        assertFalse(actualBuilding.isStarted());
-        assertTrue(actualBuilding.isEnabled());
-        assertFalse(actualBuilding.isCapital());
-        assertFalse(actualBuilding.isAwake());
-        assertFalse(actualBuilding.isActionLocked());
-        assertEquals(27, actualBuilding.getAttackCost());
-        assertNull(actualBuilding.getNetworkManager());
-        assertNull(actualBuilding.getRandomAttackableBuilding());
-        SyncStat claimDistance = actualBuilding.getClaimDistance();
-        assertEquals(3, claimDistance.getCost());
-        SyncStat attack = actualBuilding.getAttack();
-        assertFalse(attack.isMaxLevel());
-        assertEquals(3, attack.getCost());
-        assertEquals(1, claimDistance.get());
     }
 
     @Test
@@ -74,64 +36,10 @@ public class DiffBlueBuildingTest {
         assertEquals(1, claimDistance.getValue());
         assertEquals(StatType.CLAIM_DISTANCE, claimDistance.getType());
     }
-
-    @Test
-    public void testFixedUpdate() {
-        Building building = new Building();
-        building.fixedUpdate(0.5f);
-        assertTrue(building.mStats.isEmpty());
-        assertEquals(2, building.getSellPrice());
-        assertEquals(0, building.getStatBaseCost());
-        assertEquals(0, building.getStatUpdateCount());
-        assertFalse(building.isStarted());
-        assertTrue(building.isEnabled());
-        assertFalse(building.isAwake());
-    }
-
-    @Test
-    public void testCheckInitialise() {
-        Building building = new Building();
-        building.checkInitialise();
-        assertTrue(building.mStats.isEmpty());
-        assertEquals(2, building.getSellPrice());
-        assertEquals(0, building.getStatBaseCost());
-        assertEquals(0, building.getStatUpdateCount());
-        assertFalse(building.isStarted());
-        assertTrue(building.isEnabled());
-        assertFalse(building.isAwake());
-    }
-
-    @Test
-    public void testFrameUpdate() {
-        Building building = new Building();
-        GameObject gameObject = new GameObject("Name");
-        building.setGameObject(gameObject);
-        building.frameUpdate(0.5f);
-        assertTrue(building.mStats.isEmpty());
-        assertEquals(2, building.getSellPrice());
-        assertEquals(0, building.getStatBaseCost());
-        assertEquals(0, building.getStatUpdateCount());
-        assertSame(gameObject, building.getGameObject());
-        assertFalse(building.isStarted());
-        assertTrue(building.isEnabled());
-        assertFalse(building.isAwake());
-    }
-
     @Test
     public void testAfterStatChange() {
         Building building = new Building();
         building.setCapital(true);
-        building.afterStatChange();
-        assertEquals(1, building.getStatBaseCost());
-        assertEquals(1, building.getStatUpdateCount());
-        assertNull(building.getRandomAttackableBuilding());
-    }
-
-    @Test
-    public void testAfterStatChange2() {
-        Building building = new Building();
-        building.setCapital(true);
-        building.setGameObject(new GameObject("Name"));
         building.afterStatChange();
         assertEquals(1, building.getStatBaseCost());
         assertEquals(1, building.getStatUpdateCount());
@@ -146,81 +54,14 @@ public class DiffBlueBuildingTest {
     }
 
     @Test
-    public void testAttackEffect() {
-        Building building = new Building();
-        Building building1 = new Building();
-        building.attackEffect(building1, 10.0f);
-        assertTrue(building1.mStats.isEmpty());
-        assertEquals(2, building1.getSellPrice());
-        assertEquals(0, building1.getStatBaseCost());
-        assertEquals(0, building1.getStatUpdateCount());
-        assertFalse(building1.isStarted());
-        assertTrue(building1.isEnabled());
-        assertFalse(building1.isAwake());
-    }
-
-    @Test
-    public void testGetAttackableBuildings() {
-        Building building = new Building();
-        assertTrue(building.getAttackableBuildings().isEmpty());
-        assertTrue(building.getAttackableTiles().isEmpty());
-    }
-
-    @Test
     public void testGetRandomAttackableBuilding() {
         assertNull((new Building()).getRandomAttackableBuilding());
-    }
-
-    @Test
-    public void testGetAttackableTiles() {
-        Building building = new Building();
-        assertTrue(building.getAttackableTiles().isEmpty());
-        assertNull(building.getRandomAttackableBuilding());
-    }
-
-    @Test
-    public void testIsActionLocked() {
-        assertFalse((new Building()).isActionLocked());
     }
 
     @Test
     public void testIsBuildingAttackable() {
         Building building = new Building();
         assertFalse(building.isBuildingAttackable(new Building()));
-    }
-
-    @Test
-    public void testGetBuildableTiles() {
-        assertTrue((new Building()).getBuildableTiles().isEmpty());
-    }
-
-    @Test
-    public void testGetTile() {
-        assertNull((new Building()).getTile());
-    }
-
-    @Test
-    public void testGetOwner() {
-        assertNull((new Building()).getOwner());
-    }
-
-    @Test
-    public void testIsCapital() {
-        assertFalse((new Building()).isCapital());
-    }
-
-    @Test
-    public void testIsCapital2() {
-        Building building = new Building();
-        building.setCapital(true);
-        assertTrue(building.isCapital());
-    }
-
-    @Test
-    public void testSetCapital() {
-        Building building = new Building();
-        building.setCapital(true);
-        assertTrue(building.isCapital());
     }
 
     @Test
@@ -233,45 +74,5 @@ public class DiffBlueBuildingTest {
         Building building = new Building();
         building.setCapital(true);
         assertEquals(37, building.getAttackCost());
-    }
-
-    @Test
-    public void testGetStat() {
-        assertNull((new Building()).getStat(StatType.ATTACK));
-        assertNull((new Building()).getStat(null));
-    }
-
-    @Test
-    public void testGetStats() {
-        assertTrue((new Building()).getStats().isEmpty());
-    }
-
-    @Test
-    public void testGetUpgradeableStats() {
-        assertTrue((new Building()).getUpgradeableStats().isEmpty());
-    }
-
-    @Test
-    public void testGetShopStats() {
-        assertEquals(3, (new Building()).getShopStats().size());
-    }
-
-    @Test
-    public void testSetSellPrice() {
-        Building building = new Building();
-        building.setSellPrice(1);
-        assertEquals(1, building.getSellPrice());
-    }
-
-    @Test
-    public void testGetSellPrice() {
-        assertEquals(2, (new Building()).getSellPrice());
-    }
-
-    @Test
-    public void testOnDestroy() {
-        Building building = new Building();
-        building.onDestroy();
-        assertNull(building.getRandomAttackableBuilding());
     }
 }
