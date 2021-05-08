@@ -45,7 +45,7 @@ public class GameState extends NetworkableComponent implements IOnAwake {
         void handle(int winnerId);
     }
 
-    @Getter private GameConfig mConfig = new GameConfig();
+    @Getter private GameConfig mConfig = GameConfig.getDefaultConfig();
     @Getter private final SyncInt mNumPlayers = new SyncInt(0);
     @Getter private final SyncInt mNumCapitalsStanding = new SyncInt(0);
     @Getter private final SyncFloat mStartTime = new SyncFloat();

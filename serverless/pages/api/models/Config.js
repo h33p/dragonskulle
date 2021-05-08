@@ -114,7 +114,7 @@ const ConfigSchema = new mongoose.Schema(
     },
     aiAimer : {
       playAStar : Float,
-      aimAtCapital : Float,
+      maxAttempts : Number,
       tries : Number
     }
   } ]

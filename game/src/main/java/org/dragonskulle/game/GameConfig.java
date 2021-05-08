@@ -1,17 +1,24 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.DataInput;
 import java.io.DataOutput;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.dragonskulle.core.futures.AwaitFuture;
+import org.dragonskulle.core.futures.Future;
 import org.dragonskulle.game.building.Building;
+import org.dragonskulle.game.lobby.GameAPI;
 import org.dragonskulle.game.map.HexagonTile.TileType;
 import org.dragonskulle.network.components.sync.INetSerializable;
 import org.dragonskulle.network.components.sync.ISyncVar;
@@ -26,9 +33,63 @@ import org.dragonskulle.network.components.sync.ISyncVar;
 @Accessors(prefix = "m")
 @Getter
 @Setter
+@JsonIgnoreProperties({"_id", "__v"})
 public class GameConfig implements ISyncVar {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
+
+    private static final String OVERRIDE_CONFIG_PATH = "game_config_override.json";
+    private static final String CACHED_CONFIG_PATH = "game_config_cache.json";
+
+    @Accessors(prefix = "s")
+    @Getter
+    private static GameConfig sDefaultConfig = new GameConfig();
+
+    /**
+     * Queue an async refresh of the default config.
+     *
+     * @return a future that blocks until async web request finishes and game config is fully
+     *     updated.
+     */
+    public static Future refreshConfig() {
+        boolean[] finished = {false};
+
+        GameConfig fileConfig = fromFile(OVERRIDE_CONFIG_PATH);
+
+        if (fileConfig != null) {
+            finished[0] = true;
+            sDefaultConfig = fileConfig;
+        } else {
+            fileConfig = fromFile(CACHED_CONFIG_PATH);
+
+            if (fileConfig != null) {
+                sDefaultConfig = fileConfig;
+            }
+
+            GameAPI.getCurrentConfigAsync(
+                    (data, success) -> {
+                        if (success) {
+                            GameConfig c = fromJson(data);
+
+                            if (c != null) {
+                                sDefaultConfig = c;
+                                try (FileOutputStream out =
+                                        new FileOutputStream(CACHED_CONFIG_PATH)) {
+                                    try (PrintStream pout = new PrintStream(out)) {
+                                        pout.print(data);
+                                    }
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+
+                        finished[0] = true;
+                    });
+        }
+
+        return new AwaitFuture((__) -> finished[0]);
+    }
 
     /**
      * Convert this config to JSON.
@@ -60,6 +121,16 @@ public class GameConfig implements ISyncVar {
             return MAPPER.readValue(jsonData, GameConfig.class);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static GameConfig fromFile(String path) {
+        File file = new File(path);
+
+        try {
+            return MAPPER.readValue(file, GameConfig.class);
+        } catch (IOException e) {
             return null;
         }
     }
@@ -226,6 +297,44 @@ public class GameConfig implements ISyncVar {
         }
     }
 
+    /** AI properties. */
+    @Getter
+    @Setter
+    @Accessors(prefix = "m")
+    @JsonIgnoreProperties({"_id"})
+    public static class AiConfig implements INetSerializable {
+        private float mLowerBoundTime;
+        private float mUpperBoundTime;
+
+        /** Properties for probabilistic AI. */
+        private ProbabilisticAiConfig mProbabilisticAi;
+        /** Properties for aimer AI. */
+        private AiAimerConfig mAiAimer;
+
+        public AiConfig(float lowerBoundTime, float upperBoundTime) {
+            mLowerBoundTime = lowerBoundTime;
+            mUpperBoundTime = upperBoundTime;
+            mProbabilisticAi = new ProbabilisticAiConfig();
+            mAiAimer = new AiAimerConfig();
+        }
+
+        public AiConfig() {
+            this(1, 2);
+        }
+
+        @Override
+        public void serialize(DataOutput stream, int clientId) throws IOException {
+            stream.writeFloat(mLowerBoundTime);
+            stream.writeFloat(mUpperBoundTime);
+        }
+
+        @Override
+        public void deserialize(DataInput stream) throws IOException {
+            mLowerBoundTime = stream.readFloat();
+            mUpperBoundTime = stream.readFloat();
+        }
+    }
+
     /**
      * Configures bonus claimed terrain features provide for the building.
      *
@@ -258,43 +367,6 @@ public class GameConfig implements ISyncVar {
         public void deserialize(DataInput stream) throws IOException {
             mBonusTile = TileType.getTile(stream.readByte());
             mMultiplier = stream.readFloat();
-        }
-    }
-
-    /** AI properties. */
-    @Getter
-    @Setter
-    @Accessors(prefix = "m")
-    public static class AiConfig implements INetSerializable {
-        private float mLowerBoundTime;
-        private float mUpperBoundTime;
-
-        /** Properties for probabilistic AI. */
-        private ProbabilisticAiConfig mProbabilisticAi;
-        /** Properties for aimer AI. */
-        private AiAimerConfig mAiAimer;
-
-        public AiConfig(float lowerBoundTime, float upperBoundTime) {
-            mLowerBoundTime = lowerBoundTime;
-            mUpperBoundTime = upperBoundTime;
-            mProbabilisticAi = new ProbabilisticAiConfig();
-            mAiAimer = new AiAimerConfig();
-        }
-
-        public AiConfig() {
-            this(1, 2);
-        }
-
-        @Override
-        public void serialize(DataOutput stream, int clientId) throws IOException {
-            stream.writeFloat(mLowerBoundTime);
-            stream.writeFloat(mUpperBoundTime);
-        }
-
-        @Override
-        public void deserialize(DataInput stream) throws IOException {
-            mLowerBoundTime = stream.readFloat();
-            mUpperBoundTime = stream.readFloat();
         }
     }
 

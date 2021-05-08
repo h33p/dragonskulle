@@ -3,6 +3,28 @@
     "inflation" : 1.002,
     "mapSize" : 51
   },
+  "player" : {
+    "inflationPerBuilding" : 1.04,
+    "attackCooldown" : 2.0,
+    "tokenRate" : 5.0,
+    "tokenTime" : 1.0,
+    "attackHeightMul" : 1.0
+  },
+  "ai" : [ {
+    "lowerBoundTime" : 1.0,
+    "upperBoundTime" : 2.0,
+    "probabilisticAi" : {
+      "buildProbability" : 0.65,
+      "upgradeProbability" : 0.155,
+      "attackProbability" : 0.19,
+      "sellProbability" : 0.005
+    },
+    "aiAimer" : {
+      "playAStar" : 0.75,
+      "maxAttempts" : 50,
+      "tries" : 5
+    }
+  } ],
   "attackStat" : {
     "value" : {
       "baseValue" : 0.0,
@@ -92,27 +114,5 @@
     "cost" : {
       "selfLevelMultiplier" : 3.0
     }
-  },
-  "player" : {
-    "attackCooldown" : 2.0,
-    "tokenRate" : 5.0,
-    "tokenTime" : 1.0,
-    "inflationPerBuilding" : 1.04,
-    "attackHeightMul" : 1.0
-  },
-  "ai" : [ {
-    "lowerBoundTime" : 1.0,
-    "upperBoundTime" : 2.0,
-    "probabilisticAi" : {
-      "upgradeProbability" : 0.155,
-      "attackProbability" : 0.19,
-      "sellProbability" : 0.005,
-      "buildProbability" : 0.65
-    },
-    "aiAimer" : {
-      "playAStar" : 0.9,
-      "aimAtCapital" : 0.01,
-      "tries" : 20
-    }
-  } ]
+  }
 }
