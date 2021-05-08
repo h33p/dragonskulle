@@ -299,6 +299,7 @@ public class NetworkObject extends Component {
 
         for (int i = 0; i < sz; i++) {
             if (!masks[i]) continue;
+            mTmpVar.get(i).setIsClientDirty(masks[i]);
             mTmpVar.get(i).deserialize(stream);
         }
 

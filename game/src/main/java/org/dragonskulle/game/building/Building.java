@@ -42,7 +42,7 @@ import org.dragonskulle.game.misc.ArcPath.IPathUpdater;
 import org.dragonskulle.game.player.Player;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
-import org.dragonskulle.network.components.sync.AfterSyncBool;
+import org.dragonskulle.network.components.sync.SyncBool;
 import org.dragonskulle.network.components.sync.SyncFloat;
 import org.dragonskulle.network.components.sync.SyncInt;
 import org.joml.Vector2f;
@@ -81,7 +81,7 @@ public class Building extends NetworkableComponent
     @Getter private final SyncStat mClaimDistance = new SyncStat(this);
 
     /** Whether the building is a capital. */
-    private final AfterSyncBool mIsCapital = new AfterSyncBool(false);
+    public final SyncBool mIsCapital = new SyncBool(false);
 
     /**
      * Whether actions on this building (sell, upgrade, attack, etc. etc.) are locked.
@@ -203,7 +203,13 @@ public class Building extends NetworkableComponent
         initiliseStat(mViewDistance, StatType.VIEW_DISTANCE);
         initiliseStat(mBuildDistance, StatType.BUILD_DISTANCE);
         initiliseStat(mClaimDistance, StatType.CLAIM_DISTANCE);
-        mIsCapital.setAfterSync(this::assignMesh);
+    }
+
+    @Override
+    protected void afterNetUpdate() {
+        if (!isCapital() && mIsCapital.isClientDirty()) {
+            assignMesh();
+        }
     }
 
     @Override
@@ -382,7 +388,7 @@ public class Building extends NetworkableComponent
     }
 
     /** Assigns a visible mesh to be displayed depending on the maximum stat level. */
-    private void assignMesh() {
+    public void assignMesh() {
         Map<StatType, Integer> statLevels =
                 getShopStats().stream()
                         .collect(Collectors.toMap(SyncStat::getType, SyncStat::getLevel));
