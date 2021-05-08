@@ -15,7 +15,7 @@ import org.junit.Test;
  */
 public class UpgradeTest {
 
-    /** This will upgrade one stat to max level. */
+    /** This will upgrade one stat to max level checking cost is always increasing */
     @Test
     public void upgradeOneStat() {
         Building building = new Building();
@@ -24,59 +24,17 @@ public class UpgradeTest {
 
         SyncStat attack = stats.get(0);
 
-        // Lvl 1
-        int lvl1 = attack.getCost();
+        int i = 1;
+        // Test all to max
+        while (!attack.isMaxLevel()) {
 
-        attack.increaseLevel();
-        building.afterStatChange();
-
-        // Lvl 2
-        int lvl2 = attack.getCost();
-        assertTrue(lvl2 > lvl1);
-        attack.increaseLevel();
-        building.afterStatChange();
-
-        // Lvl 3
-        int lvl3 = attack.getCost();
-        assertTrue(lvl3 > lvl2);
-        attack.increaseLevel();
-        building.afterStatChange();
-
-        // Lvl 4;
-        int lvl4 = attack.getCost();
-        assertTrue(lvl4 > lvl3);
-        attack.increaseLevel();
-        building.afterStatChange();
-
-        // Lvl 5
-        int lvl5 = attack.getCost();
-        assertTrue(lvl5 > lvl4);
-        attack.increaseLevel();
-        building.afterStatChange();
-
-        // Lvl 6
-        int lvl6 = attack.getCost();
-        assertTrue(lvl6 > lvl5);
-        attack.increaseLevel();
-        building.afterStatChange();
-
-        // Lvl 7
-        int lvl7 = attack.getCost();
-        assertTrue(lvl7 > lvl6);
-        attack.increaseLevel();
-        building.afterStatChange();
-
-        // Lvl 8
-        int lvl8 = attack.getCost();
-        assertTrue(lvl8 > lvl7);
-        attack.increaseLevel();
-        building.afterStatChange();
-
-        // Lvl 9
-        int lvl9 = attack.getCost();
-        assertTrue(lvl9 > lvl8);
-        attack.increaseLevel();
-        building.afterStatChange();
+            int pre = attack.getCost();
+            attack.increaseLevel();
+            building.afterStatChange();
+            int after = attack.getCost();
+            assertTrue("This has failed on loop" + i, after > pre);
+            i++;
+        }
     }
 
     /** Checks if stat cost increases when other stats increase. */
