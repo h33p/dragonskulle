@@ -15,6 +15,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.assets.GLTF;
@@ -31,6 +32,7 @@ import org.dragonskulle.core.Resource;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.SingletonStore;
 import org.dragonskulle.game.App;
+import org.dragonskulle.game.GameConfig.PlayerConfig;
 import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonMap;
@@ -90,6 +92,13 @@ public class Building extends NetworkableComponent
      * twice.
      */
     @Getter private final SyncFloat mActionLockTime = new SyncFloat();
+
+    /**
+     * Action lock. This value is only needed to be set by the server, and it is meant to ensure
+     * there are no race conditions when building becomes unlocked by the action lock, but the
+     * action was still not processed.
+     */
+    @Getter @Setter private boolean mServerActionLocked = false;
 
     /** The tiles the building claims, including the tile the building is currently on. */
     @Getter private final Set<HexagonTile> mClaimedTiles = new HashSet<>();
@@ -676,6 +685,51 @@ public class Building extends NetworkableComponent
         }
     }
 
+    private final int DIE_SIDES = 100;
+
+    private float getAttackVal(Building opponent) {
+        HexagonTile myTile = getTile();
+        HexagonTile opponentTile = opponent.getTile();
+
+        float heightDelta;
+
+        if (myTile != null && opponentTile != null) {
+            heightDelta = myTile.getHeight() - opponentTile.getHeight();
+        } else {
+            heightDelta = 0;
+        }
+
+        Player p = getOwner();
+
+        if (p != null) {
+            PlayerConfig cfg = p.getConfig();
+
+            if (cfg != null) {
+                heightDelta *= cfg.getAttackHeightMul();
+            }
+        }
+
+        return getAttack().getValue() + heightDelta;
+    }
+
+    public float calculateAttackOdds(Building opponent) {
+        // Get the attacker and defender's stats.
+        double attack = getAttackVal(opponent);
+        double defence = opponent.getDefence().getValue();
+
+        // We use doubles for precision reasons. Small values would get distorted otherwise.
+        double accum = 0;
+
+        for (int i = 0; i < DIE_SIDES; i++) {
+            accum +=
+                    (Math.pow((double) (i + 1) / DIE_SIDES, attack)
+                                    - Math.pow((double) i / DIE_SIDES, attack))
+                            * Math.pow((double) i / DIE_SIDES, defence);
+        }
+
+        return (float) accum;
+    }
+
     /**
      * Attack an opponent building.
      *
@@ -689,12 +743,9 @@ public class Building extends NetworkableComponent
      * @return Whether the attack was successful or not.
      */
     public boolean attack(Building opponent) {
-        /* The number of sides on the dice */
-        final int maxValue = 1000;
-
         // Get the attacker and defender's stats.
-        int attack = getAttack().getValue();
-        int defence = opponent.getDefence().getValue();
+        float attack = getAttackVal(opponent);
+        float defence = opponent.getDefence().getValue();
 
         // Stores the highest result of rolling a dice a set number of times, defined by the attack
         // stat.
@@ -705,7 +756,7 @@ public class Building extends NetworkableComponent
 
         // Roll a die a number of times defined by the attack stat.
         for (int i = 0; i <= attack; i++) {
-            int value = (int) (Math.random() * (maxValue) + 1);
+            int value = (int) (Math.random() * DIE_SIDES + 1);
             // Store the highest value achieved.
             if (value > highestAttack) {
                 highestAttack = value;
@@ -714,7 +765,7 @@ public class Building extends NetworkableComponent
 
         // Roll a die a number of times defined by the defence stat.
         for (int i = 0; i <= defence; i++) {
-            int value = (int) (Math.random() * (maxValue) + 1);
+            int value = (int) (Math.random() * DIE_SIDES + 1);
             // Store the highest value achieved.
             if (value > highestDefence) {
                 highestDefence = value;
@@ -782,6 +833,16 @@ public class Building extends NetworkableComponent
      * @return {@code true} if building is action locked, {@code false} otherwise.
      */
     public boolean isActionLocked() {
+        return isTimeActionLocked() || mServerActionLocked;
+    }
+
+    /**
+     * Get whether the building is action locked by time, i.e. should definitely not have any
+     * actions happening to it.
+     *
+     * @return {@code true} if building is action locked, {@code false} otherwise.
+     */
+    public boolean isTimeActionLocked() {
         return mActionLockTime.get() > Engine.getInstance().getCurTime();
     }
 
@@ -1026,7 +1087,7 @@ public class Building extends NetworkableComponent
 
         for (SyncStat stat : mStats.values()) {
             StatType type = stat.getType();
-            if (type != null && type.isFixedValue() == false) {
+            if (type != null && stat.isFixed() == false) {
                 stats.add(stat);
             }
         }

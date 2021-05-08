@@ -37,7 +37,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
     private Reference<Player> mPlayerReference;
     @Getter @Setter private int mTokens = 0;
 
-    private Reference<UIDescription> mDescription;
+    private Reference<UIBuildingDescription> mDescription;
 
     /**
      * Constructor.
@@ -73,8 +73,8 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
         transformUI.setParentAnchor(0.16f, 1.09f, 0.86f, 1.09f + 0.25f);
 
         // Add the description box.
-        UIDescription description = new UIDescription();
-        mDescription = description.getReference(UIDescription.class);
+        UIBuildingDescription description = new UIBuildingDescription();
+        mDescription = description.getReference(UIBuildingDescription.class);
         getGameObject().addComponent(description);
 
         // Add the building selection buttons.
@@ -164,13 +164,21 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
         getParent().getParent().getSetPredefinedBuildingChosen().setPredefinedBuilding(descriptor);
 
         if (!Reference.isValid(mDescription)) return;
-        UIDescription description = mDescription.get();
-        description.update(descriptor);
+        UIBuildingDescription description = mDescription.get();
+        description.update(descriptor, getPlayer());
+    }
+
+    /** Ensure player reference is valid in build description. */
+    private void ensurePlayerValidForDescription() {
+        if (!Reference.isValid(mDescription)) return;
+        UIBuildingDescription description = mDescription.get();
+        description.updatePlayer(getPlayer());
     }
 
     @Override
     public void fixedUpdate(float deltaTime) {
         updateTokens();
+        ensurePlayerValidForDescription();
     }
 
     /** Update the local tokens. */
@@ -187,12 +195,13 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
      */
     private Player getPlayer() {
         if (!Reference.isValid(mPlayerReference)) {
-            // Attempt to get a valid reference.
-            mPlayerReference =
-                    getParent().getParent().mGetPlayer.getPlayer().getReference(Player.class);
 
-            // If the reference is still invalid, return null.
-            if (!Reference.isValid(mPlayerReference)) return null;
+            Player player = getParent().getParent().mGetPlayer.getPlayer();
+
+            if (player == null) return null;
+
+            // Attempt to get a valid reference.
+            mPlayerReference = player.getReference(Player.class);
         }
 
         // Return the Player.

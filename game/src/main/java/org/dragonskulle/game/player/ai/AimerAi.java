@@ -8,6 +8,7 @@ import java.util.Random;
 import java.util.stream.Stream;
 import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.game.GameConfig.AiAimerConfig;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.BuildingDescriptor;
@@ -61,20 +62,11 @@ public class AimerAi extends ProbabilisticAiPlayer {
     /** The node we previously were on. */
     private Node mNodePreviouslyOn = null;
 
-    /** Whether to use the A* route. */
-    private static final float PLAY_A_STAR = 0.75f;
-
     /** The chance to aim at a capital. */
     private float mAimAtCapital = 0.0f;
 
     /** The number of times we've attempted A* */
     private int mAStarAttempts = 0;
-
-    /** The number of attempts before it will always aim for a Capital */
-    private static final float NUMBER_OF_ATTEMPTS = 50f;
-
-    /** This is the number of tries we should do before resetting. */
-    private static final int TRIES = 5;
 
     /** Basic Constructor. */
     public AimerAi() {}
@@ -100,7 +92,15 @@ public class AimerAi extends ProbabilisticAiPlayer {
                 // attempts for 0.5
 
                 mAStarAttempts += 1;
-                mAimAtCapital = (float) (Math.pow(2, (mAStarAttempts / NUMBER_OF_ATTEMPTS)) - 1);
+                mAimAtCapital =
+                        (float)
+                                (Math.pow(
+                                                2,
+                                                (mAStarAttempts
+                                                        / getConfig()
+                                                                .getAiAimer()
+                                                                .getMaxAttempts()))
+                                        - 1);
             }
             return;
         }
@@ -111,8 +111,10 @@ public class AimerAi extends ProbabilisticAiPlayer {
             return;
         }
 
-        // This will choose whether to play as an A* player or as a Probabilistic Player
-        if (mRandom.nextFloat() < PLAY_A_STAR) {
+        AiAimerConfig cfg = getConfig().getAiAimer();
+
+        // This will choose whether to play as an A* player or as a Probablistic Player
+        if (mRandom.nextFloat() < cfg.getPlayAStar()) {
 
             moveBackwards();
 
@@ -140,7 +142,7 @@ public class AimerAi extends ProbabilisticAiPlayer {
             }
 
             // Checks if we have been on this tile for ages
-            if (mAttempts > TRIES) {
+            if (mAttempts > cfg.getTries()) {
                 log.info("All tried depleted.");
                 mPath = new ArrayDeque<Integer>();
                 return;

@@ -1,12 +1,14 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player.ui;
 
+import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.player.BuildingDescriptor;
+import org.dragonskulle.game.player.Player;
 import org.dragonskulle.game.player.PredefinedBuildings;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIText;
@@ -18,7 +20,8 @@ import org.dragonskulle.utils.TextUtils;
  *
  * @author Craig Wilbourne
  */
-public class UIDescription extends Component implements IOnAwake, IFixedUpdate {
+@Log
+public class UIBuildingDescription extends Component implements IOnAwake, IFixedUpdate {
 
     // The different fields that are displayed:
     private Reference<UITextRect> mNameRef;
@@ -27,8 +30,14 @@ public class UIDescription extends Component implements IOnAwake, IFixedUpdate {
     private Reference<UITextRect> mTokenRef;
     private Reference<UITextRect> mCostRef;
 
+    private int mPrevCost = -1;
+    private Reference<Player> mPlayerRef;
+    private BuildingDescriptor mDescriptor;
+
+    private static final int TEXT_LENGTH = 27;
+
     /** Whether the component has been initialised. */
-    private boolean initialised = false;
+    private boolean mInitialised = false;
 
     @Override
     public void onAwake() {
@@ -63,43 +72,94 @@ public class UIDescription extends Component implements IOnAwake, IFixedUpdate {
         return component.getReference(UITextRect.class);
     }
 
-    private void updateField(Reference<UITextRect> box, String text) {
-        if (!Reference.isValid(box)) return;
+    private boolean updateField(Reference<UITextRect> box, String text) {
+        if (!Reference.isValid(box)) return false;
 
         Reference<UIText> label = box.get().getLabelText();
-        if (!Reference.isValid(label)) return;
+        if (!Reference.isValid(label)) return false;
 
         label.get().setText(text);
 
-        System.out.println("ran: " + initialised);
+        log.fine("ran: " + mInitialised);
 
         // The initial label text has been set.
-        initialised = true;
+        mInitialised = true;
+
+        return true;
     }
 
     /**
      * Update the description to match the desired descriptor.
      *
-     * @param descriptor
+     * @param descriptor descriptor to use.
+     * @param player target player for price inflation calculations.
      */
-    void update(BuildingDescriptor descriptor) {
-        final int length = 27;
+    void update(BuildingDescriptor descriptor, Player player) {
+        updatePlayer(player);
+
+        if (descriptor == null) {
+            return;
+        }
 
         updateField(mNameRef, descriptor.getName().toUpperCase());
-        updateField(mAttackRef, TextUtils.constructField("Attack", descriptor.getAttack(), length));
         updateField(
-                mDefenceRef, TextUtils.constructField("Defence", descriptor.getDefence(), length));
+                mAttackRef,
+                TextUtils.constructField("Attack", descriptor.getAttack(), TEXT_LENGTH));
+        updateField(
+                mDefenceRef,
+                TextUtils.constructField("Defence", descriptor.getDefence(), TEXT_LENGTH));
         updateField(
                 mTokenRef,
                 TextUtils.constructField(
-                        "Generation", descriptor.getTokenGenerationLevel(), length));
-        updateField(mCostRef, TextUtils.constructField("COST", descriptor.getCost(), length));
+                        "Generation", descriptor.getTokenGenerationLevel(), TEXT_LENGTH));
+
+        mDescriptor = descriptor;
+
+        updateCost();
+    }
+
+    /**
+     * Update the player reference.
+     *
+     * @param player target player to set.
+     */
+    public void updatePlayer(Player player) {
+
+        boolean update = false;
+
+        if (!Reference.isValid(mPlayerRef) && player != null) {
+            update = true;
+        }
+
+        mPlayerRef = player != null ? player.getReference(Player.class) : null;
+
+        if (update) {
+            update(mDescriptor, player);
+        }
+    }
+
+    /** Update cost shown in the UI, based on base price and inflation. */
+    private void updateCost() {
+
+        int curCost =
+                mDescriptor.getTotalCost(Reference.isValid(mPlayerRef) ? mPlayerRef.get() : null);
+
+        if (curCost == mPrevCost) {
+            return;
+        }
+
+        if (updateField(mCostRef, TextUtils.constructField("COST", curCost, TEXT_LENGTH))) {
+            mPrevCost = curCost;
+        }
     }
 
     @Override
     public void fixedUpdate(float deltaTime) {
-        if (initialised) return;
-        update(PredefinedBuildings.BASE);
+        if (!mInitialised) {
+            update(PredefinedBuildings.BASE, null);
+        } else if (Reference.isValid(mPlayerRef)) {
+            updateCost();
+        }
     }
 
     @Override

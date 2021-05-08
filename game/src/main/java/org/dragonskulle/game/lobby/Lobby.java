@@ -14,6 +14,7 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.futures.ProducerFuture;
+import org.dragonskulle.game.GameConfig;
 import org.dragonskulle.game.GameState;
 import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.game.player.ai.AimerAi;
@@ -198,7 +199,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                 "Start Game",
                                 (__, ___) -> {
                                     mServerNetworkManager.get().getServerManager().start(false);
-                                    LobbyAPI.deleteHostAsync(mLobbyId, this::onDeleteHost);
+                                    GameAPI.deleteHostAsync(mLobbyId, this::onDeleteHost);
                                     mLobbyId = "";
                                     mLobbyIDUpdated.set(true);
                                     LobbyDiscovery.closeLocalLobby();
@@ -222,7 +223,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                         }
                                     }
                                     if (!mLobbyId.equals("")) {
-                                        LobbyAPI.deleteHostAsync(mLobbyId, this::onDeleteHost);
+                                        GameAPI.deleteHostAsync(mLobbyId, this::onDeleteHost);
                                         mLobbyId = "";
                                         mLobbyIDUpdated.set(true);
                                     }
@@ -331,15 +332,18 @@ public class Lobby extends Component implements IFrameUpdate {
         buildJoinUi();
         buildHostUi();
         buildServerList();
-        LobbyAPI.getAllHostsAsync(this::onGetAllHosts);
+        GameAPI.getAllHostsAsync(this::onGetAllHosts);
     }
 
     private void createServer(boolean isLocal, boolean removePort) {
+
+        GameConfig.refreshConfig().schedule();
+
         if (isLocal) {
             LobbyDiscovery.openLocalLobby();
         } else {
             String ip = UPnP.getExternalIPAddress();
-            LobbyAPI.addNewHostAsync(ip, PORT, this::onAddNewHost);
+            GameAPI.addNewHostAsync(ip, PORT, this::onAddNewHost);
         }
 
         if (createServer(
@@ -494,13 +498,13 @@ public class Lobby extends Component implements IFrameUpdate {
                                                         mJoiningUi.setEnabled(true);
                                                         mServerListUi.setEnabled(false);
                                                     } else {
-                                                        LobbyAPI.getAllHostsAsync(
+                                                        GameAPI.getAllHostsAsync(
                                                                 this::onGetAllHosts);
                                                     }
                                                 },
                                                 Lobby::onHostStartGame,
                                                 () -> {
-                                                    LobbyAPI.getAllHostsAsync(this::onGetAllHosts);
+                                                    GameAPI.getAllHostsAsync(this::onGetAllHosts);
                                                     mJoiningUi.setEnabled(false);
                                                     mServerListUi.setEnabled(true);
                                                 });
@@ -517,7 +521,7 @@ public class Lobby extends Component implements IFrameUpdate {
                         "Refresh",
                         (button, ___) -> {
                             button.getLabelText().get().setText("Refreshing...");
-                            LobbyAPI.getAllHostsAsync(this::onGetAllHosts);
+                            GameAPI.getAllHostsAsync(this::onGetAllHosts);
                         });
 
         uiElements[uiElements.length - 1] =
@@ -538,7 +542,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                 "Join with ID",
                                 (button, ___) -> {
                                     button.getLabelText().get().setText("Connecting...");
-                                    LobbyAPI.getHostById(
+                                    GameAPI.getHostById(
                                             inputBox.getInput(),
                                             (response, success) -> {
                                                 if (success) {
@@ -564,7 +568,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                                                                         .setEnabled(
                                                                                                 false);
                                                                             } else {
-                                                                                LobbyAPI
+                                                                                GameAPI
                                                                                         .getAllHostsAsync(
                                                                                                 this
                                                                                                         ::onGetAllHosts);
@@ -572,7 +576,7 @@ public class Lobby extends Component implements IFrameUpdate {
                                                                         },
                                                                         Lobby::onHostStartGame,
                                                                         () -> {
-                                                                            LobbyAPI
+                                                                            GameAPI
                                                                                     .getAllHostsAsync(
                                                                                             this
                                                                                                     ::onGetAllHosts);
@@ -762,28 +766,28 @@ public class Lobby extends Component implements IFrameUpdate {
     public static void onGameStarted(NetworkManager manager) {
         log.fine("Game Start");
         log.fine("Spawning 'Server' Owned objects");
-        Reference<NetworkObject> obj =
-                manager.getServerManager()
-                        .spawnNetworkObject(-10000, manager.findTemplateByName("map"));
 
-        Reference<GameState> gameState = obj.get().getGameObject().getComponent(GameState.class);
+        manager.getServerManager()
+                .spawnNetworkObject(-10000, manager.findTemplateByName("game_state"));
+
+        manager.getServerManager().spawnNetworkObject(-10000, manager.findTemplateByName("map"));
+
+        GameState gameState = Scene.getActiveScene().getSingleton(GameState.class);
 
         // 6 players for now
         int maxPlayers = 6;
 
-        gameState.get().getNumPlayers().set(maxPlayers);
+        gameState.getNumPlayers().set(maxPlayers);
 
-        gameState
-                .get()
-                .registerGameEndListener(
-                        new Reference<>(
-                                (__) -> {
-                                    UIPauseMenu pauseMenu =
-                                            manager.getGameScene().getSingleton(UIPauseMenu.class);
-                                    if (pauseMenu != null) {
-                                        pauseMenu.endGame();
-                                    }
-                                }));
+        gameState.registerGameEndListener(
+                new Reference<>(
+                        (__) -> {
+                            UIPauseMenu pauseMenu =
+                                    manager.getGameScene().getSingleton(UIPauseMenu.class);
+                            if (pauseMenu != null) {
+                                pauseMenu.endGame();
+                            }
+                        }));
 
         // Get the number of clients and thus the number of AI needed
         int clientNumber = manager.getServerManager().getClients().size();
@@ -812,7 +816,7 @@ public class Lobby extends Component implements IFrameUpdate {
     @Override
     protected void onDestroy() {
         if (!mLobbyId.equals("")) {
-            LobbyAPI.deleteHostAsync(mLobbyId, null);
+            GameAPI.deleteHostAsync(mLobbyId, null);
         }
     }
 }

@@ -2,7 +2,7 @@
 package org.dragonskulle.network.components.requests;
 
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
+import java.io.DataInput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import lombok.Getter;
@@ -196,7 +196,7 @@ public class ServerEvent<T extends INetSerializable> {
      * @throws IOException thrown when an error occurs when reading from the stream {@code
      *     inStream}.
      */
-    public void handle(DataInputStream inStream) throws IOException {
+    public void handle(DataInput inStream) throws IOException {
         mTmpData.deserialize(inStream);
         mHandler.invokeHandler(mTmpData);
     }
