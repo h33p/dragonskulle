@@ -16,6 +16,7 @@ import org.dragonskulle.core.Resource;
 import org.dragonskulle.core.ResourceManager;
 import org.dragonskulle.settings.Settings;
 import org.dragonskulle.ui.CursorType;
+import org.dragonskulle.ui.UIAppearance;
 import org.dragonskulle.utils.MathUtils;
 import org.joml.Vector2f;
 import org.joml.Vector2fc;
@@ -96,7 +97,7 @@ public class Cursor {
 
         GLFW.glfwSetCursorPosCallback(window, listener);
 
-        setCustomCursor(window, CursorType.DEFAULT);
+        setCustomCursor(window, UIAppearance.getDefaultCursor());
     }
 
     /**
@@ -133,6 +134,7 @@ public class Cursor {
      *
      * @param window the window to attach to
      * @param scale the scale of the cursor
+     * @param cursorType the type of cursor to show
      * @throws IOException thrown if the cursor file doesn't exist
      */
     public static void setCustomCursor(long window, float scale, CursorType cursorType)

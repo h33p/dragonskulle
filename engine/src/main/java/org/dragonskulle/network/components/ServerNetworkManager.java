@@ -3,6 +3,7 @@ package org.dragonskulle.network.components;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -11,6 +12,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -56,13 +58,26 @@ public class ServerNetworkManager {
          */
         @Override
         public int clientConnected(ServerClient client) {
+            if (mGameState != ServerGameState.LOBBY) {
+                return -1;
+            }
+
             return mServer.addConnectedClient(client);
+        }
+
+        @Override
+        public void clientFullyConnected(ServerClient client) {
+            if (mClientConnectedEvent != null) {
+                mClientConnectedEvent.handle(mManager.getGameScene(), mManager, client);
+            }
         }
 
         @Override
         public void clientLoaded(ServerClient client) {
             client.setInGame(true);
-            mClientLoadedEvent.handle(mManager.getGameScene(), mManager, client);
+            if (mClientLoadedEvent != null) {
+                mClientLoadedEvent.handle(mManager.getGameScene(), mManager, client);
+            }
         }
 
         /**
@@ -77,7 +92,7 @@ public class ServerNetworkManager {
 
         @Override
         public void clientComponentRequest(
-                ServerClient client, int objectID, int requestID, DataInputStream stream)
+                ServerClient client, int objectID, int requestID, DataInput stream)
                 throws IOException {
             ServerObjectEntry entry = mNetworkObjects.get(objectID);
 
@@ -176,6 +191,8 @@ public class ServerNetworkManager {
     /** Back reference to {@link NetworkManager}. */
     @Getter private final NetworkManager mManager;
     /** Callback for connected clients. */
+    private final NetworkManager.IConnectedClientEvent mClientConnectedEvent;
+    /** Callback for connected clients. */
     private final NetworkManager.IClientLoadedEvent mClientLoadedEvent;
     /** Callback for game start. */
     private final NetworkManager.IGameStartEvent mGameStartEventHandler;
@@ -184,13 +201,14 @@ public class ServerNetworkManager {
     /** The Counter used to assign objects a unique id. */
     private final AtomicInteger mNetworkObjectCounter = new AtomicInteger(0);
     /** Describes the current state of the game. */
-    private ServerGameState mGameState = ServerGameState.LOBBY;
-
+    @Getter private ServerGameState mGameState = ServerGameState.LOBBY;
+    /** Whether the server scene should be loaded as a presentation scene. */
+    private boolean mShouldPresent;
     /**
      * The Network objects - this can be moved to game instance but no point until game has been
      * merged in.
      */
-    @Getter private final HashMap<Integer, ServerObjectEntry> mNetworkObjects = new HashMap<>();
+    private final HashMap<Integer, ServerObjectEntry> mNetworkObjects = new HashMap<>();
 
     /** Stores per-owner singletons. Can be looked up with getIdSingletons */
     private final HashMap<Integer, SingletonStore> mIdSingletons = new HashMap<>();
@@ -206,37 +224,43 @@ public class ServerNetworkManager {
     public ServerNetworkManager(
             NetworkManager manager,
             int port,
+            NetworkManager.IConnectedClientEvent clientConnectedEvent,
             NetworkManager.IClientLoadedEvent clientLoadedEvent,
             NetworkManager.IGameStartEvent gameStartEventHandler,
             NetworkManager.IGameEndEvent gameEndEventHandler)
             throws IOException {
         mManager = manager;
         mServer = new Server(port, mListener);
+        mClientConnectedEvent = clientConnectedEvent;
         mClientLoadedEvent = clientLoadedEvent;
         mGameStartEventHandler = gameStartEventHandler;
         mGameEndEventHandler = gameEndEventHandler;
     }
 
-    public void start() {
+    public void start(boolean shouldPresent) {
         if (mGameState == ServerGameState.LOBBY) {
             mGameState = ServerGameState.STARTING;
+            mShouldPresent = shouldPresent;
         }
     }
 
     /** Start the game, load game scene. */
     void startGame() {
+
         Engine engine = Engine.getInstance();
 
         mManager.createGameScene(true);
 
-        if (engine.getPresentationScene() == Scene.getActiveScene()) {
+        if (engine.getPresentationScene() == Scene.getActiveScene() && mShouldPresent) {
             engine.loadPresentationScene(mManager.getGameScene());
         } else {
             engine.activateScene(mManager.getGameScene());
         }
 
-        if (mGameStartEventHandler != null) {
-            mGameStartEventHandler.handle(mManager);
+        try (SceneOverride __ = new SceneOverride(mManager.getGameScene())) {
+            if (mGameStartEventHandler != null) {
+                mGameStartEventHandler.handle(mManager);
+            }
         }
 
         for (ServerClient c : mServer.getClients()) {
@@ -311,7 +335,7 @@ public class ServerNetworkManager {
         if (recipients == EventRecipients.OWNER) {
             if (oid < 0) {
                 ByteArrayInputStream bis = new ByteArrayInputStream(msg);
-                DataInputStream dis = new DataInputStream(bis);
+                DataInput dis = new DataInputStream(bis);
                 dis.readByte(); // messageId
                 dis.readInt(); // networkObjectId
                 dis.readInt(); // eventId
@@ -328,7 +352,7 @@ public class ServerNetworkManager {
             }
 
             ByteArrayInputStream bis = new ByteArrayInputStream(msg);
-            DataInputStream dis = new DataInputStream(bis);
+            DataInput dis = new DataInputStream(bis);
             dis.readByte(); // messageId
             dis.readInt(); // networkObjectId
             dis.readInt(); // eventId
@@ -385,6 +409,15 @@ public class ServerNetworkManager {
             mIdSingletons.put(id, store);
         }
         return store;
+    }
+
+    /**
+     * Get a stream of network objects on the server.
+     *
+     * @return a stream containing unfiltered references to network objects.
+     */
+    public Stream<Reference<NetworkObject>> getNetworkObjects() {
+        return mNetworkObjects.values().stream().map(ServerObjectEntry::getNetworkObject);
     }
 
     /** Network update, called by {@link NetworkManager}. */

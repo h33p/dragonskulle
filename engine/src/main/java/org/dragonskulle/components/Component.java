@@ -1,7 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.components;
 
-import java.io.Serializable;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -18,7 +17,7 @@ import org.dragonskulle.core.Reference;
  *     user-defined variables on a component
  */
 @Accessors(prefix = "m")
-public abstract class Component implements Serializable {
+public abstract class Component {
 
     @Getter private Reference<Component> mReference = new Reference<>(this);
 

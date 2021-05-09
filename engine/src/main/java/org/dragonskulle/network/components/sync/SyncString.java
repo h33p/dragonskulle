@@ -1,8 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.components.sync;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Objects;
 
@@ -52,7 +52,7 @@ public class SyncString extends BaseSyncVar {
      * @throws IOException the io exception
      */
     @Override
-    public void serialize(DataOutputStream out, int clientId) throws IOException {
+    public void serialize(DataOutput out, int clientId) throws IOException {
         out.writeUTF(this.mData);
         mDirty = false;
     }
@@ -64,7 +64,7 @@ public class SyncString extends BaseSyncVar {
      * @throws IOException the io exception
      */
     @Override
-    public void deserialize(DataInputStream in) throws IOException {
+    public void deserialize(DataInput in) throws IOException {
         this.mData = in.readUTF();
     }
 

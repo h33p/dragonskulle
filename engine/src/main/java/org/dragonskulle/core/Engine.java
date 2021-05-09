@@ -16,6 +16,7 @@ import org.dragonskulle.components.ILateNetworkUpdate;
 import org.dragonskulle.components.INetworkUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
+import org.dragonskulle.core.futures.Future;
 import org.dragonskulle.input.Bindings;
 import org.dragonskulle.network.UPnP;
 import org.dragonskulle.renderer.components.Camera;
@@ -103,15 +104,30 @@ public class Engine {
     }
 
     /**
-     * Starts only fixed updates of the engine, allows for custom quit condition.
+     * Runs the engine with a list of futures, until they all finish.
      *
-     * <p>Note that this method will not destroy game object references!
+     * <p>Each future will have a scene assigned to them, and be executed at the same time. Note,
+     * that while inside the future context, {@code Scene.getActiveScene()} will always return
+     * {@code null}, so you can use the input argument as active scene.
      *
-     * @param exitCondition customizable exit condition
+     * @param futures a list of futures to execute.
      */
-    public synchronized void startFixedDebug(IEngineExitCondition exitCondition) {
+    public synchronized void startWithFutures(Future... futures) {
+        int cnt = 0;
+        int[] loadedScenes = {0};
+
+        for (Future future : futures) {
+            Scene scene = new Scene("future" + cnt);
+            future.then(this::unloadScene).then((__) -> loadedScenes[0]--).schedule(scene);
+            cnt++;
+            loadedScenes[0]++;
+            activateScene(scene);
+        }
+
         mIsRunning = true;
-        mainLoop(exitCondition, false);
+        mainLoop(() -> loadedScenes[0] != 0, false);
+
+        cleanup();
     }
 
     /**
@@ -372,10 +388,8 @@ public class Engine {
         mFrameEvents = mEventsToConsume;
         consumeEvents(toConsume);
 
-        for (Component component : mPresentationScene.getEnabledComponents()) {
-            if (component instanceof IFrameUpdate) {
-                ((IFrameUpdate) component).frameUpdate(deltaTime);
-            }
+        for (IFrameUpdate component : mPresentationScene.getComponentsByIface(IFrameUpdate.class)) {
+            component.frameUpdate(deltaTime);
         }
     }
 
@@ -387,10 +401,8 @@ public class Engine {
 
         for (Scene s : mActiveScenes) {
             Scene.setActiveScene(s);
-            for (Component component : s.getEnabledComponents()) {
-                if (component instanceof IFixedUpdate) {
-                    ((IFixedUpdate) component).fixedUpdate(UPDATE_TIME);
-                }
+            for (IFixedUpdate component : s.getComponentsByIface(IFixedUpdate.class)) {
+                component.fixedUpdate(UPDATE_TIME);
             }
         }
         Scene.setActiveScene(null);
@@ -400,10 +412,8 @@ public class Engine {
     private void networkUpdate() {
         for (Scene s : mActiveScenes) {
             Scene.setActiveScene(s);
-            for (Component component : s.getEnabledComponents()) {
-                if (component instanceof INetworkUpdate) {
-                    ((INetworkUpdate) component).networkUpdate();
-                }
+            for (INetworkUpdate component : s.getComponentsByIface(INetworkUpdate.class)) {
+                component.networkUpdate();
             }
         }
         Scene.setActiveScene(null);
@@ -413,10 +423,8 @@ public class Engine {
     private void lateNetworkUpdate() {
         for (Scene s : mActiveScenes) {
             Scene.setActiveScene(s);
-            for (Component component : s.getEnabledComponents()) {
-                if (component instanceof ILateNetworkUpdate) {
-                    ((ILateNetworkUpdate) component).lateNetworkUpdate();
-                }
+            for (ILateNetworkUpdate component : s.getComponentsByIface(ILateNetworkUpdate.class)) {
+                component.lateNetworkUpdate();
             }
         }
         Scene.setActiveScene(null);
@@ -428,10 +436,9 @@ public class Engine {
      * @param deltaTime Time change since last frame
      */
     private void lateFrameUpdate(float deltaTime) {
-        for (Component component : mPresentationScene.getEnabledComponents()) {
-            if (component instanceof ILateFrameUpdate) {
-                ((ILateFrameUpdate) component).lateFrameUpdate(deltaTime);
-            }
+        for (ILateFrameUpdate component :
+                mPresentationScene.getComponentsByIface(ILateFrameUpdate.class)) {
+            component.lateFrameUpdate(deltaTime);
         }
     }
 
@@ -463,12 +470,12 @@ public class Engine {
         mTmpRenderables.clear();
         mTmpLights.clear();
 
-        for (Component component : mPresentationScene.getEnabledComponents()) {
-            if (component instanceof Renderable) {
-                mTmpRenderables.add((Renderable) component);
-            } else if (component instanceof Light) {
-                mTmpLights.add((Light) component);
-            }
+        for (Renderable component : mPresentationScene.getComponentsByIface(Renderable.class)) {
+            mTmpRenderables.add(component);
+        }
+
+        for (Light component : mPresentationScene.getComponentsByIface(Light.class)) {
+            mTmpLights.add(component);
         }
 
         Camera mainCamera = mPresentationScene.getSingleton(Camera.class);
@@ -561,7 +568,11 @@ public class Engine {
 
         UPnP.deleteAllMappings();
         destroyAllObjects();
-        mGLFWState.free();
+
+        if (mGLFWState != null) {
+            mGLFWState.free();
+            mGLFWState = null;
+        }
     }
 
     /**

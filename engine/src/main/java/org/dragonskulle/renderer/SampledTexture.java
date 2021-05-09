@@ -1,11 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.renderer;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.ObjectStreamException;
-import java.io.Serializable;
 import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
@@ -21,7 +16,7 @@ import org.lwjgl.system.NativeResource;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class SampledTexture implements NativeResource, Serializable {
+public class SampledTexture implements NativeResource {
     /** The underlying texture image */
     @Getter private Resource<Texture> mTexture;
     /** The settings for texture sampling */
@@ -107,7 +102,10 @@ public class SampledTexture implements NativeResource, Serializable {
 
     @Override
     public void free() {
-        mTexture.free();
+        if (mTexture != null) {
+            mTexture.free();
+            mTexture = null;
+        }
     }
 
     @Override
@@ -126,19 +124,4 @@ public class SampledTexture implements NativeResource, Serializable {
         SampledTexture other = (SampledTexture) o;
         return mMapping.equals(other.mMapping) && mTexture.equals(other.mTexture);
     }
-
-    private void readObject(ObjectInputStream inputStream)
-            throws ClassNotFoundException, IOException {
-        mTexture = Texture.getResource(inputStream.readUTF());
-        mMapping = (TextureMapping) inputStream.readObject();
-        mLinear = inputStream.readBoolean();
-    }
-
-    private void writeObject(ObjectOutputStream outputStream) throws IOException {
-        outputStream.writeUTF(mTexture.get().getName());
-        outputStream.writeObject(mMapping);
-        outputStream.writeBoolean(mLinear);
-    }
-
-    private void readObjectNoData() throws ObjectStreamException {}
 }

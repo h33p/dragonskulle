@@ -1,7 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.renderer;
 
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -21,7 +20,7 @@ import org.joml.Vector4f;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class Mesh implements Serializable {
+public class Mesh {
     /** Vertices of the mesh. */
     @Getter private Vertexc[] mVertices;
 

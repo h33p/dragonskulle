@@ -1,8 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.map;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
 import lombok.AccessLevel;
@@ -62,7 +62,7 @@ public class HexagonTile implements INetSerializable {
             mValue = value;
         }
 
-        static TileType getTile(byte value) {
+        public static TileType getTile(byte value) {
             for (TileType t : VALUES) {
                 if (t.mValue == value) {
                     return t;
@@ -355,7 +355,7 @@ public class HexagonTile implements INetSerializable {
     }
 
     @Override
-    public void serialize(DataOutputStream stream, int clientId) throws IOException {
+    public void serialize(DataOutput stream, int clientId) throws IOException {
         stream.writeFloat(mHeight);
         stream.writeByte(mTileType.getValue());
 
@@ -382,7 +382,7 @@ public class HexagonTile implements INetSerializable {
     }
 
     @Override
-    public void deserialize(DataInputStream stream) throws IOException {
+    public void deserialize(DataInput stream) throws IOException {
         float height = stream.readFloat();
         TileType newType = TileType.getTile(stream.readByte());
 
@@ -542,12 +542,7 @@ public class HexagonTile implements INetSerializable {
                 break;
         }
 
-        Reference<HighlightControls> controls = mGameObject.getComponent(HighlightControls.class);
-        if (controls == null) {
-            mHighlightControls = new Reference<>(null);
-        } else {
-            mHighlightControls = controls;
-        }
+        mHighlightControls = mGameObject.getComponent(HighlightControls.class);
 
         mHandler.updateGameObject(this);
     }

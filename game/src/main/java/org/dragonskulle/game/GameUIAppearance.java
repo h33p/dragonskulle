@@ -103,7 +103,6 @@ public class GameUIAppearance {
      */
     public static void initialise() {
         UIAppearance appearance = UIManager.getInstance().getAppearance();
-        appearance.getTextFont().free();
         appearance.setTextFont(Font.getFontResource("fatpixel.ttf"));
         appearance.setButtonTexture(new SampledTexture("ui/wide_button_new.png"));
         appearance.setTextRectTexture(new SampledTexture("ui/info_box.png"));

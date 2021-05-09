@@ -1,7 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.components;
 
-import java.io.DataInputStream;
+import java.io.DataInput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -161,7 +161,7 @@ public class NetworkObject extends Component {
 
         for (Reference<NetworkableComponent> comp : mNetworkableComponents) {
             NetworkableComponent nc = comp.get();
-            nc.initialize(this, mClientRequests, mServerEvents);
+            nc.initialise(this, mClientRequests, mServerEvents);
         }
 
         int id = 0;
@@ -239,7 +239,7 @@ public class NetworkObject extends Component {
      * @return true if executed successfully.
      * @throws IOException the io exception
      */
-    public boolean handleClientRequest(int requestID, DataInputStream stream) throws IOException {
+    public boolean handleClientRequest(int requestID, DataInput stream) throws IOException {
         if (requestID < 0 || requestID >= mClientRequests.size()) {
             return false;
         }
@@ -264,7 +264,7 @@ public class NetworkObject extends Component {
      * @return true if executed successfully.
      * @throws IOException if parsing fails
      */
-    public boolean handleServerEvent(int eventID, DataInputStream stream) throws IOException {
+    public boolean handleServerEvent(int eventID, DataInput stream) throws IOException {
         if (eventID < 0 || eventID >= mServerEvents.size()) {
             return false;
         }
@@ -274,18 +274,13 @@ public class NetworkObject extends Component {
         return true;
     }
 
-    public static final int ID_OFFSET = 0;
-    public static final int OWNER_ID_OFFSET = ID_OFFSET + 4;
-    public static final int MASK_LENGTH_OFFSET = OWNER_ID_OFFSET + 4;
-    public static final int MASK_OFFSET = MASK_LENGTH_OFFSET + 1;
-
     /**
      * Updates itself from stream authored by server.
      *
      * @param stream the stream containing the payload
      * @throws IOException thrown if failed to read client streams
      */
-    public void updateFromBytes(DataInputStream stream) throws IOException {
+    public void updateFromBytes(DataInput stream) throws IOException {
         int maskLength = stream.readByte();
 
         byte[] mask = IOUtils.readNBytes(stream, maskLength);

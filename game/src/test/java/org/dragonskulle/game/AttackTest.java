@@ -3,9 +3,12 @@ package org.dragonskulle.game;
 
 import static org.junit.Assert.assertEquals;
 
+import org.dragonskulle.core.Scene;
+import org.dragonskulle.core.Scene.SceneOverride;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.building.stat.SyncStat;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -16,15 +19,26 @@ import org.junit.Test;
  */
 public class AttackTest {
 
+    private SceneOverride mOverride;
     private Building mAttacker;
     private Building mDefender;
 
     @Before
     public void setup() {
+        Scene scene = new Scene("");
+
+        scene.registerSingleton(new GameState());
+
+        mOverride = new SceneOverride(scene);
         mAttacker = new Building();
         mDefender = new Building();
         mAttacker.onConnectedSyncvars();
         mDefender.onConnectedSyncvars();
+    }
+
+    @After
+    public void cleanup() {
+        mOverride.close();
     }
 
     /**
@@ -38,10 +52,15 @@ public class AttackTest {
         float wins = 0f;
         int iterations = 10000;
 
-        for (int i = 0; i < iterations; i++) {
-            if (attacker.attack(defender)) {
-                wins++;
+        try {
+            for (int i = 0; i < iterations; i++) {
+                if (attacker.attack(defender)) {
+                    wins++;
+                }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
         }
 
         return wins / iterations;
@@ -51,8 +70,10 @@ public class AttackTest {
     @Test
     public void basicAttack() {
         float percentageOfWins = runAttack(mAttacker, mDefender);
+        float calculatedPercentage = mAttacker.calculateAttackOdds(mDefender);
 
         assertEquals(0.5f, percentageOfWins, 0.1f);
+        assertEquals(0.5f, calculatedPercentage, 0.1f);
     }
 
     /**

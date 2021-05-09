@@ -55,6 +55,18 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
     }
 
     /** Simple server client connection handler interface. */
+    public interface IConnectedClientEvent {
+        /**
+         * Handle client connection on the server.
+         *
+         * @param gameScene scene in which the game will be run
+         * @param manager network manager which the event is called from
+         * @param client newly connected network client
+         */
+        void handle(Scene gameScene, NetworkManager manager, ServerClient client);
+    }
+
+    /** Simple server client connection handler interface. */
     public interface IClientLoadedEvent {
         /**
          * Handle client connection on the server.
@@ -98,7 +110,8 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
     }
 
     /** Registered spawnable templates. */
-    @Getter() protected final TemplateManager mSpawnableTemplates;
+    @Getter(AccessLevel.PACKAGE)
+    protected final TemplateManager mSpawnableTemplates;
     /** Target game scene. */
     @Getter private Scene mGameScene;
 
@@ -113,7 +126,7 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
      * Constructor for network manager.
      *
      * @param templates spawnable templates for objects in the game. Each object has a unique ID,
-     *     and it can be looked up by name using {@link findTemplateByName} method
+     *     and it can be looked up by name using findTemplateByName method
      * @param builder builder which will be used to build the game scene.
      */
     public NetworkManager(TemplateManager templates, ISceneBuilder builder) {
@@ -182,22 +195,32 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
      *
      * @param port network port to bind
      * @param connectionHandler callback that gets called on every client connection
+     * @param loadHandler callback that gets called on every client connection when it loads into
+     *     game scene.
      * @param startEventHandler callback that gets called when the game starts
      */
-    public void createServer(
+    public boolean createServer(
             int port,
-            IClientLoadedEvent connectionHandler,
+            IConnectedClientEvent connectionHandler,
+            IClientLoadedEvent loadHandler,
             IGameStartEvent startEventHandler,
             IGameEndEvent endEventHandler) {
         if (mClientManager == null && mServerManager == null) {
             try {
                 mServerManager =
                         new ServerNetworkManager(
-                                this, port, connectionHandler, startEventHandler, endEventHandler);
+                                this,
+                                port,
+                                connectionHandler,
+                                loadHandler,
+                                startEventHandler,
+                                endEventHandler);
+                return true;
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+        return false;
     }
 
     /**
@@ -252,9 +275,7 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
         Stream<Reference<NetworkObject>> obj = null;
 
         if (mServerManager != null) {
-            obj =
-                    mServerManager.getNetworkObjects().values().stream()
-                            .map(e -> e.getNetworkObject());
+            obj = mServerManager.getNetworkObjects();
         } else if (mClientManager != null) {
             obj = mClientManager.getNetworkObjects();
         }

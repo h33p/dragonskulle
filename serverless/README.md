@@ -20,3 +20,10 @@ GET /api/hosts/{id} - retrieves a specific entry
 GET /api/hosts/code/{code} - gets host by code
 
 DELETE /api/hosts/code/{code} - deletes host by code
+
+GET /api/config - gets the current config values
+
+POST /api/config - sets the values
+You must also provide `token` in the headers with the API Key.
+
+Entry must be in correct format. Check `default_config.js` for example.

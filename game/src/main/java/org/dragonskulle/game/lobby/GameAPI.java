@@ -16,19 +16,20 @@ import lombok.extern.java.Log;
  * @author Harry Stoltz
  */
 @Log
-public class LobbyAPI {
+public class GameAPI {
 
-    private static final String API_URL = "https://dragonskulle.vercel.app/api/hosts";
-    private static final String USER_AGENT =
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0";
-    private static URL url;
+    private static final String API_URL = "http://blaz.is:3000/api/";
+    private static final String USER_AGENT = "HexWars/0.1";
+    private static URL sHostsUrl;
+    private static URL sConfigUrl;
 
     static {
         try {
-            url = new URL(API_URL);
+            sHostsUrl = new URL(API_URL + "hosts");
+            sConfigUrl = new URL(API_URL + "config");
         } catch (MalformedURLException e) {
             log.warning("Invalid URL for API. Won't be able to join or host public lobbies");
-            url = null;
+            sHostsUrl = null;
         }
     }
 
@@ -128,10 +129,13 @@ public class LobbyAPI {
                 if (mCallback != null) {
                     boolean success = con.getResponseCode() == HttpURLConnection.HTTP_OK;
                     mCallback.call(builder.toString(), success);
+                    return;
                 }
             } catch (IOException e) {
                 log.warning(String.format("%s request to %s failed", mMethod, mUrl.toString()));
+                e.printStackTrace();
             }
+            mCallback.call("", false);
         }
     }
 
@@ -141,10 +145,25 @@ public class LobbyAPI {
      * @param callback Method to call after the request is completed.
      */
     public static void getAllHostsAsync(IAsyncCallback callback) {
-        if (url == null) {
+        if (sHostsUrl == null) {
+            callback.call(null, false);
             return;
         }
-        AsyncRequest request = new AsyncRequest(url, "GET", callback);
+        AsyncRequest request = new AsyncRequest(sHostsUrl, "GET", callback);
+        request.start();
+    }
+
+    /**
+     * Attempt to get current game configuration values via the API.
+     *
+     * @param callback Method to call after the request is completed.
+     */
+    public static void getCurrentConfigAsync(IAsyncCallback callback) {
+        if (sConfigUrl == null) {
+            callback.call(null, false);
+            return;
+        }
+        AsyncRequest request = new AsyncRequest(sConfigUrl, "GET", callback);
         request.start();
     }
 
@@ -156,13 +175,14 @@ public class LobbyAPI {
      * @param callback Method to call after the request is completed.
      */
     public static void addNewHostAsync(String ip, int port, IAsyncCallback callback) {
-        if (url == null) {
+        if (sHostsUrl == null) {
+            callback.call(null, false);
             return;
         }
         String contentType = "application/json";
         String content = String.format("{\"address\":\"%s\",\"port\":%d}", ip, port);
 
-        AsyncRequest request = new AsyncRequest(url, "POST", callback, contentType, content);
+        AsyncRequest request = new AsyncRequest(sHostsUrl, "POST", callback, contentType, content);
         request.start();
     }
 
@@ -173,7 +193,8 @@ public class LobbyAPI {
      * @param callback Method to call after the request is completed.
      */
     public static void deleteHostAsync(String id, IAsyncCallback callback) {
-        if (url == null) {
+        if (sHostsUrl == null) {
+            callback.call(null, false);
             return;
         }
 
@@ -192,7 +213,8 @@ public class LobbyAPI {
      * @param callback Method to call after the request is completed
      */
     public static void getHostById(String id, IAsyncCallback callback) {
-        if (url == null) {
+        if (sHostsUrl == null) {
+            callback.call(null, false);
             return;
         }
 

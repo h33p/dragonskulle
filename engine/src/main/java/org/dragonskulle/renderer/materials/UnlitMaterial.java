@@ -3,7 +3,6 @@ package org.dragonskulle.renderer.materials;
 
 import static org.lwjgl.vulkan.VK10.VK_FORMAT_R32G32B32A32_SFLOAT;
 
-import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.List;
 import lombok.Getter;
@@ -31,8 +30,7 @@ import org.joml.Vector4f;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class UnlitMaterial
-        implements IMaterial, IColouredMaterial, IRefCountedMaterial, Serializable {
+public class UnlitMaterial implements IMaterial, IColouredMaterial, IRefCountedMaterial {
     public static class UnlitShaderSet extends ShaderSet {
         /** Creates a unlit shader set */
         public UnlitShaderSet() {

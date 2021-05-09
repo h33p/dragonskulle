@@ -30,8 +30,8 @@ import org.dragonskulle.ui.UIText;
  *
  * @author Oscar L
  */
-@Log
 @Accessors(prefix = "m")
+@Log
 public class UIBuildingOptions extends Component implements IOnStart, IFixedUpdate {
     private List<BuildingDescriptor> mBuildingsCanPlace;
     @Setter private BuildingDescriptor mSelectedBuildingDescriptor = PredefinedBuildings.BASE;
@@ -43,7 +43,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
 
     private Reference<UIButton> mBuyButton;
 
-    private Reference<UIDescription> mDescription;
+    private Reference<UIBuildingDescription> mDescription;
 
     /**
      * Constructor.
@@ -73,8 +73,8 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
         transformUI.setParentAnchor(0.16f, 1.09f, 0.86f, 1.09f + 0.25f);
 
         // Add the description box.
-        UIDescription description = new UIDescription();
-        mDescription = description.getReference(UIDescription.class);
+        UIBuildingDescription description = new UIBuildingDescription();
+        mDescription = description.getReference(UIBuildingDescription.class);
         getGameObject().addComponent(description);
 
         // Add the building selection buttons.
@@ -161,14 +161,22 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
      */
     private void updateDescription(BuildingDescriptor descriptor) {
         if (!Reference.isValid(mDescription)) return;
-        UIDescription description = mDescription.get();
-        description.update(descriptor);
+        UIBuildingDescription description = mDescription.get();
+        description.update(descriptor, getPlayer());
+    }
+
+    /** Ensure player reference is valid in build description. */
+    private void ensurePlayerValidForDescription() {
+        if (!Reference.isValid(mDescription)) return;
+        UIBuildingDescription description = mDescription.get();
+        description.updatePlayer(getPlayer());
     }
 
     @Override
     public void fixedUpdate(float deltaTime) {
         updateTokens();
         updateBuyButton();
+        ensurePlayerValidForDescription();
     }
 
     /** Enable and disable the buy button. */
@@ -180,7 +188,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
         if (mSelectedBuildingDescriptor == null) return;
 
         UIButton button = mBuyButton.get();
-        int cost = mSelectedBuildingDescriptor.getCost();
+        int cost = mSelectedBuildingDescriptor.getTotalCost(player);
 
         if (!Reference.isValid(button.getLabelText())) return;
         UIText label = button.getLabelText().get();
@@ -213,7 +221,7 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
             if (player == null) return;
 
             // Ensure the player can afford to build.
-            int cost = mSelectedBuildingDescriptor.getCost();
+            int cost = mSelectedBuildingDescriptor.getTotalCost(player);
             if (cost > player.getTokens().get()) return;
 
             player.getClientBuildRequest()
@@ -235,12 +243,13 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
      */
     private Player getPlayer() {
         if (!Reference.isValid(mPlayerReference)) {
-            // Attempt to get a valid reference.
-            mPlayerReference =
-                    getParent().getParent().mGetPlayer.getPlayer().getReference(Player.class);
 
-            // If the reference is still invalid, return null.
-            if (!Reference.isValid(mPlayerReference)) return null;
+            Player player = getParent().getParent().mGetPlayer.getPlayer();
+
+            if (player == null) return null;
+
+            // Attempt to get a valid reference.
+            mPlayerReference = player.getReference(Player.class);
         }
 
         // Return the Player.

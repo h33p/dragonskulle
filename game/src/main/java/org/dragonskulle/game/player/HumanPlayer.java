@@ -320,7 +320,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                     if (Reference.isValid(mPlayer)) {
                                         int id = mPlayer.get().getNetworkObject().getOwnerId();
                                         boolean didWin = id == winnerId;
-                                        player.playLocalSound(didWin ? GameUIAppearance.AudioEvent.ON_WIN_SOUND : GameUIAppearance.AudioEvent.ON_LOSE_SOUND);
                                         pauseMenu.get().endGame(didWin);
                                     }
                                 });

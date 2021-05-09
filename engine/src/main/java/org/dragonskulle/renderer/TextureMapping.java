@@ -8,7 +8,6 @@ import static org.lwjgl.vulkan.VK10.VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 import static org.lwjgl.vulkan.VK10.VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
 import static org.lwjgl.vulkan.VK10.VK_SAMPLER_ADDRESS_MODE_REPEAT;
 
-import java.io.Serializable;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
@@ -17,7 +16,7 @@ import lombok.experimental.Accessors;
  *
  * @author Aurimas Blažulionis
  */
-public class TextureMapping implements Serializable {
+public class TextureMapping {
 
     /** Controls whether the texture uses linear or nearest filtering. */
     public TextureFiltering mFiltering;

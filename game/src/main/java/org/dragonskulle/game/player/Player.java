@@ -22,6 +22,9 @@ import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.core.futures.AwaitFuture;
+import org.dragonskulle.game.GameConfig;
+import org.dragonskulle.game.GameConfig.PlayerConfig;
 import org.dragonskulle.game.GameState;
 import org.dragonskulle.game.GameUIAppearance;
 import org.dragonskulle.game.building.Building;
@@ -115,22 +118,15 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private SyncBool mOwnsCapital = new SyncBool(true);
 
     /**
-     * This Is how often a player can attack.
+     * Player configuration values used for timeout configuration.
      */
-    private static final float ATTACK_COOLDOWN = 2f;
+    private PlayerConfig mConfig;
+
     /**
      * When the last time a player attacked.
      */
-    private final SyncFloat mLastAttack = new SyncFloat(-ATTACK_COOLDOWN);
+    private final SyncFloat mLastAttack = new SyncFloat(-10f);
 
-    /**
-     * The base rate of tokens which will always be added.
-     */
-    private static final int TOKEN_RATE = 2;
-    /**
-     * How frequently the tokens should be added.
-     */
-    private static final float TOKEN_TIME = 1f;
     /**
      * The total amount of time passed since the last time tokens where added.
      */
@@ -170,7 +166,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private transient ServerEvent<GameState.InvokeAudioEvent> mOwnerAudioEvent;
     @Getter
     private transient ServerEvent<GameState.InvokeAudioEvent> mGlobalAudioEvent;
-    private Reference<AudioSource> mJukebox;
 
     /**
      * The base constructor for player.
@@ -189,11 +184,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * We need to initialise client requests here, since java does not like to serialise lambdas.
      */
     @Override
-    protected void onNetworkInitialize() {
-        mClientBuildRequest = new ClientRequest<>(new BuildData(), this::buildEvent);
-        mClientAttackRequest = new ClientRequest<>(new AttackData(), this::attackEvent);
-        mClientStatRequest = new ClientRequest<>(new StatData(), this::statEvent);
-        mClientSellRequest = new ClientRequest<>(new SellData(), this::sellEvent);
+    protected void onNetworkInitialise() {
+        mClientBuildRequest = new ClientRequest<>(new BuildData(), this::buildRequest);
+        mClientAttackRequest = new ClientRequest<>(new AttackData(), this::attackRequest);
+        mClientStatRequest = new ClientRequest<>(new StatData(), this::statRequest);
+        mClientSellRequest = new ClientRequest<>(new SellData(), this::sellRequest);
 
         mServerAttackEvent = new ServerEvent<>(new AttackData(), this::attackEffect);
 
@@ -236,12 +231,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         Vector3fc col = mPlayerColour.get();
         mPlayerHighlightSelection =
                 MapEffects.highlightSelectionFromColour(col.x(), col.y(), col.z());
-
-        AudioSource src = new AudioSource();
-        mJukebox = src.getReference(AudioSource.class);
+        PlayerConfig cfg = getConfig();
 
         // TODO Get all Players & add to list
-        updateTokens(TOKEN_TIME);
+        updateTokens(cfg != null ? cfg.getTokenTime() : 1);
     }
 
     /**
@@ -269,6 +262,42 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     @Override
     protected void onDestroy() {}
+
+    private GameState getGameState() {
+        if (Reference.isValid(mGameState)) {
+            return mGameState.get();
+        }
+
+        Scene activeScene = Scene.getActiveScene();
+
+        if (activeScene == null) {
+            return null;
+        }
+
+        mGameState = activeScene.getSingletonRef(GameState.class);
+
+        if (!Reference.isValid(mGameState)) {
+            return null;
+        }
+
+        return mGameState.get();
+    }
+
+    public PlayerConfig getConfig() {
+        if (mConfig != null) {
+            return mConfig;
+        }
+
+        GameState state = getGameState();
+
+        if (state == null) {
+            return null;
+        }
+
+        mConfig = state.getConfig().getPlayer();
+
+        return mConfig;
+    }
 
     /**
      * This will randomly place a capital using an angle so each person is within their own slice.
@@ -428,20 +457,25 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * This method will update the amount of tokens the user has per {@link #TOKEN_TIME}. Goes
+     * This method will update the amount of tokens the user has at the rate defined in {@link PlayerConfig#getPlayer()}. Goes
      * through all owned {@link Building}s to check if need to update tokens. Should only be ran on
      * the server.
      *
      * @param time The time since the last update.
      */
     private void updateTokens(float time) {
+
+        PlayerConfig cfg = getConfig();
+        float tokenTime = cfg.getTokenTime();
+        float tokenRate = cfg.getTokenRate();
+
         // Only the server should add tokens.
         if (getNetworkObject().isServer()) {
             // Increase the total amount of time since tokens where last added.
             mCumulativeTokenTime += time;
 
             // Check to see if enough time has passed.
-            if (mCumulativeTokenTime >= TOKEN_TIME) {
+            if (mCumulativeTokenTime >= tokenTime) {
 
                 // Add tokens for each building.
                 getOwnedBuildingsAsStream()
@@ -450,10 +484,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                         .forEach(building -> mTokens.add(building.getTokenGeneration().getValue()));
 
                 // Add a base amount of tokens.
-                mTokens.add(TOKEN_RATE);
+                mTokens.add(Math.round(tokenRate));
 
                 // Reduce the cumulative time by the TOKEN_TIME.
-                mCumulativeTokenTime -= TOKEN_TIME;
+                mCumulativeTokenTime -= tokenTime;
             }
         }
     }
@@ -710,8 +744,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @param tile The {@link HexagonTile} to check
      * @return {@code true} if the Player owns the tile
      */
-    public boolean isClaimingTile(HexagonTile tile) {
-        if (tile == null) {
+    public boolean hasClaimedTile(HexagonTile tile) {
+        if (tile == null || getNetworkObject() == null) {
+            return false;
+        }
+
+        if (tile.getClaimantId() == null) {
             return false;
         }
         return tile.getClaimantId() == getNetworkObject().getOwnerId();
@@ -748,7 +786,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return Whether the player is in the attack cooldown period.
      */
     public boolean inCooldown() {
-        return getNetworkManager().getServerTime() < mLastAttack.get() + ATTACK_COOLDOWN;
+        return getRemainingCooldown() > 0;
     }
 
     /**
@@ -757,19 +795,16 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return The remaining time to wait.
      */
     public float getRemainingCooldown() {
-        return ATTACK_COOLDOWN - (getNetworkManager().getServerTime() - mLastAttack.get());
+        return getConfig().getAttackCooldown()
+                - (getNetworkManager().getServerTime() - mLastAttack.get());
     }
 
     /**
-     * Process and parse an event in which the <b>client</b> player wishes to place a {@link
-     * Building}.
-     *
-     * <p>Players that run on the <b>server</b> do not need to do this- they can simply run {@link
-     * #buildAttempt(HexagonTile)}.
+     * Process and parse a request in which the player wishes to place a {@link Building}.
      *
      * @param data The {@link BuildData} sent by the client.
      */
-    void buildEvent(BuildData data) {
+    private void buildRequest(BuildData data) {
         if (gameEnd()) {
             return;
         }
@@ -806,7 +841,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return Whether the attempt to build was successful.
      */
     private boolean buildAttempt(HexagonTile tile, BuildingDescriptor descriptor) {
-        if (!buildCheck(tile, descriptor.getCost())) {
+
+        if (!buildCheck(tile, descriptor.getTotalCost(this))) {
             log.info("Unable to pass build check.");
             return false;
         }
@@ -817,13 +853,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
-        // TODO set to late update as this wont work fun times yay
         building.getAttack().setLevel(descriptor.getAttack());
         building.getDefence().setLevel(descriptor.getDefence());
         building.getTokenGeneration().setLevel(descriptor.getTokenGenerationLevel());
-        building.setSellPrice(descriptor.getSellPrice());
+        building.setSellPrice(descriptor.getSellPrice(this));
         // Subtract the cost.
-        mTokens.subtract(descriptor.getCost());
+        mTokens.subtract(descriptor.getTotalCost(this));
         log.warning("Added building.");
         return true;
     }
@@ -882,15 +917,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * Process and parse an event in which the <b>client</b> player wishes to attack a {@link
-     * Building} from another Building.
-     *
-     * <p>Players that run on the <b>server</b> do not need to do this- they can simply run {@link
-     * #attackAttempt(Building, Building)}.
+     * Process and parse a request in which the player wishes to attack a {@link Building} from
+     * another Building.
      *
      * @param data The {@link AttackData} sent by the client.
      */
-    void attackEvent(AttackData data) {
+    private void attackRequest(AttackData data) {
 //        playSound(AudioEvent.ATTACK_INVOKED_SOUND, ServerEvent.EventRecipients.ACTIVE_CLIENTS); //can add later
         HexagonMap map = getMap();
         if (map == null) {
@@ -927,7 +959,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      *
      * @param attacker The attacking building.
      * @param defender The defending building.
-     * @return Whether the attempt to attack was successful.
+     * @return Whether the attempt to attack was successfully dispatched.
      */
     private boolean attackAttempt(Building attacker, Building defender) {
 
@@ -950,43 +982,53 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         float lockTime = Engine.getInstance().getCurTime() + 1f;
 
         attacker.getActionLockTime().set(lockTime);
+        attacker.setServerActionLocked(true);
+
         defender.getActionLockTime().set(lockTime);
+        defender.setServerActionLocked(true);
 
         mServerAttackEvent.invoke((data) -> data.setData(attacker, defender));
 
-        // TODO: use Future to delay the actual attack until the animation plays
+        new AwaitFuture((__) -> !attacker.isTimeActionLocked())
+                .then(
+                        (__) -> {
+                            attacker.setServerActionLocked(false);
+                            defender.setServerActionLocked(false);
 
-        boolean won;
-        if (defender.getOwner().hasLost()) won = true;
-        else won = attacker.attack(defender);
-        log.info("Attack is: " + won);
+                            boolean won;
+                            if (defender.getOwner().hasLost()) won = true;
+                            else won = attacker.attack(defender);
+                            log.info("Attack is: " + won);
 
-        // If you've won attack
-        if (won) {
+                            // If you've won attack
+                            if (won) {
 
-            // Special checks for Capital
-            if (defender.isCapital()) {
-                defender.setCapital(false);
+                                // Special checks for Capital
+                                if (defender.isCapital()) {
+                                    defender.setCapital(false);
 
-                GameState state = mGameState.get();
-                state.getNumCapitalsStanding().add(-1);
-                if (state.getNumCapitalsStanding().get() <= 1) {
-                    state.endGame(attacker.getOwnerId());
-                }
+                                    GameState state = mGameState.get();
+                                    state.getNumCapitalsStanding().add(-1);
+                                    if (state.getNumCapitalsStanding().get() <= 1) {
+                                        state.endGame(attacker.getOwnerId());
+                                    }
 
-                // Update stats
-                ArrayList<SyncStat> stats = defender.getStats();
-                for (SyncStat stat : stats) stat.set(SyncStat.LEVEL_MIN);
+                                    // Update stats
+                                    ArrayList<SyncStat> stats = defender.getStats();
+                                    for (SyncStat stat : stats) stat.set(SyncStat.LEVEL_MIN);
 
-                defender.getOwner().setOwnsCapital(false);
-                defender.afterStatChange();
-            }
+                                    defender.getOwner().setOwnsCapital(false);
+                                    defender.afterStatChange();
+                                }
 
-            defender.getNetworkObject().setOwnerId(getNetworkObject().getOwnerId());
-        }
-        log.info("Done");
+                                defender.getNetworkObject()
+                                        .setOwnerId(getNetworkObject().getOwnerId());
+                            }
+                            log.info("Done");
+                        })
+                .schedule();
 
-        return won;
+        return true;
     }
 
     /**
@@ -1052,15 +1094,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * Process and parse an event in which the <b>client</b> player wishes to sell a {@link
-     * Building}.
-     *
-     * <p>Players that run on the <b>server</b> do not need to do this- they can simply run {@link
-     * #sellAttempt(Building)}.
+     * Process and parse a request in which the player wishes to sell a {@link Building}.
      *
      * @param data The {@link SellData} sent by the client.
      */
-    void sellEvent(SellData data) {
+    private void sellRequest(SellData data) {
 
         if (gameEnd()) {
             return;
@@ -1098,12 +1136,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                         new GameState.InvokeAudioEvent(sound)
                 );
                 break;
-        }
-    }
-
-    protected void playLocalSound(AudioEvent sound) {
-        if (Reference.isValid(mJukebox)) {
-            mJukebox.get().playSound(sound.getPath());
         }
     }
 
@@ -1163,15 +1195,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     }
 
     /**
-     * Process and parse an event in which the <b>client</b> player wishes to increase a specific
-     * {@link StatType} of a {@link Building}.
-     *
-     * <p>Players that run on the <b>server</b> do not need to do this- they can simply run {@link
-     * #statAttempt(Building, StatType)}.
+     * Process and parse a request in which the player wishes to increase a specific {@link
+     * StatType} of a {@link Building}.
      *
      * @param data The {@link StatData} sent by the client.
      */
-    void statEvent(StatData data) {
+    private void statRequest(StatData data) {
 
         if (gameEnd()) {
             return;
@@ -1319,6 +1348,39 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     public void setOwnsCapital(boolean hasCapital) {
         mOwnsCapital.set(hasCapital);
+    }
+
+    /**
+     * Retrieve current player inflation.
+     *
+     * <p>This method will essentially return {@code globalInflation * buildingInflation}, if game
+     * state exists.
+     *
+     * @return player inflation. Defaults to 1, if game state is not valid.
+     */
+    public float getInflation() {
+        float inflation = 1f;
+
+        if (Reference.isValid(mGameState)) {
+            GameState state = mGameState.get();
+            inflation *= state.getGlobalInflation();
+            inflation *=
+                    Math.pow(
+                            mOwnedBuildings.size(),
+                            state.getConfig().getPlayer().getInflationPerBuilding());
+        }
+
+        return inflation;
+    }
+
+    public float getGlobalInflation() {
+        GameState state = getGameState();
+
+        if (state != null) {
+            return state.getGlobalInflation();
+        }
+
+        return 1;
     }
 
     /**

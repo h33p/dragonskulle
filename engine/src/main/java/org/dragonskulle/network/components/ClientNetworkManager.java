@@ -1,7 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.components;
 
-import java.io.DataInputStream;
+import java.io.DataInput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
@@ -36,7 +36,7 @@ import org.joml.Vector3f;
 public class ClientNetworkManager {
 
     /** Describes client connection state. */
-    private enum ConnectionState {
+    public static enum ConnectionState {
         NOT_CONNECTED,
         CONNECTING,
         CONNECTED,
@@ -94,7 +94,7 @@ public class ClientNetworkManager {
          * @param stream the payload of the object to be updated
          */
         @Override
-        public void updateNetworkObject(DataInputStream stream) throws IOException {
+        public void updateNetworkObject(DataInput stream) throws IOException {
             int idToUpdate = stream.readInt();
             ClientObjectEntry entry = getNetworkObjectEntry(idToUpdate);
             if (entry == null) {
@@ -114,12 +114,12 @@ public class ClientNetworkManager {
          * @param stream payload containing the server's world state
          */
         @Override
-        public void updateServerState(DataInputStream stream) throws IOException {
+        public void updateServerState(DataInput stream) throws IOException {
             mServerTime = stream.readFloat();
         }
 
         @Override
-        public void spawnNetworkObject(DataInputStream stream) throws IOException {
+        public void spawnNetworkObject(DataInput stream) throws IOException {
             int objectId = stream.readInt();
             int ownerId = stream.readInt();
             int spawnTemplateId = stream.readInt();
@@ -127,7 +127,7 @@ public class ClientNetworkManager {
         }
 
         @Override
-        public void objectEvent(DataInputStream stream) throws IOException {
+        public void objectEvent(DataInput stream) throws IOException {
             int objectId = stream.readInt();
             ClientObjectEntry entry = getNetworkObjectEntry(objectId);
             if (entry == null) {
