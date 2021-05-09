@@ -8,6 +8,9 @@ import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.game.GameConfig;
+import org.dragonskulle.game.GameConfig.AiConfig;
+import org.dragonskulle.game.GameState;
 import org.dragonskulle.game.player.BuildingDescriptor;
 import org.dragonskulle.game.player.Player;
 import org.dragonskulle.game.player.PredefinedBuildings;
@@ -22,13 +25,12 @@ import org.dragonskulle.game.player.PredefinedBuildings;
 public abstract class AiPlayer extends Component implements IFixedUpdate, IOnStart {
 
     /** The time since the last check if the AI player can play. (Start at 0). */
-    private float mTimeSinceStart;
-    /** The lower bound for the random number to choose a time. */
-    protected int mLowerBoundTime = 1;
-    /** The upper bound for the random number to choose a time. */
-    protected int mUpperBoundTime = 2;
+    protected float mTimeSinceStart;
     /** Will hold how long the AI player has to wait until playing. */
-    private int mTimeToWait;
+    protected float mTimeToWait;
+
+    /** AI configuration values used for timeout configuration. */
+    protected AiConfig mConfig;
 
     /** The Random Number Generator. */
     protected Random mRandom = new Random();
@@ -69,8 +71,28 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
     }
 
     /** This will set how long the AI player has to wait until they can play. */
-    private void createNewRandomTime() {
-        mTimeToWait = mRandom.nextInt() % (mUpperBoundTime + 1 - mLowerBoundTime) + mLowerBoundTime;
+    protected void createNewRandomTime() {
+        AiConfig cfg = getConfig();
+
+        mTimeToWait =
+                mRandom.nextInt() % (cfg.getUpperBoundTime() - cfg.getLowerBoundTime())
+                        + cfg.getLowerBoundTime();
+    }
+
+    public AiConfig getConfig() {
+        if (mConfig != null) {
+            return mConfig;
+        }
+
+        GameConfig cfg = GameState.getSceneConfig();
+
+        if (cfg != null && cfg.getAi().size() > 0) {
+            mConfig = cfg.getAi().get(0);
+        } else {
+            mConfig = new AiConfig();
+        }
+
+        return mConfig;
     }
 
     @Override
@@ -101,8 +123,7 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
      *     afford a building.
      */
     protected BuildingDescriptor getRandomBuildingType() {
-        List<BuildingDescriptor> options =
-                PredefinedBuildings.getPurchasable(getPlayer().getTokens().get());
+        List<BuildingDescriptor> options = PredefinedBuildings.getPurchasable(getPlayer());
         // Test if they can afford to build anything.
         if (options.size() == 0) return null;
 

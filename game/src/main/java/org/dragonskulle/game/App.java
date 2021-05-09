@@ -204,15 +204,26 @@ public class App implements NativeResource {
         Scene mainMenu = mMainMenuGltf.get().getDefaultScene();
         addDebugUi(mainMenu);
 
-        Reference<NetworkManager> networkManager =
+        Reference<NetworkManager> clientNetworkManager =
                 new NetworkManager(createTemplateManager(), App::createMainScene)
                         .getReference(NetworkManager.class);
 
-        GameObject networkManagerObject =
+        Reference<NetworkManager> serverNetworkManager =
+                new NetworkManager(createTemplateManager(), App::createMainScene)
+                        .getReference(NetworkManager.class);
+
+        GameObject serverNetworkManagerObject =
                 new GameObject(
-                        "network manager",
+                        "serverNetworkManager",
                         (handle) -> {
-                            handle.addComponent(networkManager.get());
+                            handle.addComponent(serverNetworkManager.get());
+                        });
+
+        GameObject clientNetworkManagerObject =
+                new GameObject(
+                        "clientNetworkManager",
+                        (handle) -> {
+                            handle.addComponent(clientNetworkManager.get());
                         });
 
         GameObject audioObject =
@@ -254,7 +265,8 @@ public class App implements NativeResource {
                         });
 
         Reference<Lobby> lobby =
-                new Lobby(mainUi.getReference(), networkManager).getReference(Lobby.class);
+                new Lobby(mainUi.getReference(), clientNetworkManager, serverNetworkManager)
+                        .getReference(Lobby.class);
 
         GameObject lobbyObject =
                 new GameObject(
@@ -301,7 +313,8 @@ public class App implements NativeResource {
                         }),
                 new UIButton("Quit", (__, ___) -> Engine.getInstance().stop()));
 
-        mainMenu.addRootObject(networkManagerObject);
+        mainMenu.addRootObject(serverNetworkManagerObject);
+        mainMenu.addRootObject(clientNetworkManagerObject);
 
         mainMenu.addRootObject(audioObject);
         mainMenu.addRootObject(gameTitle);

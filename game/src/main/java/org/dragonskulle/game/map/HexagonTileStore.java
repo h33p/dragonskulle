@@ -1,8 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.map;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -200,7 +200,7 @@ class HexagonTileStore implements ISyncVar {
     }
 
     @Override
-    public void deserialize(DataInputStream stream) throws IOException {
+    public void deserialize(DataInput stream) throws IOException {
 
         final int maskSize = NetworkMessage.maskSizeInBytes(mTiles.length);
         boolean[] tileRowMask =
@@ -224,7 +224,7 @@ class HexagonTileStore implements ISyncVar {
     }
 
     @Override
-    public void serialize(DataOutputStream stream, int clientId) throws IOException {
+    public void serialize(DataOutput stream, int clientId) throws IOException {
         Integer id = clientId;
 
         boolean[][] tileMask = mTileMask.get(id);

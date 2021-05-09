@@ -1,7 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
 
-import java.io.DataInputStream;
+import java.io.DataInput;
 import java.io.IOException;
 
 /**
@@ -59,7 +59,6 @@ public interface IServerListener {
      * @param requestID request ID on the object
      * @param stream stream of the request
      */
-    void clientComponentRequest(
-            ServerClient client, int objectID, int requestID, DataInputStream stream)
+    void clientComponentRequest(ServerClient client, int objectID, int requestID, DataInput stream)
             throws IOException;
 }

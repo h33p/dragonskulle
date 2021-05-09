@@ -1,7 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
 
-import java.io.DataInputStream;
+import java.io.DataInput;
 import java.io.IOException;
 
 /**
@@ -47,7 +47,7 @@ public interface IClientListener {
      * @param stream stream containing the message
      * @throws IOException if there was an error parsing the message
      */
-    void updateNetworkObject(DataInputStream stream) throws IOException;
+    void updateNetworkObject(DataInput stream) throws IOException;
 
     /**
      * Spawn a network object from bytes, this is authored by the server.
@@ -55,7 +55,7 @@ public interface IClientListener {
      * @param stream stream containing the message
      * @throws IOException if there was an error parsing the message
      */
-    void spawnNetworkObject(DataInputStream stream) throws IOException;
+    void spawnNetworkObject(DataInput stream) throws IOException;
 
     /**
      * Update the server's state on the client.
@@ -63,7 +63,7 @@ public interface IClientListener {
      * @param stream stream containing the message
      * @throws IOException if there was an error parsing the message
      */
-    void updateServerState(DataInputStream stream) throws IOException;
+    void updateServerState(DataInput stream) throws IOException;
 
     /**
      * Invoke a server event on the client's object.
@@ -71,5 +71,5 @@ public interface IClientListener {
      * @param stream stream containing the message
      * @throws IOException if there was an error parsing the message
      */
-    void objectEvent(DataInputStream stream) throws IOException;
+    void objectEvent(DataInput stream) throws IOException;
 }

@@ -1,8 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
@@ -17,12 +17,12 @@ public final class TestAttackData implements INetSerializable {
         mToBuilding = toBuilding;
     }
 
-    public void serialize(DataOutputStream stream, int clientId) throws IOException {
+    public void serialize(DataOutput stream, int clientId) throws IOException {
         stream.writeInt(mPassword);
         stream.writeInt(mToBuilding);
     }
 
-    public void deserialize(DataInputStream stream) throws IOException {
+    public void deserialize(DataInput stream) throws IOException {
         mPassword = stream.readInt();
         mToBuilding = stream.readInt();
     }

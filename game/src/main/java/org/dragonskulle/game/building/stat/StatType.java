@@ -4,7 +4,8 @@ package org.dragonskulle.game.building.stat;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
-import org.dragonskulle.game.building.stat.SyncStat.IValueCalculator;
+import org.dragonskulle.game.GameConfig;
+import org.dragonskulle.game.building.stat.SyncStat.IConfigChooser;
 
 /**
  * Stores different types of stats.
@@ -21,17 +22,12 @@ import org.dragonskulle.game.building.stat.SyncStat.IValueCalculator;
 @Log
 @Accessors(prefix = "m")
 public enum StatType {
-    ATTACK((level) -> level), // The attack value is identical to the current level number.
-    BUILD_DISTANCE(2), // Regardless of the level, the build distance will always be the same.
-    CLAIM_DISTANCE(1), // Regardless of the level, the claim distance will always be the same.
-    DEFENCE((level) -> level), // The defence value is identical to the current level number.
-    TOKEN_GENERATION(
-            (level) ->
-                    Math.max(
-                            level - 1,
-                            0)), // The number of tokens to generate is identical to the current
-    // level number minus
-    VIEW_DISTANCE(3); // Regardless of the level, the view distance will always be the same.
+    ATTACK(GameConfig::getAttackStat),
+    BUILD_DISTANCE(GameConfig::getBuildDistanceStat),
+    CLAIM_DISTANCE(GameConfig::getClaimDistanceStat),
+    DEFENCE(GameConfig::getDefenceStat),
+    TOKEN_GENERATION(GameConfig::getGenerationStat),
+    VIEW_DISTANCE(GameConfig::getViewDistanceStat);
 
     /* Set the IDs of the Stats. */
     static {
@@ -42,66 +38,19 @@ public enum StatType {
         }
     }
 
-    /** The nice name for the enum value. */
-    private String mNiceName;
-
     /** The index of the specific StatType in {@link #values()}. */
     private int mID;
 
-    /** The method used to turn a level ({@code int}) into a value ({@code int}). */
-    @Getter private final IValueCalculator mValueCalculator;
-
-    /** Whether the stat always returns a fixed value. */
-    @Getter private final boolean mFixedValue;
+    /** Configuration value receiver. */
+    @Getter private final IConfigChooser mConfigChooser;
 
     /**
      * Create a new type of stat.
      *
-     * @param valueCalculator The method used to turn a level into a value.
+     * @param configChooser The method used to pick the right config value from game config.
      */
-    StatType(IValueCalculator valueCalculator) {
-        mFixedValue = false;
-        mValueCalculator = valueCalculator;
-    }
-
-    /**
-     * Create a new type of stat.
-     *
-     * @param valueCalculator The method used to turn a level into a value.
-     */
-    StatType(IValueCalculator valueCalculator, String niceName) {
-        mFixedValue = false;
-        mValueCalculator = valueCalculator;
-        mNiceName = niceName;
-    }
-
-    /**
-     * Create a new type of stat that is permanently one value.
-     *
-     * @param value The value of the stat, regardless of level.
-     */
-    StatType(int value) {
-        mFixedValue = true;
-        mValueCalculator =
-                (__) -> {
-                    return value;
-                };
-    }
-
-    /**
-     * Retrieves the StatType from its NiceName, if it exists. Otherwise it will try looking in its
-     * default name.
-     *
-     * @param name the nice name to retrieve from
-     * @return the corresponding stat type.
-     */
-    public static StatType fromNiceName(String name) {
-        for (StatType type : StatType.values()) {
-            if (type.mNiceName != null && type.mNiceName.equals(name)) {
-                return type;
-            }
-        }
-        return StatType.valueOf(name);
+    StatType(IConfigChooser configChooser) {
+        mConfigChooser = configChooser;
     }
 
     /**
@@ -127,14 +76,5 @@ public enum StatType {
         }
 
         return values[id];
-    }
-
-    /**
-     * Gets the stats nice name or the default if no nice name exists.
-     *
-     * @return the nice name
-     */
-    public String getNiceName() {
-        return this.mNiceName != null ? this.mNiceName : this.name();
     }
 }

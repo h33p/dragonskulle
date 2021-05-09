@@ -288,6 +288,15 @@ public class GameObject {
         }
     }
 
+    protected void getAllEnabledChildren(List<GameObject> ret) {
+        for (GameObject child : mChildren) {
+            if (child.isEnabled()) {
+                ret.add(child);
+                child.getAllEnabledChildren(ret);
+            }
+        }
+    }
+
     /**
      * Finds a child by its name.
      *
@@ -511,7 +520,8 @@ public class GameObject {
      * @param enabled New value for mEnabled
      */
     public void setEnabled(boolean enabled) {
-        mEnabled = enabled;
+
+        mEnabled = enabled && (mParent == null || mParent.mEnabled);
 
         for (GameObject child : mChildren) {
             child.setEnabled(enabled);
