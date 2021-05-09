@@ -145,7 +145,9 @@ public class GameUIAppearance {
     }
 
     public static AudioSource getSource() {
-        AudioSource singleton = Scene.getActiveScene().getSingleton(AudioSource.class);
+        Scene activeScene = Scene.getActiveScene();
+        if (activeScene == null) return null;
+        AudioSource singleton = activeScene.getSingleton(AudioSource.class);
 
         if (singleton == null) {
             Reference<AudioListener> listener = AudioManager.getInstance().getAudioListener();

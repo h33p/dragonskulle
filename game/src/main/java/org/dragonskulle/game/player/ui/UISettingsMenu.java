@@ -12,8 +12,16 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.input.GameActions;
 import org.dragonskulle.input.Cursor;
 import org.dragonskulle.settings.Settings;
-import org.dragonskulle.ui.*;
+import org.dragonskulle.ui.BuildHandlerInfo;
+import org.dragonskulle.ui.TransformUI;
+import org.dragonskulle.ui.UIAppearance;
+import org.dragonskulle.ui.UIButton;
+import org.dragonskulle.ui.UIDropDown;
+import org.dragonskulle.ui.UIManager;
 import org.dragonskulle.ui.UIManager.IUIBuildHandler;
+import org.dragonskulle.ui.UISlider;
+import org.dragonskulle.ui.UIText;
+import org.dragonskulle.ui.UITextRect;
 
 /**
  * A component that displays a settings menu.
