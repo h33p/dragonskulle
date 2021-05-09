@@ -60,7 +60,7 @@ public class UITokenCounter extends Component implements IOnAwake, IFixedUpdate 
     @Override
     public void fixedUpdate(float deltaTime) {
         if (mCurTokens == mTargetTokens) return;
-        float step = Math.abs(mTargetTokens - mCurTokens) / 2;
+        float step = Math.abs(mTargetTokens - mCurTokens) / 100;
         float incrToken = mCurTokens + (mCurTokens < mTargetTokens ? step : -step);
         setTokens(incrToken);
     }
@@ -82,7 +82,7 @@ public class UITokenCounter extends Component implements IOnAwake, IFixedUpdate 
      */
     private void setVisibleTokens(float incrToken) {
         if (Reference.isValid(mTokens)) {
-            mTokens.get().setText(String.format("Tokens: %5d", Math.round(incrToken)));
+            mTokens.get().setText(String.format("Tokens: %5d", (int) Math.floor(incrToken)));
         } else {
             if (Reference.isValid(mTextRect)) {
                 mTokens = mTextRect.get().getLabelText();
@@ -91,7 +91,7 @@ public class UITokenCounter extends Component implements IOnAwake, IFixedUpdate 
                             .get()
                             .getLabelText()
                             .get()
-                            .setText(String.format("Tokens: %5d", Math.round(incrToken)));
+                            .setText(String.format("Tokens: %5d", (int) Math.floor(incrToken)));
                 }
             }
         }
