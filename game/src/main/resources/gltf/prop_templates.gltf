@@ -12,14 +12,13 @@
             "name" : "Scene",
             "nodes" : [
                 0,
-                11,
-                13,
-                15,
-                17,
-                19,
-                21,
-                50,
-                51
+                22,
+                51,
+                52,
+                53,
+                54,
+                56,
+                57
             ]
         }
     ],
@@ -33,15 +32,15 @@
             },
             "name" : "Camera",
             "rotation" : [
-                0.5744659304618835,
-                -0.2136446088552475,
-                -0.2754325866699219,
-                0.7405955195426941
+                0.37515538930892944,
+                -0.20795416831970215,
+                -0.43795424699783325,
+                0.7900695204734802
             ],
             "translation" : [
-                -1.6984485387802124,
-                -1.7957245111465454,
-                0.8185808062553406
+                -1.9908220767974854,
+                -1.3354073762893677,
+                2.824761390686035
             ]
         },
         {
@@ -182,8 +181,8 @@
             "rotation" : [
                 0,
                 0,
-                0.18279637396335602,
-                0.9831508994102478
+                0.18279635906219482,
+                0.983150839805603
             ],
             "translation" : [
                 -0.016051054000854492,
@@ -216,16 +215,16 @@
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "name" : "lvl2",
+            "name" : "lvl10",
             "rotation" : [
                 0,
                 0,
-                -0.40158477425575256,
-                0.9158219695091248
+                0.24519920349121094,
+                0.9694727659225464
             ],
             "translation" : [
-                0.35843148827552795,
-                -0.2634577751159668,
+                0.49602794647216797,
+                0.31805914640426636,
                 0
             ]
         },
@@ -254,16 +253,16 @@
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "name" : "lvl4",
+            "name" : "lvl2",
             "rotation" : [
                 0,
                 0,
-                -0.9471228718757629,
-                0.3208710551261902
+                -0.4015846848487854,
+                0.91582190990448
             ],
             "translation" : [
-                -0.2619076073169708,
-                -0.3320158123970032,
+                0.35843148827552795,
+                -0.2634577751159668,
                 0
             ]
         },
@@ -292,16 +291,16 @@
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "name" : "lvl6",
+            "name" : "lvl4",
             "rotation" : [
                 0,
                 0,
-                -0.967659056186676,
-                -0.25226208567619324
+                -0.9471229314804077,
+                0.3208710551261902
             ],
             "translation" : [
-                -0.4566473066806793,
-                0.24099202454090118,
+                -0.2619076073169708,
+                -0.3320158123970032,
                 0
             ]
         },
@@ -330,16 +329,16 @@
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "name" : "lvl8",
+            "name" : "lvl6",
             "rotation" : [
                 0,
                 0,
-                -0.6553603410720825,
-                -0.7553163766860962
+                0.9676589369773865,
+                0.25226205587387085
             ],
             "translation" : [
-                0.044991351664066315,
-                0.5582295060157776,
+                -0.4566473066806793,
+                0.24099202454090118,
                 0
             ]
         },
@@ -368,18 +367,34 @@
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "name" : "lvl10",
+            "name" : "lvl8",
             "rotation" : [
                 0,
                 0,
-                -0.24519920349121094,
-                -0.9694727063179016
+                0.6553603410720825,
+                0.7553163766860962
             ],
             "translation" : [
-                0.49602794647216797,
-                0.31805914640426636,
+                0.044991351664066315,
+                0.5582295060157776,
                 0
             ]
+        },
+        {
+            "children" : [
+                11,
+                13,
+                15,
+                17,
+                19,
+                21
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D"
+                }
+            },
+            "name" : "attack_prop"
         },
         {
             "extensions" : {
@@ -462,12 +477,12 @@
         },
         {
             "children" : [
-                22,
                 23,
                 24,
                 25,
                 26,
-                27
+                27,
+                28
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -492,7 +507,7 @@
         },
         {
             "children" : [
-                29
+                30
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -504,7 +519,7 @@
         },
         {
             "children" : [
-                30
+                31
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -526,7 +541,7 @@
         },
         {
             "children" : [
-                29
+                30
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -538,7 +553,7 @@
         },
         {
             "children" : [
-                32
+                33
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -560,7 +575,7 @@
         },
         {
             "children" : [
-                29
+                30
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -572,7 +587,7 @@
         },
         {
             "children" : [
-                34
+                35
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -603,7 +618,7 @@
         },
         {
             "children" : [
-                36
+                37
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -662,10 +677,10 @@
         },
         {
             "children" : [
-                37,
                 38,
                 39,
-                40
+                40,
+                41
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -676,7 +691,7 @@
         },
         {
             "children" : [
-                29
+                30
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -688,7 +703,7 @@
         },
         {
             "children" : [
-                42
+                43
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -710,7 +725,7 @@
         },
         {
             "children" : [
-                29
+                30
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -722,7 +737,7 @@
         },
         {
             "children" : [
-                44
+                45
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -744,7 +759,7 @@
         },
         {
             "children" : [
-                29
+                30
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -756,7 +771,7 @@
         },
         {
             "children" : [
-                46
+                47
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -787,7 +802,7 @@
         },
         {
             "children" : [
-                48
+                49
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -809,15 +824,15 @@
         },
         {
             "children" : [
-                28,
-                31,
-                33,
-                35,
-                41,
-                43,
-                45,
-                47,
-                49
+                29,
+                32,
+                34,
+                36,
+                42,
+                44,
+                46,
+                48,
+                50
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -834,7 +849,66 @@
                 }
             },
             "mesh" : 16,
-            "name" : "Cube"
+            "name" : "defence_lvl_2"
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D"
+                }
+            },
+            "mesh" : 17,
+            "name" : "defence_lvl_4"
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D"
+                }
+            },
+            "mesh" : 18,
+            "name" : "defence_lvl_6"
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D"
+                }
+            },
+            "mesh" : 19,
+            "name" : "ladder",
+            "rotation" : [
+                0,
+                0.18395131826400757,
+                -0.98293536901474,
+                1.6014050174817385e-07
+            ],
+            "translation" : [
+                0.5835466980934143,
+                -0.2310340255498886,
+                0.3506239354610443
+            ]
+        },
+        {
+            "children" : [
+                55
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D"
+                }
+            },
+            "mesh" : 20,
+            "name" : "defence_lvl_8"
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D"
+                }
+            },
+            "mesh" : 21,
+            "name" : "defence_lvl_10"
         }
     ],
     "cameras" : [
@@ -931,6 +1005,20 @@
                 ],
                 "metallicFactor" : 0,
                 "roughnessFactor" : 0.5
+            }
+        },
+        {
+            "doubleSided" : true,
+            "name" : "Base Roof",
+            "pbrMetallicRoughness" : {
+                "baseColorFactor" : [
+                    0.06662599742412567,
+                    0.02028854563832283,
+                    0.004024720750749111,
+                    1
+                ],
+                "metallicFactor" : 0,
+                "roughnessFactor" : 0.38235294818878174
             }
         }
     ],
@@ -1186,7 +1274,78 @@
                         "NORMAL" : 71,
                         "TEXCOORD_0" : 72
                     },
-                    "indices" : 73
+                    "indices" : 73,
+                    "material" : 1
+                }
+            ]
+        },
+        {
+            "name" : "Cube.002",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 74,
+                        "NORMAL" : 75,
+                        "TEXCOORD_0" : 76
+                    },
+                    "indices" : 73,
+                    "material" : 3
+                }
+            ]
+        },
+        {
+            "name" : "Cube.011",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 77,
+                        "NORMAL" : 78,
+                        "TEXCOORD_0" : 79
+                    },
+                    "indices" : 80,
+                    "material" : 3
+                }
+            ]
+        },
+        {
+            "name" : "Cube.010",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 81,
+                        "NORMAL" : 82,
+                        "TEXCOORD_0" : 83
+                    },
+                    "indices" : 84,
+                    "material" : 6
+                }
+            ]
+        },
+        {
+            "name" : "Cube.012",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 85,
+                        "NORMAL" : 86,
+                        "TEXCOORD_0" : 87
+                    },
+                    "indices" : 88,
+                    "material" : 3
+                }
+            ]
+        },
+        {
+            "name" : "Cube.013",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 89,
+                        "NORMAL" : 90,
+                        "TEXCOORD_0" : 91
+                    },
+                    "indices" : 92,
+                    "material" : 3
                 }
             ]
         }
@@ -1795,35 +1954,199 @@
         {
             "bufferView" : 70,
             "componentType" : 5126,
-            "count" : 216,
+            "count" : 160,
             "max" : [
-                0.8827139139175415,
+                0.8650427460670471,
                 0.5,
                 0.10016977787017822
             ],
             "min" : [
-                0.8493362665176392,
+                0.8316283822059631,
                 -0.5,
-                -0.024535277858376503
+                -0.05662991479039192
             ],
             "type" : "VEC3"
         },
         {
             "bufferView" : 71,
             "componentType" : 5126,
-            "count" : 216,
+            "count" : 160,
             "type" : "VEC3"
         },
         {
             "bufferView" : 72,
             "componentType" : 5126,
-            "count" : 216,
+            "count" : 160,
             "type" : "VEC2"
         },
         {
             "bufferView" : 73,
             "componentType" : 5123,
+            "count" : 396,
+            "type" : "SCALAR"
+        },
+        {
+            "bufferView" : 74,
+            "componentType" : 5126,
+            "count" : 160,
+            "max" : [
+                0.8650427460670471,
+                0.5,
+                0.10016977787017822
+            ],
+            "min" : [
+                0.8316283822059631,
+                -0.5,
+                -0.05662991479039192
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 75,
+            "componentType" : 5126,
+            "count" : 160,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 76,
+            "componentType" : 5126,
+            "count" : 160,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 77,
+            "componentType" : 5126,
+            "count" : 123,
+            "max" : [
+                0.8556390404701233,
+                0.5,
+                0.27060362696647644
+            ],
+            "min" : [
+                0.7589806914329529,
+                -0.5,
+                -0.004228516481816769
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 78,
+            "componentType" : 5126,
+            "count" : 123,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 79,
+            "componentType" : 5126,
+            "count" : 123,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 80,
+            "componentType" : 5123,
             "count" : 324,
+            "type" : "SCALAR"
+        },
+        {
+            "bufferView" : 81,
+            "componentType" : 5126,
+            "count" : 11680,
+            "max" : [
+                0.03512522578239441,
+                0.0049999915063381195,
+                0.004999987781047821
+            ],
+            "min" : [
+                -0.03512522578239441,
+                -0.005000006407499313,
+                -0.3790000081062317
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 82,
+            "componentType" : 5126,
+            "count" : 11680,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 83,
+            "componentType" : 5126,
+            "count" : 11680,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 84,
+            "componentType" : 5123,
+            "count" : 28992,
+            "type" : "SCALAR"
+        },
+        {
+            "bufferView" : 85,
+            "componentType" : 5126,
+            "count" : 802,
+            "max" : [
+                0.8556390404701233,
+                0.5,
+                0.46568167209625244
+            ],
+            "min" : [
+                0.5240641236305237,
+                -0.5,
+                -0.004228516481816769
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 86,
+            "componentType" : 5126,
+            "count" : 802,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 87,
+            "componentType" : 5126,
+            "count" : 802,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 88,
+            "componentType" : 5123,
+            "count" : 1956,
+            "type" : "SCALAR"
+        },
+        {
+            "bufferView" : 89,
+            "componentType" : 5126,
+            "count" : 2963,
+            "max" : [
+                0.8556390404701233,
+                0.5,
+                0.5630209445953369
+            ],
+            "min" : [
+                0.5240641236305237,
+                -0.5,
+                -0.00422857329249382
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 90,
+            "componentType" : 5126,
+            "count" : 2963,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 91,
+            "componentType" : 5126,
+            "count" : 2963,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 92,
+            "componentType" : 5123,
+            "count" : 8112,
             "type" : "SCALAR"
         }
     ],
@@ -2180,28 +2503,123 @@
         },
         {
             "buffer" : 0,
-            "byteLength" : 2592,
+            "byteLength" : 1920,
             "byteOffset" : 318532
         },
         {
             "buffer" : 0,
-            "byteLength" : 2592,
-            "byteOffset" : 321124
+            "byteLength" : 1920,
+            "byteOffset" : 320452
         },
         {
             "buffer" : 0,
-            "byteLength" : 1728,
-            "byteOffset" : 323716
+            "byteLength" : 1280,
+            "byteOffset" : 322372
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 792,
+            "byteOffset" : 323652
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 1920,
+            "byteOffset" : 324444
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 1920,
+            "byteOffset" : 326364
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 1280,
+            "byteOffset" : 328284
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 1476,
+            "byteOffset" : 329564
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 1476,
+            "byteOffset" : 331040
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 984,
+            "byteOffset" : 332516
         },
         {
             "buffer" : 0,
             "byteLength" : 648,
-            "byteOffset" : 325444
+            "byteOffset" : 333500
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 140160,
+            "byteOffset" : 334148
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 140160,
+            "byteOffset" : 474308
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 93440,
+            "byteOffset" : 614468
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 57984,
+            "byteOffset" : 707908
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 9624,
+            "byteOffset" : 765892
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 9624,
+            "byteOffset" : 775516
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 6416,
+            "byteOffset" : 785140
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 3912,
+            "byteOffset" : 791556
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 35556,
+            "byteOffset" : 795468
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 35556,
+            "byteOffset" : 831024
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 23704,
+            "byteOffset" : 866580
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 16224,
+            "byteOffset" : 890284
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 326092,
+            "byteLength" : 906508,
             "uri" : "prop_templates.bin"
         }
     ]
