@@ -64,6 +64,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     /** Class controlling pulsating highlighting */
     private static class PulseHighlight {
         private Vector4fc mTargetColour;
+        private final Vector4f mOut = new Vector4f(0f);
         private float mInvPeriod;
         private float mMinLerp;
         private final float mStartTime;
@@ -112,12 +113,14 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
          * <p>This method will interpolate the given colour value to have pulsating.
          *
          * @param curtime current engine time
-         * @param out output colour
+         * @param cur current colour
+         * @return interpolated colour
          */
-        private void handle(float curtime, Vector4f out) {
+        private Vector4fc handle(float curtime, Vector4fc cur) {
             float periods = (curtime - mStartTime) * mInvPeriod;
             float lerp = (float) Math.sin(Math.PI * (periods - 0.5f)) * 0.5f + 0.5f;
-            out.lerp(mTargetColour, MathUtils.lerp(mMinLerp, 1, lerp));
+            cur.lerp(mTargetColour, MathUtils.lerp(mMinLerp, 1, lerp), mOut);
+            return mOut;
         }
     }
 
@@ -128,7 +131,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
 
     /** A simple tile highlight selection interface. */
     public static interface IHighlightSelector {
-        public Vector4fc handleTile(HexagonTile tile, Vector4f currentSelection);
+        public Vector4fc handleTile(HexagonTile tile, Vector4fc currentSelection);
     }
 
     public static final Vector4fc VALID_MATERIAL = highlightSelectionFromColour(0.1f, 0.6f, 0f);
@@ -366,9 +369,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
                         return null;
                     }
 
-                    hl.handle(curtime, curval);
-
-                    return curval;
+                    return hl.handle(curtime, curval);
                 });
     }
 

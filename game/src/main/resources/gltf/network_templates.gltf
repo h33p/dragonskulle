@@ -13,7 +13,8 @@
             "nodes" : [
                 0,
                 1,
-                2
+                2,
+                3
             ]
         }
     ],
@@ -51,10 +52,6 @@
                                     "value" : 51
                                 }
                             ]
-                        },
-                        {
-                            "class_name" : "org.dragonskulle.game.GameState",
-                            "enabled" : true
                         }
                     ]
                 }
@@ -95,6 +92,25 @@
             "name" : "building",
             "translation" : [
                 -4,
+                0,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.GameState",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "name" : "game_state",
+            "translation" : [
+                -2,
                 0,
                 0
             ]

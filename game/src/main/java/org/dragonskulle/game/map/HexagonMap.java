@@ -14,6 +14,7 @@ import lombok.extern.java.Log;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.game.GameState;
 import org.dragonskulle.game.map.HexagonTile.TileType;
 import org.dragonskulle.input.Actions;
 import org.dragonskulle.input.Cursor;
@@ -353,6 +354,13 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
 
     @Override
     protected void onNetworkInitialise() {
+
+        GameState gameState = Scene.getActiveScene().getSingleton(GameState.class);
+
+        if (gameState != null) {
+            mSize = gameState.getConfig().getGlobal().getMapSize();
+        }
+
         Random rand = new Random();
         mTiles = new HexagonTileStore(mSize, rand.nextInt(), this);
         checkIslands();

@@ -4,6 +4,7 @@ package org.dragonskulle.network;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
+import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -173,7 +174,7 @@ public class ServerClient {
             log.info("Spawned client thread");
 
             BufferedInputStream bIn = new BufferedInputStream(mSocket.getInputStream());
-            DataInputStream input = new DataInputStream(bIn);
+            DataInput input = new DataInputStream(bIn);
             mDataOut = new DataOutputStream(new BufferedOutputStream(mSocket.getOutputStream()));
 
             mServerListener.clientConnected(this);
@@ -186,7 +187,7 @@ public class ServerClient {
 
             while (mRunning && mSocket.isConnected() && !mSocket.isClosed()) {
                 short len = input.readShort();
-                byte[] bytes = IOUtils.readExactlyNBytes(input, len);
+                byte[] bytes = IOUtils.readNBytes(input, len);
                 if (mSimLatency <= 0f) {
                     mRequests.add(bytes);
                 } else {
@@ -217,7 +218,7 @@ public class ServerClient {
      *
      * @param stream stream to parse the request from
      */
-    private void parseRequest(DataInputStream stream) throws IOException {
+    private void parseRequest(DataInput stream) throws IOException {
         byte messageType = stream.readByte();
 
         switch (messageType) {
@@ -243,7 +244,7 @@ public class ServerClient {
      * @param stream the stream
      * @throws IOException the io exception
      */
-    private void handleClientRequest(DataInputStream stream) throws IOException {
+    private void handleClientRequest(DataInput stream) throws IOException {
         int objectID = stream.readInt();
         int requestID = stream.readInt();
 
