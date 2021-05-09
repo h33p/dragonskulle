@@ -33,13 +33,13 @@
             "nodes" : [
                 0,
                 1,
-                41
+                127
             ]
         },
         {
             "name" : "Scene.001",
             "nodes" : [
-                42
+                128
             ]
         }
     ],
@@ -75,18 +75,52 @@
             },
             "name" : "Camera",
             "rotation" : [
-                0.6357702016830444,
-                0.19129858911037445,
-                0.21546439826488495,
-                0.7160838842391968
+                0.6357703804969788,
+                0.19129881262779236,
+                0.21546465158462524,
+                0.7160836458206177
             ],
             "translation" : [
-                5.316149711608887,
-                -10.054880142211914,
-                1.6407638788223267
+                4.738583087921143,
+                -10.441059112548828,
+                1.6127125024795532
             ]
         },
         {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 0,
+            "name" : "building itself.001"
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 1,
+            "name" : "walls.001"
+        },
+        {
+            "children" : [
+                2,
+                3
+            ],
             "extensions" : {
                 "DSKULLE_game_object" : {
                     "transform" : "org.dragonskulle.components.Transform3D",
@@ -105,80 +139,32 @@
                                 },
                                 {
                                     "name" : "mSineAmplitude",
-                                    "value" : 0.30000001192092896
+                                    "value" : 0.4999999403953552
                                 }
                             ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.MenuFader",
+                            "enabled" : true
                         }
                     ]
                 }
             },
-            "mesh" : 0,
-            "name" : "Cube.002",
-            "rotation" : [
-                0,
-                0,
-                -0.43479543924331665,
-                0.9005292654037476
-            ],
-            "scale" : [
-                1.206251859664917,
-                1.206251859664917,
-                1.206251859664917
-            ],
-            "translation" : [
-                0,
-                0,
-                0.10000000149011612
-            ]
+            "name" : "capital_building"
         },
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
-                }
-            },
-            "mesh" : 1,
-            "name" : "Hex"
-        },
-        {
-            "children" : [
-                3
-            ],
-            "extensions" : {
-                "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "transform" : "org.dragonskulle.components.Transform3D",
                     "components" : [
                         {
-                            "class_name" : "org.dragonskulle.game.Wobbler",
-                            "enabled" : true,
-                            "properties" : [
-                                {
-                                    "name" : "mPhaseShift",
-                                    "value" : 0.4330126941204071
-                                },
-                                {
-                                    "name" : "mWobbleRange",
-                                    "value" : 0.4000000059604645
-                                }
-                            ]
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
                         }
                     ]
                 }
             },
-            "name" : "main_menu_hexagon",
-            "translation" : [
-                0.8660253882408142,
-                1.5,
-                0
-            ]
-        },
-        {
-            "extensions" : {
-                "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
-                }
-            },
-            "mesh" : 1,
+            "mesh" : 2,
             "name" : "Hex"
         },
         {
@@ -195,26 +181,37 @@
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0
+                                    "value" : 0.4330126941204071
                                 },
                                 {
                                     "name" : "mWobbleRange",
-                                    "value" : 0.4000000059604645
+                                    "value" : 0.4999999403953552
                                 }
                             ]
                         }
                     ]
                 }
             },
-            "name" : "main_menu_hexagon.001"
+            "name" : "main_menu_hexagon",
+            "translation" : [
+                0.8660253882408142,
+                1.5,
+                0
+            ]
         },
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
                 }
             },
-            "mesh" : 1,
+            "mesh" : 2,
             "name" : "Hex"
         },
         {
@@ -231,31 +228,32 @@
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.4330126941204071
+                                    "value" : 0
                                 },
                                 {
                                     "name" : "mWobbleRange",
-                                    "value" : 0.4000000059604645
+                                    "value" : 0.4999999403953552
                                 }
                             ]
                         }
                     ]
                 }
             },
-            "name" : "main_menu_hexagon.002",
-            "translation" : [
-                0.8660253882408142,
-                -1.5,
-                0
-            ]
+            "name" : "main_menu_hexagon.001"
         },
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
                 }
             },
-            "mesh" : 1,
+            "mesh" : 2,
             "name" : "Hex"
         },
         {
@@ -272,20 +270,20 @@
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.43301263451576233
+                                    "value" : 0.4330126941204071
                                 },
                                 {
                                     "name" : "mWobbleRange",
-                                    "value" : 0.4000000059604645
+                                    "value" : 0.4999999403953552
                                 }
                             ]
                         }
                     ]
                 }
             },
-            "name" : "main_menu_hexagon.003",
+            "name" : "main_menu_hexagon.002",
             "translation" : [
-                -0.8660249710083008,
+                0.8660253882408142,
                 -1.5,
                 0
             ]
@@ -293,10 +291,16 @@
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
                 }
             },
-            "mesh" : 1,
+            "mesh" : 2,
             "name" : "Hex"
         },
         {
@@ -317,27 +321,33 @@
                                 },
                                 {
                                     "name" : "mWobbleRange",
-                                    "value" : 0.4000000059604645
+                                    "value" : 0.4999999403953552
                                 }
                             ]
                         }
                     ]
                 }
             },
-            "name" : "main_menu_hexagon.004",
+            "name" : "main_menu_hexagon.003",
             "translation" : [
                 -0.8660249710083008,
-                1.5,
+                -1.5,
                 0
             ]
         },
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
                 }
             },
-            "mesh" : 1,
+            "mesh" : 2,
             "name" : "Hex"
         },
         {
@@ -354,31 +364,37 @@
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.4330126941204071
+                                    "value" : 0.43301263451576233
                                 },
                                 {
                                     "name" : "mWobbleRange",
-                                    "value" : 0.4000000059604645
+                                    "value" : 0.4999999403953552
                                 }
                             ]
                         }
                     ]
                 }
             },
-            "name" : "main_menu_hexagon.005",
+            "name" : "main_menu_hexagon.004",
             "translation" : [
-                -1.7320507764816284,
-                0,
+                -0.8660249710083008,
+                1.5,
                 0
             ]
         },
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
                 }
             },
-            "mesh" : 1,
+            "mesh" : 2,
             "name" : "Hex"
         },
         {
@@ -395,20 +411,20 @@
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.4330124855041504
+                                    "value" : 0.4330126941204071
                                 },
                                 {
                                     "name" : "mWobbleRange",
-                                    "value" : 0.4000000059604645
+                                    "value" : 0.4999999403953552
                                 }
                             ]
                         }
                     ]
                 }
             },
-            "name" : "main_menu_hexagon.006",
+            "name" : "main_menu_hexagon.005",
             "translation" : [
-                1.7320499420166016,
+                -1.7320507764816284,
                 0,
                 0
             ]
@@ -416,10 +432,16 @@
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
                 }
             },
-            "mesh" : 1,
+            "mesh" : 2,
             "name" : "Hex"
         },
         {
@@ -436,31 +458,37 @@
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.75
+                                    "value" : 0.4330124855041504
                                 },
                                 {
                                     "name" : "mWobbleRange",
-                                    "value" : 0.4000000059604645
+                                    "value" : 0.4999999403953552
                                 }
                             ]
                         }
                     ]
                 }
             },
-            "name" : "main_menu_hexagon.007",
+            "name" : "main_menu_hexagon.006",
             "translation" : [
+                1.7320499420166016,
                 0,
-                3,
                 0
             ]
         },
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
                 }
             },
-            "mesh" : 1,
+            "mesh" : 2,
             "name" : "Hex"
         },
         {
@@ -481,27 +509,33 @@
                                 },
                                 {
                                     "name" : "mWobbleRange",
-                                    "value" : 0.4000000059604645
+                                    "value" : 0.4999999403953552
                                 }
                             ]
                         }
                     ]
                 }
             },
-            "name" : "main_menu_hexagon.008",
+            "name" : "main_menu_hexagon.007",
             "translation" : [
                 0,
-                -3,
+                3,
                 0
             ]
         },
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
                 }
             },
-            "mesh" : 1,
+            "mesh" : 2,
             "name" : "Hex"
         },
         {
@@ -518,31 +552,37 @@
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.7499997019767761
+                                    "value" : 0.75
                                 },
                                 {
                                     "name" : "mWobbleRange",
-                                    "value" : 0.4000000059604645
+                                    "value" : 0.4999999403953552
                                 }
                             ]
                         }
                     ]
                 }
             },
-            "name" : "main_menu_hexagon.009",
+            "name" : "main_menu_hexagon.008",
             "translation" : [
-                -2.5980749130249023,
-                -1.5,
+                0,
+                -3,
                 0
             ]
         },
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
                 }
             },
-            "mesh" : 1,
+            "mesh" : 2,
             "name" : "Hex"
         },
         {
@@ -563,16 +603,16 @@
                                 },
                                 {
                                     "name" : "mWobbleRange",
-                                    "value" : 0.4000000059604645
+                                    "value" : 0.4999999403953552
                                 }
                             ]
                         }
                     ]
                 }
             },
-            "name" : "main_menu_hexagon.010",
+            "name" : "main_menu_hexagon.009",
             "translation" : [
-                2.5980749130249023,
+                -2.5980749130249023,
                 -1.5,
                 0
             ]
@@ -580,10 +620,16 @@
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
                 }
             },
-            "mesh" : 1,
+            "mesh" : 2,
             "name" : "Hex"
         },
         {
@@ -604,27 +650,33 @@
                                 },
                                 {
                                     "name" : "mWobbleRange",
-                                    "value" : 0.4000000059604645
+                                    "value" : 0.4999999403953552
                                 }
                             ]
                         }
                     ]
                 }
             },
-            "name" : "main_menu_hexagon.011",
+            "name" : "main_menu_hexagon.010",
             "translation" : [
                 2.5980749130249023,
-                1.5,
+                -1.5,
                 0
             ]
         },
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
                 }
             },
-            "mesh" : 1,
+            "mesh" : 2,
             "name" : "Hex"
         },
         {
@@ -645,16 +697,16 @@
                                 },
                                 {
                                     "name" : "mWobbleRange",
-                                    "value" : 0.4000000059604645
+                                    "value" : 0.4999999403953552
                                 }
                             ]
                         }
                     ]
                 }
             },
-            "name" : "main_menu_hexagon.012",
+            "name" : "main_menu_hexagon.011",
             "translation" : [
-                -2.5980749130249023,
+                2.5980749130249023,
                 1.5,
                 0
             ]
@@ -662,10 +714,16 @@
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
                 }
             },
-            "mesh" : 1,
+            "mesh" : 2,
             "name" : "Hex"
         },
         {
@@ -682,31 +740,37 @@
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.8660249710083008
+                                    "value" : 0.7499997019767761
                                 },
                                 {
                                     "name" : "mWobbleRange",
-                                    "value" : 0.4000000059604645
+                                    "value" : 0.4999999403953552
                                 }
                             ]
                         }
                     ]
                 }
             },
-            "name" : "main_menu_hexagon.013",
+            "name" : "main_menu_hexagon.012",
             "translation" : [
-                3.464099884033203,
-                0,
+                -2.5980749130249023,
+                1.5,
                 0
             ]
         },
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
                 }
             },
-            "mesh" : 1,
+            "mesh" : 2,
             "name" : "Hex"
         },
         {
@@ -727,16 +791,16 @@
                                 },
                                 {
                                     "name" : "mWobbleRange",
-                                    "value" : 0.4000000059604645
+                                    "value" : 0.4999999403953552
                                 }
                             ]
                         }
                     ]
                 }
             },
-            "name" : "main_menu_hexagon.014",
+            "name" : "main_menu_hexagon.013",
             "translation" : [
-                -3.464099884033203,
+                3.464099884033203,
                 0,
                 0
             ]
@@ -744,10 +808,16 @@
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
                 }
             },
-            "mesh" : 1,
+            "mesh" : 2,
             "name" : "Hex"
         },
         {
@@ -764,31 +834,37 @@
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.8660253882408142
+                                    "value" : 0.8660249710083008
                                 },
                                 {
                                     "name" : "mWobbleRange",
-                                    "value" : 0.4000000059604645
+                                    "value" : 0.4999999403953552
                                 }
                             ]
                         }
                     ]
                 }
             },
-            "name" : "main_menu_hexagon.015",
+            "name" : "main_menu_hexagon.014",
             "translation" : [
-                1.7320507764816284,
-                3,
+                -3.464099884033203,
+                0,
                 0
             ]
         },
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
                 }
             },
-            "mesh" : 1,
+            "mesh" : 2,
             "name" : "Hex"
         },
         {
@@ -805,20 +881,20 @@
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.8660252690315247
+                                    "value" : 0.8660253882408142
                                 },
                                 {
                                     "name" : "mWobbleRange",
-                                    "value" : 0.4000000059604645
+                                    "value" : 0.4999999403953552
                                 }
                             ]
                         }
                     ]
                 }
             },
-            "name" : "main_menu_hexagon.016",
+            "name" : "main_menu_hexagon.015",
             "translation" : [
-                -1.7320499420166016,
+                1.7320507764816284,
                 3,
                 0
             ]
@@ -826,10 +902,16 @@
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
                 }
             },
-            "mesh" : 1,
+            "mesh" : 2,
             "name" : "Hex"
         },
         {
@@ -846,31 +928,37 @@
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
-                                    "value" : 0.8660253882408142
+                                    "value" : 0.8660252690315247
                                 },
                                 {
                                     "name" : "mWobbleRange",
-                                    "value" : 0.4000000059604645
+                                    "value" : 0.4999999403953552
                                 }
                             ]
                         }
                     ]
                 }
             },
-            "name" : "main_menu_hexagon.017",
+            "name" : "main_menu_hexagon.016",
             "translation" : [
-                1.7320507764816284,
-                -3,
+                -1.7320499420166016,
+                3,
                 0
             ]
         },
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
                 }
             },
-            "mesh" : 1,
+            "mesh" : 2,
             "name" : "Hex"
         },
         {
@@ -887,11 +975,58 @@
                             "properties" : [
                                 {
                                     "name" : "mPhaseShift",
+                                    "value" : 0.8660253882408142
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.017",
+            "translation" : [
+                1.7320507764816284,
+                -3,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                41
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
                                     "value" : 0.8660252690315247
                                 },
                                 {
                                     "name" : "mWobbleRange",
-                                    "value" : 0.4000000059604645
+                                    "value" : 0.4999999403953552
                                 }
                             ]
                         }
@@ -906,8 +1041,1981 @@
             ]
         },
         {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
             "children" : [
-                2,
+                43
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.145643949508667
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.019",
+            "translation" : [
+                -0.8660249710083008,
+                -4.5,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                45
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.145643949508667
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.020",
+            "translation" : [
+                0.8660253882408142,
+                -4.5,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                47
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.2990379333496094
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.021",
+            "translation" : [
+                2.5980749130249023,
+                -4.5,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                49
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.1456435918807983
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.022",
+            "translation" : [
+                3.464099884033203,
+                -3,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                51
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.1456435918807983
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.023",
+            "translation" : [
+                3.464099884033203,
+                3,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                53
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.2990379333496094
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.024",
+            "translation" : [
+                2.5980749130249023,
+                4.5,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                55
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.145643949508667
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.025",
+            "translation" : [
+                0.8660253882408142,
+                4.5,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                57
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.145643949508667
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.026",
+            "translation" : [
+                -0.8660249710083008,
+                4.5,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                59
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.2990379333496094
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.027",
+            "translation" : [
+                -2.5980749130249023,
+                4.5,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                61
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.1456435918807983
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.028",
+            "translation" : [
+                -3.464099884033203,
+                3,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                63
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.1456435918807983
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.029",
+            "translation" : [
+                -3.464099884033203,
+                -3,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                65
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.2990379333496094
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.030",
+            "translation" : [
+                -2.5980749130249023,
+                -4.5,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                67
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.1456425189971924
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.031",
+            "translation" : [
+                4.330121040344238,
+                -1.5,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                69
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.1456425189971924
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.032",
+            "translation" : [
+                4.330121040344238,
+                1.5,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                71
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.1456425189971924
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.033",
+            "translation" : [
+                -4.330121040344238,
+                -1.5,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                73
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.1456425189971924
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.034",
+            "translation" : [
+                -4.330121040344238,
+                1.5,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                75
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.2990376949310303
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.035",
+            "translation" : [
+                5.196150779724121,
+                0,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                77
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.2990376949310303
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.036",
+            "translation" : [
+                -5.196150779724121,
+                0,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                79
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.5612494945526123
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.037",
+            "translation" : [
+                1.7320507764816284,
+                -6,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                81
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.5
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.038",
+            "translation" : [
+                0,
+                -6,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                83
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.5612494945526123
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.039",
+            "translation" : [
+                -1.7320499420166016,
+                -6,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                85
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.7320505380630493
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.040",
+            "translation" : [
+                -3.464099884033203,
+                -6,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                87
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.7320505380630493
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.041",
+            "translation" : [
+                3.464099884033203,
+                -6,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                89
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.5612484216690063
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.042",
+            "translation" : [
+                4.330121040344238,
+                -4.5,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                91
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.5612484216690063
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.043",
+            "translation" : [
+                -4.330121040344238,
+                -4.5,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                93
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.4999996423721313
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.044",
+            "translation" : [
+                -5.196150779724121,
+                -3,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                95
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.4999996423721313
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.045",
+            "translation" : [
+                5.196150779724121,
+                -3,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                97
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.5612494945526123
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.046",
+            "translation" : [
+                1.7320507764816284,
+                6,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                99
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.5
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.047",
+            "translation" : [
+                0,
+                6,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                101
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.5612494945526123
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.048",
+            "translation" : [
+                -1.7320499420166016,
+                6,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                103
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.7320505380630493
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.049",
+            "translation" : [
+                -3.464099884033203,
+                6,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                105
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.7320505380630493
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.050",
+            "translation" : [
+                3.464099884033203,
+                6,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                107
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.5612484216690063
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.051",
+            "translation" : [
+                4.330121040344238,
+                4.5,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                109
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.5612484216690063
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.052",
+            "translation" : [
+                -4.330121040344238,
+                4.5,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                111
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.4999996423721313
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.053",
+            "translation" : [
+                -5.196150779724121,
+                3,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                113
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.4999996423721313
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.054",
+            "translation" : [
+                5.196150779724121,
+                3,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                115
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.5612478256225586
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.055",
+            "translation" : [
+                6.06217098236084,
+                -1.5,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                117
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.5612478256225586
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.056",
+            "translation" : [
+                6.06217098236084,
+                1.5,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                119
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.5612478256225586
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.057",
+            "translation" : [
+                -6.06217098236084,
+                -1.5,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                121
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.5612478256225586
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.058",
+            "translation" : [
+                -6.06217098236084,
+                1.5,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                123
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.7320501804351807
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.059",
+            "translation" : [
+                6.928200721740723,
+                0,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "mesh" : 2,
+            "name" : "Hex"
+        },
+        {
+            "children" : [
+                125
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.Wobbler",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPhaseShift",
+                                    "value" : 1.7320501804351807
+                                },
+                                {
+                                    "name" : "mWobbleRange",
+                                    "value" : 0.4999999403953552
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "name" : "main_menu_hexagon.060",
+            "translation" : [
+                -6.928200721740723,
+                0,
+                0
+            ]
+        },
+        {
+            "children" : [
                 4,
                 6,
                 8,
@@ -926,7 +3034,50 @@
                 34,
                 36,
                 38,
-                40
+                40,
+                42,
+                44,
+                46,
+                48,
+                50,
+                52,
+                54,
+                56,
+                58,
+                60,
+                62,
+                64,
+                66,
+                68,
+                70,
+                72,
+                74,
+                76,
+                78,
+                80,
+                82,
+                84,
+                86,
+                88,
+                90,
+                92,
+                94,
+                96,
+                98,
+                100,
+                102,
+                104,
+                106,
+                108,
+                110,
+                112,
+                114,
+                116,
+                118,
+                120,
+                122,
+                124,
+                126
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -946,7 +3097,7 @@
                                 },
                                 {
                                     "name" : "mSineAmplitude",
-                                    "value" : 0.029999999329447746
+                                    "value" : -0.20000000298023224
                                 }
                             ]
                         }
@@ -961,7 +3112,7 @@
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "mesh" : 2,
+            "mesh" : 3,
             "name" : "Sphere"
         }
     ],
@@ -983,9 +3134,9 @@
             "name" : "MenuHex",
             "pbrMetallicRoughness" : {
                 "baseColorFactor" : [
-                    1,
-                    0.537187397480011,
-                    0.06823772937059402,
+                    0.1574343740940094,
+                    0.1217571347951889,
+                    0.08632887899875641,
                     1
                 ],
                 "roughnessFactor" : 0.19117647409439087
@@ -996,9 +3147,9 @@
             "name" : "MenuHex2",
             "pbrMetallicRoughness" : {
                 "baseColorFactor" : [
-                    1,
-                    0.537187397480011,
-                    0.06823772937059402,
+                    0.35884055495262146,
+                    0.26797980070114136,
+                    0.1805926114320755,
                     1
                 ],
                 "roughnessFactor" : 0.0882352963089943
@@ -1007,7 +3158,7 @@
     ],
     "meshes" : [
         {
-            "name" : "Cube.002",
+            "name" : "Cube.004",
             "primitives" : [
                 {
                     "attributes" : {
@@ -1030,7 +3181,7 @@
             ]
         },
         {
-            "name" : "Circle",
+            "name" : "Circle.001",
             "primitives" : [
                 {
                     "attributes" : {
@@ -1040,6 +3191,29 @@
                     },
                     "indices" : 11,
                     "material" : 0
+                },
+                {
+                    "attributes" : {
+                        "POSITION" : 12,
+                        "NORMAL" : 13,
+                        "TEXCOORD_0" : 14
+                    },
+                    "indices" : 15,
+                    "material" : 1
+                }
+            ]
+        },
+        {
+            "name" : "Circle",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 16,
+                        "NORMAL" : 17,
+                        "TEXCOORD_0" : 18
+                    },
+                    "indices" : 19,
+                    "material" : 0
                 }
             ]
         },
@@ -1048,11 +3222,11 @@
             "primitives" : [
                 {
                     "attributes" : {
-                        "POSITION" : 12,
-                        "NORMAL" : 13,
-                        "TEXCOORD_0" : 14
+                        "POSITION" : 20,
+                        "NORMAL" : 21,
+                        "TEXCOORD_0" : 22
                     },
-                    "indices" : 15
+                    "indices" : 23
                 }
             ]
         }
@@ -1061,15 +3235,15 @@
         {
             "bufferView" : 0,
             "componentType" : 5126,
-            "count" : 592,
+            "count" : 53,
             "max" : [
-                0.39927423000335693,
-                0.39934274554252625,
-                0.6205218434333801
+                0.20079609751701355,
+                0.20079609751701355,
+                0.6023673415184021
             ],
             "min" : [
-                -0.39927423000335693,
-                -0.39934274554252625,
+                -0.20079609751701355,
+                -0.20079609751701355,
                 0
             ],
             "type" : "VEC3"
@@ -1077,57 +3251,125 @@
         {
             "bufferView" : 1,
             "componentType" : 5126,
-            "count" : 592,
+            "count" : 53,
             "type" : "VEC3"
         },
         {
             "bufferView" : 2,
             "componentType" : 5126,
-            "count" : 592,
+            "count" : 53,
             "type" : "VEC2"
         },
         {
             "bufferView" : 3,
             "componentType" : 5123,
-            "count" : 2262,
+            "count" : 162,
             "type" : "SCALAR"
         },
         {
             "bufferView" : 4,
             "componentType" : 5126,
-            "count" : 409,
+            "count" : 141,
             "max" : [
-                0.40454524755477905,
-                0.40454527735710144,
-                0.901775598526001
+                0.22947362065315247,
+                0.22947362065315247,
+                0.6129429340362549
             ],
             "min" : [
-                -0.40454524755477905,
-                -0.40454527735710144,
-                0.6128460764884949
+                -0.22947362065315247,
+                -0.22947362065315247,
+                0.3994523584842682
             ],
             "type" : "VEC3"
         },
         {
             "bufferView" : 5,
             "componentType" : 5126,
-            "count" : 409,
+            "count" : 141,
             "type" : "VEC3"
         },
         {
             "bufferView" : 6,
             "componentType" : 5126,
-            "count" : 409,
+            "count" : 141,
             "type" : "VEC2"
         },
         {
             "bufferView" : 7,
             "componentType" : 5123,
-            "count" : 1626,
+            "count" : 570,
             "type" : "SCALAR"
         },
         {
             "bufferView" : 8,
+            "componentType" : 5126,
+            "count" : 13579,
+            "max" : [
+                0.8228941559791565,
+                0.9238281846046448,
+                0.667153537273407
+            ],
+            "min" : [
+                -0.8228942155838013,
+                -0.9238281846046448,
+                -5.547992287802117e-08
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 9,
+            "componentType" : 5126,
+            "count" : 13579,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 10,
+            "componentType" : 5126,
+            "count" : 13579,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 11,
+            "componentType" : 5123,
+            "count" : 30795,
+            "type" : "SCALAR"
+        },
+        {
+            "bufferView" : 12,
+            "componentType" : 5126,
+            "count" : 2353,
+            "max" : [
+                0.8326132297515869,
+                0.9353815317153931,
+                0.8752305507659912
+            ],
+            "min" : [
+                -0.8326132893562317,
+                -0.9353815317153931,
+                0.6214631199836731
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 13,
+            "componentType" : 5126,
+            "count" : 2353,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 14,
+            "componentType" : 5126,
+            "count" : 2353,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 15,
+            "componentType" : 5123,
+            "count" : 6048,
+            "type" : "SCALAR"
+        },
+        {
+            "bufferView" : 16,
             "componentType" : 5126,
             "count" : 126,
             "max" : [
@@ -1143,25 +3385,25 @@
             "type" : "VEC3"
         },
         {
-            "bufferView" : 9,
+            "bufferView" : 17,
             "componentType" : 5126,
             "count" : 126,
             "type" : "VEC3"
         },
         {
-            "bufferView" : 10,
+            "bufferView" : 18,
             "componentType" : 5126,
             "count" : 126,
             "type" : "VEC2"
         },
         {
-            "bufferView" : 11,
+            "bufferView" : 19,
             "componentType" : 5123,
             "count" : 498,
             "type" : "SCALAR"
         },
         {
-            "bufferView" : 12,
+            "bufferView" : 20,
             "componentType" : 5126,
             "count" : 1984,
             "max" : [
@@ -1177,19 +3419,19 @@
             "type" : "VEC3"
         },
         {
-            "bufferView" : 13,
+            "bufferView" : 21,
             "componentType" : 5126,
             "count" : 1984,
             "type" : "VEC3"
         },
         {
-            "bufferView" : 14,
+            "bufferView" : 22,
             "componentType" : 5126,
             "count" : 1984,
             "type" : "VEC2"
         },
         {
-            "bufferView" : 15,
+            "bufferView" : 23,
             "componentType" : 5123,
             "count" : 2880,
             "type" : "SCALAR"
@@ -1198,88 +3440,128 @@
     "bufferViews" : [
         {
             "buffer" : 0,
-            "byteLength" : 7104,
+            "byteLength" : 636,
             "byteOffset" : 0
         },
         {
             "buffer" : 0,
-            "byteLength" : 7104,
-            "byteOffset" : 7104
+            "byteLength" : 636,
+            "byteOffset" : 636
         },
         {
             "buffer" : 0,
-            "byteLength" : 4736,
-            "byteOffset" : 14208
+            "byteLength" : 424,
+            "byteOffset" : 1272
         },
         {
             "buffer" : 0,
-            "byteLength" : 4524,
-            "byteOffset" : 18944
+            "byteLength" : 324,
+            "byteOffset" : 1696
         },
         {
             "buffer" : 0,
-            "byteLength" : 4908,
-            "byteOffset" : 23468
+            "byteLength" : 1692,
+            "byteOffset" : 2020
         },
         {
             "buffer" : 0,
-            "byteLength" : 4908,
-            "byteOffset" : 28376
+            "byteLength" : 1692,
+            "byteOffset" : 3712
         },
         {
             "buffer" : 0,
-            "byteLength" : 3272,
-            "byteOffset" : 33284
+            "byteLength" : 1128,
+            "byteOffset" : 5404
         },
         {
             "buffer" : 0,
-            "byteLength" : 3252,
-            "byteOffset" : 36556
+            "byteLength" : 1140,
+            "byteOffset" : 6532
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 162948,
+            "byteOffset" : 7672
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 162948,
+            "byteOffset" : 170620
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 108632,
+            "byteOffset" : 333568
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 61590,
+            "byteOffset" : 442200
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 28236,
+            "byteOffset" : 503792
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 28236,
+            "byteOffset" : 532028
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 18824,
+            "byteOffset" : 560264
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 12096,
+            "byteOffset" : 579088
         },
         {
             "buffer" : 0,
             "byteLength" : 1512,
-            "byteOffset" : 39808
+            "byteOffset" : 591184
         },
         {
             "buffer" : 0,
             "byteLength" : 1512,
-            "byteOffset" : 41320
+            "byteOffset" : 592696
         },
         {
             "buffer" : 0,
             "byteLength" : 1008,
-            "byteOffset" : 42832
+            "byteOffset" : 594208
         },
         {
             "buffer" : 0,
             "byteLength" : 996,
-            "byteOffset" : 43840
+            "byteOffset" : 595216
         },
         {
             "buffer" : 0,
             "byteLength" : 23808,
-            "byteOffset" : 44836
+            "byteOffset" : 596212
         },
         {
             "buffer" : 0,
             "byteLength" : 23808,
-            "byteOffset" : 68644
+            "byteOffset" : 620020
         },
         {
             "buffer" : 0,
             "byteLength" : 15872,
-            "byteOffset" : 92452
+            "byteOffset" : 643828
         },
         {
             "buffer" : 0,
             "byteLength" : 5760,
-            "byteOffset" : 108324
+            "byteOffset" : 659700
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 114084,
+            "byteLength" : 665460,
             "uri" : "main_menu.bin"
         }
     ]

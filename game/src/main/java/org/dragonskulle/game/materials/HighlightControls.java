@@ -1,9 +1,10 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.materials;
 
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
@@ -19,12 +20,11 @@ import org.joml.Vector4fc;
  *     allows to change their highlighting.
  */
 @Accessors(prefix = "m")
-@Log
 public class HighlightControls extends Component implements IOnAwake, IFrameUpdate {
 
-    private Reference<Renderable> mRenderable = new Reference<>(null);
+    private List<Reference<Renderable>> mRenderables = new ArrayList<>();
     private final String mChildName;
-    private PBRHighlightMaterial mHighlightMaterial;
+    @Getter private List<PBRHighlightMaterial> mHighlightMaterials = new ArrayList<>();
     @Getter private final Vector4f mTargetColour = new Vector4f(0f);
 
     public HighlightControls() {
@@ -36,7 +36,7 @@ public class HighlightControls extends Component implements IOnAwake, IFrameUpda
     }
 
     public void setHighlight(float r, float g, float b, float a) {
-        if (mHighlightMaterial == null) {
+        if (mHighlightMaterials == null) {
             return;
         }
         mTargetColour.set(r, g, b, a);
@@ -56,29 +56,29 @@ public class HighlightControls extends Component implements IOnAwake, IFrameUpda
             go = getGameObject();
         }
 
-        mRenderable = go.getComponent(Renderable.class);
+        go.getComponents(Renderable.class, mRenderables);
 
-        if (mRenderable != null) {
-            mHighlightMaterial = mRenderable.get().getMaterial(PBRHighlightMaterial.class);
-            if (mHighlightMaterial == null) {
-                PBRMaterial pbrMat = mRenderable.get().getMaterial(PBRMaterial.class);
+        for (Reference<Renderable> renderable : mRenderables) {
+            PBRHighlightMaterial highlightMaterial =
+                    renderable.get().getMaterial(PBRHighlightMaterial.class);
+            if (highlightMaterial == null) {
+                PBRMaterial pbrMat = renderable.get().getMaterial(PBRMaterial.class);
                 if (pbrMat == null) {
                     return;
                 }
-                mHighlightMaterial = new PBRHighlightMaterial(pbrMat);
-                mRenderable.get().setMaterial(mHighlightMaterial.incRefCount());
+                highlightMaterial = new PBRHighlightMaterial(pbrMat);
+                renderable.get().setMaterial(highlightMaterial.incRefCount());
             }
+
+            mHighlightMaterials.add(highlightMaterial);
         }
     }
 
     @Override
     public void frameUpdate(float deltaTime) {
-
-        if (mHighlightMaterial == null) {
-            return;
+        for (PBRHighlightMaterial mat : mHighlightMaterials) {
+            mat.getOverlayColour().lerp(mTargetColour, Math.min(1, deltaTime * 10f));
         }
-
-        mHighlightMaterial.getOverlayColour().lerp(mTargetColour, Math.min(1, deltaTime * 10f));
     }
 
     @Override

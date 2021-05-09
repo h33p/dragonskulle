@@ -64,7 +64,13 @@
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
                 }
             },
             "mesh" : 0,
@@ -262,9 +268,9 @@
             "name" : "MenuHex",
             "pbrMetallicRoughness" : {
                 "baseColorFactor" : [
-                    1,
-                    0.537187397480011,
-                    0.06823772937059402,
+                    0.1574343740940094,
+                    0.1217571347951889,
+                    0.08632887899875641,
                     1
                 ],
                 "roughnessFactor" : 0.19117647409439087

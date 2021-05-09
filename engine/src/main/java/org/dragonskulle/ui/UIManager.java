@@ -145,6 +145,30 @@ public class UIManager {
      */
     public void buildVerticalUi(
             GameObject go, float startY, float startX, float endX, IUIBuildHandler... elems) {
+        buildVerticalUi(go, startY, startX, endX, 0.5f, elems);
+    }
+
+    /**
+     * Build a vertical UI on the object
+     *
+     * <p>This method will build UI elements vertically in accordance to {@link UIAppearance}
+     * settings.
+     *
+     * @param go object to build the children on.
+     * @param startY starting Y parent anchor, this will act as an offset.
+     * @param startX starting X parent anchor, this will be consistent for all elements.
+     * @param endX ending X parent anchor, this will be consistent for all elements.
+     * @param pivotX X pivot point, used for alienment.
+     * @param elems list of buildable UI elements. Can be UITextRect elements, lambdas, custom
+     *     objects, or a mix of them.
+     */
+    public void buildVerticalUi(
+            GameObject go,
+            float startY,
+            float startX,
+            float endX,
+            float pivotX,
+            IUIBuildHandler... elems) {
         int cnt = 0;
 
         for (IUIBuildHandler handler : elems) {
@@ -162,6 +186,7 @@ public class UIManager {
                             TransformUI transform = child.getTransform(TransformUI.class);
                             transform.setParentAnchor(startX, curY, endX, curY);
                             transform.setMargin(0, 0, 0, mAppearance.getVerticalUIElemHeight());
+                            transform.setPivotOffset(pivotX, 0.5f);
                             handler.handleUIBuild(child);
                         });
             }

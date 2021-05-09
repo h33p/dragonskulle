@@ -298,9 +298,10 @@ public class App implements NativeResource {
 
         uiManager.buildVerticalUi(
                 mainUi,
-                0.05f,
+                0.3f,
                 0,
-                MENU_BASEWIDTH,
+                1,
+                null,
                 new UIButton(
                         "Play Game",
                         (__, ___) -> {
