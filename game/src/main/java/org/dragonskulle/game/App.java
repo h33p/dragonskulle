@@ -44,7 +44,7 @@ public class App implements NativeResource {
 
     private final Resource<GLTF> mMainMenuGltf = GLTF.getResource("main_menu");
     private final Resource<GLTF> mNetworkTemplatesGltf = GLTF.getResource("network_templates");
-    private static final String BGM_SOUND = "game_background.wav";
+    private static final String BGM_SOUND = GameUIAppearance.AudioFiles.BGM_SOUND.getPath();
 
     public static final Resource<GLTF> TEMPLATES = GLTF.getResource("templates");
 
@@ -142,7 +142,7 @@ public class App implements NativeResource {
                             audio.addComponent(listener);
 
                             AudioSource bgm = new AudioSource();
-                            bgm.setVolume(0.1f);
+                            bgm.setVolume(0.5f);
                             bgm.setLooping(true);
                             bgm.playSound(BGM_SOUND);
                             audio.addComponent(bgm);
@@ -166,7 +166,11 @@ public class App implements NativeResource {
                         "pause menu",
                         new TransformUI(),
                         (menu) -> {
-                            menu.addComponent(new UIPauseMenu(networkManager, camera, asrc.getReference(AudioSource.class)));
+                            menu.addComponent(
+                                    new UIPauseMenu(
+                                            networkManager,
+                                            camera,
+                                            asrc.getReference(AudioSource.class)));
                         });
 
         mainScene.addRootObject(pauseMenu);
@@ -178,7 +182,7 @@ public class App implements NativeResource {
      * Creates the main scene.
      *
      * @param networkManager the network manager
-     * @param asServer       true, if to create as server
+     * @param asServer true, if to create as server
      * @return the scene created
      */
     static Scene createMainScene(NetworkManager networkManager, boolean asServer) {
@@ -242,7 +246,7 @@ public class App implements NativeResource {
                         "menu audio",
                         (audio) -> {
                             AudioSource bgm = new AudioSource();
-                            bgm.setVolume(0.1f);
+                            bgm.setVolume(0.6f);
                             bgm.setLooping(true);
                             bgm.playSound(BGM_SOUND);
 

@@ -6,7 +6,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.IOnAwake;
@@ -46,13 +45,13 @@ public class GameState extends NetworkableComponent implements IOnAwake {
 
         public InvokeAudioEvent() {}
 
-        public InvokeAudioEvent(GameUIAppearance.AudioEvent sound) {
+        public InvokeAudioEvent(GameUIAppearance.AudioFiles sound) {
             mSoundId = sound;
         }
 
         @Getter
         @Accessors(prefix = "m")
-        private GameUIAppearance.AudioEvent mSoundId;
+        private GameUIAppearance.AudioFiles mSoundId;
 
         @Override
         public void serialize(DataOutput stream, int __) throws IOException {
@@ -61,24 +60,20 @@ public class GameState extends NetworkableComponent implements IOnAwake {
 
         @Override
         public void deserialize(DataInput stream) throws IOException {
-            mSoundId = GameUIAppearance.AudioEvent.get(stream.readInt());
+            mSoundId = GameUIAppearance.AudioFiles.get(stream.readInt());
         }
     }
-
 
     public static interface IGameEndEvent {
         void handle(int winnerId);
     }
 
     @Getter private GameConfig mConfig = GameConfig.getDefaultConfig();
-    @Getter
-    private final SyncInt mNumPlayers = new SyncInt(0);
-    @Getter
-    private final SyncInt mNumCapitalsStanding = new SyncInt(0);
+    @Getter private final SyncInt mNumPlayers = new SyncInt(0);
+    @Getter private final SyncInt mNumCapitalsStanding = new SyncInt(0);
     @Getter private final SyncFloat mStartTime = new SyncFloat();
 
-    @Getter
-    private boolean mInGame = true;
+    @Getter private boolean mInGame = true;
 
     private transient ServerEvent<GameEndEventData> mGameEndEvent;
 

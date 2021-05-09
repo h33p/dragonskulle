@@ -1,7 +1,33 @@
-building_sell: https://freesound.org/people/BeezleFM/sounds/512133/
-building_upgrade: https://freesound.org/people/InspectorJ/sounds/400991/
-attack_success: https://freesound.org/people/Debsound/sounds/437602/
-victory: https://samplefocus.com/samples/flawless-victory#_=_
-game_start: https://samplefocus.com/samples/round-1-fight
-attack_launched: https://soundbible.com/909-Cannon.html
-attack_failed: https://freesound.org/people/adcbicycle/sounds/13900/
+building_sell: 
+https://freesound.org/people/BeezleFM/sounds/512133/
+
+building_upgrade: 
+https://freesound.org/people/InspectorJ/sounds/400991/
+
+attack_success: 
+https://freesound.org/people/Debsound/sounds/437602/
+
+victory:
+https://freesound.org/people/Tuudurt/sounds/258142/
+
+game_start: 
+https://freesound.org/people/kirmm/sounds/392180/
+
+attack_launched: 
+https://soundbible.com/909-Cannon.html
+
+attack_failed: 
+https://freesound.org/people/adcbicycle/sounds/13900/
+
+game_background_nakarada: 
+
+Battle Of The Creek by Alexander Nakarada | https://www.serpentsoundstudios.com
+Music promoted by https://www.free-stock-music.com
+Attribution 4.0 International (CC BY 4.0)
+https://creativecommons.org/licenses/by/4.0/
+
+on_lose:
+https://freesound.org/people/Akrythael/sounds/334916/
+
+attack_invoke:
+https://freesound.org/people/Isaac200000/sounds/184650/

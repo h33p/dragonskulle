@@ -22,31 +22,43 @@ import org.dragonskulle.ui.UIManager;
  * @author Aurimas Blažulionis
  */
 public class GameUIAppearance {
+    /** Audio files contain the path of the audio to invoke when called. */
     @Accessors(prefix = "m")
-    public enum AudioEvent {
+    public enum AudioFiles {
+        BGM_SOUND("game_background_nakarada.wav"),
         BUTTON_DOWN_SOUND("button-down.wav"),
         BUTTON_UP_SOUND("button-up.wav"),
         BUILDING_SOUND("building_upgrade.wav"),
         BUILDING_SELL_SOUND("building_sell.wav"),
         ATTACK_SUCCESS_SOUND("attack_success.wav"),
         ATTACK_FAILURE_SOUND("attack_failed.wav"),
-        ATTACK_INVOKED_SOUND("attack_launched.wav"),
-        ON_GAME_START("game_start.wav"), //todo
-        ON_WIN_SOUND("victory.wav"), //todo
-        ON_LOSE_SOUND("on_lose.wav"), //todo
-        DEFENCE_FAILED_SOUND("attack_success.wav"), //todo
-        DEFENCE_SUCCESS_SOUND("attack_failed.wav"); //todo
+        ATTACK_INVOKED_SOUND("attack_invoke.wav"),
+        ON_GAME_START("game_start.wav"),
+        ON_WIN_SOUND("victory.wav"),
+        ON_LOSE_SOUND("on_lose.wav"),
+        DEFENCE_FAILED_SOUND("attack_success.wav"),
+        DEFENCE_SUCCESS_SOUND("attack_failed.wav");
 
-        private static final AudioEvent[] sValues = values();
+        private static final AudioFiles[] sValues = values();
 
-        protected static AudioEvent get(int ordinal) {
+        /**
+         * Get an audio file by ordinal index.
+         *
+         * @param ordinal the ordinal index
+         * @return the audio event
+         */
+        protected static AudioFiles get(int ordinal) {
             return sValues[ordinal];
         }
 
-        @Getter
-        private final String mPath;
+        @Getter private final String mPath;
 
-        AudioEvent(String resourcePath) {
+        /**
+         * Constructor.
+         *
+         * @param resourcePath the resource path to the audio
+         */
+        AudioFiles(String resourcePath) {
             mPath = resourcePath;
         }
     }
@@ -60,7 +72,7 @@ public class GameUIAppearance {
      * Get a information box texture.
      *
      * @return info box texture. The reference is cloned, so this texture needs to be freed by the
-     * callee
+     *     callee
      */
     public static SampledTexture getInfoBoxTexture() {
         return UIManager.getInstance().getAppearance().getRectTextures()[INFO_BOX].clone();
@@ -70,7 +82,7 @@ public class GameUIAppearance {
      * Get a drawer texture.
      *
      * @return info drawer texture. The reference is cloned, so this texture needs to be freed by
-     * the callee
+     *     the callee
      */
     public static SampledTexture getDrawerTexture() {
         return UIManager.getInstance().getAppearance().getRectTextures()[DRAWER].clone();
@@ -80,7 +92,7 @@ public class GameUIAppearance {
      * Get a square button texture.
      *
      * @return square button texture. The reference is cloned, so this texture needs to be freed by
-     * the callee
+     *     the callee
      */
     public static SampledTexture getSquareButtonTexture() {
         return UIManager.getInstance().getAppearance().getRectTextures()[SQUARE_BUTTON].clone();
@@ -90,7 +102,7 @@ public class GameUIAppearance {
      * Get a 2:1 info box texture.
      *
      * @return 2:1 info box texture. The reference is cloned, so this texture needs to be freed by
-     * the callee
+     *     the callee
      */
     public static SampledTexture getInfoBox21Texture() {
         return UIManager.getInstance().getAppearance().getRectTextures()[INFO_BOX_2_1].clone();
@@ -109,12 +121,12 @@ public class GameUIAppearance {
         appearance.setDropDownIconTexture(new SampledTexture("ui/drop_down_icon_new.png"));
         appearance.setSliderKnobTexture(new SampledTexture("ui/slider_bar.png"));
         appearance.setRectTextures(
-                new SampledTexture[]{
-                        new SampledTexture("ui/info_box.png"),
-                        new SampledTexture("ui/drawer.png"),
-                        new SampledTexture(
-                                "ui/square_button.png", new TextureMapping(TextureFiltering.NEAREST)),
-                        new SampledTexture("ui/info_box_2_1.png")
+                new SampledTexture[] {
+                    new SampledTexture("ui/info_box.png"),
+                    new SampledTexture("ui/drawer.png"),
+                    new SampledTexture(
+                            "ui/square_button.png", new TextureMapping(TextureFiltering.NEAREST)),
+                    new SampledTexture("ui/info_box_2_1.png")
                 });
         appearance.setRectTextVertMargin(0.3f);
         appearance.setRectTextHorizMargin(0.15f);
@@ -122,25 +134,21 @@ public class GameUIAppearance {
         appearance.setOnPressDown(GameUIAppearance::onPressDown);
     }
 
-    /**
-     * Inject a sound to every button click.
-     */
+    /** Inject a sound to every button click. */
     private static void onClick(UIButton button, float deltaTime) {
         AudioSource source = getSource();
 
         if (source != null) {
-            source.playSound(AudioEvent.BUTTON_UP_SOUND.getPath());
+            source.playSound(AudioFiles.BUTTON_UP_SOUND.getPath());
         }
     }
 
-    /**
-     * Inject a sound to every button down press.
-     */
+    /** Inject a sound to every button down press. */
     private static void onPressDown(UIButton button, float deltaTime) {
         AudioSource source = getSource();
 
         if (source != null) {
-            source.playSound(AudioEvent.BUTTON_DOWN_SOUND.getPath());
+            source.playSound(AudioFiles.BUTTON_DOWN_SOUND.getPath());
         }
     }
 
