@@ -37,11 +37,16 @@ public abstract class Component {
 
     /** Handle the actual destruction of a component. Only called by the engine. */
     public final void engineDestroy() {
-        onDestroy();
-
         if (mGameObject != null) {
             mGameObject.removeComponent(this);
         }
+
+        mReference.clear();
+    }
+
+    /** Handle component's removal. Called by game object. */
+    public final void onRemove() {
+        onDestroy();
         mGameObject = null;
         mReference.clear();
     }

@@ -5,7 +5,6 @@ import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
@@ -29,6 +28,7 @@ import org.dragonskulle.game.map.MapEffects.StandardHighlightType;
 import org.dragonskulle.game.misc.ArcPath;
 import org.dragonskulle.game.misc.ArcPath.IArcHandler;
 import org.dragonskulle.game.misc.ArcPath.IPathUpdater;
+import org.dragonskulle.game.player.network_data.BuildData;
 import org.dragonskulle.game.player.ui.Screen;
 import org.dragonskulle.game.player.ui.UILinkedScrollBar;
 import org.dragonskulle.game.player.ui.UIMenuLeftDrawer;
@@ -51,7 +51,6 @@ import org.joml.Vector3f;
  * @author DragonSkulle
  */
 @Accessors(prefix = "m")
-@Log
 public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate, IOnStart {
 
     /** The current {@link Screen} being displayed. */
@@ -61,6 +60,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     @Getter @Setter private HexagonTile mHexChosen;
     /** Stores the current Building being selected, if there is one. */
     @Getter @Setter private Reference<Building> mBuildingChosen;
+
+    /** Predefined building descriptor to use for placing buildings. */
+    @Getter @Setter
+    private BuildingDescriptor mPredefinedBuildingChosen = PredefinedBuildings.get(0);
 
     /** Store a reference to the relevant {@link Player}. */
     private Reference<Player> mPlayer;
@@ -99,11 +102,15 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             float deltaTime = Engine.getInstance().getFrameDeltaTime();
             float lerptime = Math.min(1f, deltaTime * speed);
 
+            Building target = Reference.isValid(mBuildingChosen) ? mBuildingChosen.get() : null;
+            HexagonTile start = mHexChosen;
+            Player player = mPlayer.get();
+
             if (mArcFadeOut
-                    || mHexChosen == null
-                    || !Reference.isValid(mBuildingChosen)
-                    || !mPlayer.get()
-                            .attackCheck(mBuildingChosen.get(), mHexChosen.getBuilding())) {
+                    || target == null
+                    || start == null
+                    || target.getTile() == null
+                    || !player.attackCheck(start.getBuilding(), target)) {
                 mLerpedStart = MathUtils.lerp(mLerpedStart, -1, lerptime);
 
                 arcPath.setSpawnOffset(mLerpedStart);
@@ -123,8 +130,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
             arcPath.setSpawnOffset(mLerpedStart);
 
-            HexagonTile hex = mBuildingChosen.get().getTile();
-            HexagonTile hexEnd = mHexChosen;
+            HexagonTile hex = start;
+            HexagonTile hexEnd = target.getTile();
 
             TransformHex.axialToCartesian(
                     new Vector2f(hex.getQ(), hex.getR()), hex.getHeight(), posStart);
@@ -220,7 +227,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         this::getHexChosen,
                         this::setHexChosen,
                         this::switchScreen,
-                        this::getPlayer);
+                        this::getPlayer,
+                        this::setPredefinedBuildingChosen);
         mMenuDrawer = menu.getReference(UIMenuLeftDrawer.class);
 
         // Create a GameObject to store the token counter, and to hold the left menu.
@@ -322,21 +330,59 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     @Override
     public void frameUpdate(float deltaTime) {
         detectTileSelection();
+        detectBackAction();
+        detectKeyboardInput();
         updateVisuals();
     }
 
-    /**
-     * Only allow the player to select opponent buildings.
-     *
-     * @param selected The hexagon tile clicked on.
-     */
-    private void attackSelect(HexagonTile selected) {
-        Player player = getPlayer();
-        if (player == null || !selected.hasBuilding()) return;
+    private void detectKeyboardInput() {
+        Screen nextScreen = mCurrentScreen;
 
-        Building building = selected.getBuilding();
-        if (player.isBuildingOwner(building)) return;
-        mBuildingChosen = building.getReference(Building.class);
+        switch (mCurrentScreen) {
+            case BUILDING_SELECTED_SCREEN:
+                if (Reference.isValid(mBuildingChosen)) {
+                    Building b = mBuildingChosen.get();
+
+                    if (!b.getAttackableBuildings().isEmpty()
+                            && GameActions.ATTACK_MODE.isJustActivated()) {
+                        nextScreen = Screen.ATTACKING_SCREEN;
+                    }
+
+                    if (!b.isCapital() && GameActions.SELL_MODE.isJustActivated()) {
+                        nextScreen = Screen.SELLING_SCREEN;
+                    }
+                }
+            case ATTACKING_SCREEN:
+            case DEFAULT_SCREEN:
+                if (GameActions.BUILD_MODE.isJustActivated()) {
+                    nextScreen = Screen.PLACING_NEW_BUILDING;
+                }
+            default:
+                break;
+        }
+
+        if (mCurrentScreen != nextScreen) {
+            switchScreen(nextScreen);
+        }
+    }
+
+    private void detectBackAction() {
+        Player player = getPlayer();
+        Cursor cursor = Actions.getCursor();
+        if (player == null || cursor == null) return;
+
+        boolean click = GameActions.RIGHT_CLICK.isJustDeactivated() && !cursor.hadLittleDrag();
+        // If no clicking is occurring, exit.
+        if (!click) return;
+
+        // If the mouse is over the UI, exit.
+        if (UIManager.getInstance().getHoveredObject() != null) return;
+
+        Screen nextScreen = Screen.DEFAULT_SCREEN;
+
+        if (mCurrentScreen != nextScreen) {
+            switchScreen(nextScreen);
+        }
     }
 
     /** If the user selects a tile, swap to the relevant screen. */
@@ -344,13 +390,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         Player player = getPlayer();
         Cursor cursor = Actions.getCursor();
         if (player == null || cursor == null) return;
-
-        boolean click = GameActions.LEFT_CLICK.isJustDeactivated() && !cursor.hadLittleDrag();
-        // If no clicking is occurring, exit.
-        if (!click) return;
-
-        // If the mouse is over the UI, exit.
-        if (UIManager.getInstance().getHoveredObject() != null) return;
 
         // Ensure a tile can be selected.
         HexagonMap map = player.getMap();
@@ -360,33 +399,82 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         HexagonTile selected = map.cursorToTile();
         if (selected == null) return;
 
-        // If in attacking mode, do its own thing.
+        // If in attack mode we select on hover for UI
         if (mCurrentScreen == Screen.ATTACKING_SCREEN) {
-            attackSelect(selected);
-            return;
-        }
+            Building building = selected.getBuilding();
 
-        mHexChosen = selected;
-
-        if (mHexChosen.hasBuilding()) {
-            Building building = mHexChosen.getBuilding();
-            if (building == null) return;
-
-            // Select the building.
-            mBuildingChosen = building.getReference(Building.class);
-
-            if (player.isBuildingOwner(building)) {
-                switchScreen(Screen.BUILDING_SELECTED_SCREEN);
-            } else {
-                switchScreen(Screen.DEFAULT_SCREEN);
-            }
-        } else {
-            if (mHexChosen.isBuildable(player)) {
-                switchScreen(Screen.PLACING_NEW_BUILDING);
+            if (player.attackCheck(mHexChosen.getBuilding(), building)) {
+                mBuildingChosen = building.getReference(Building.class);
             } else {
                 mBuildingChosen = null;
-                switchScreen(Screen.DEFAULT_SCREEN);
             }
+        }
+
+        boolean click = GameActions.LEFT_CLICK.isJustDeactivated() && !cursor.hadLittleDrag();
+        // If no clicking is occurring, exit.
+        if (!click) return;
+
+        // If the mouse is over the UI, exit.
+        if (UIManager.getInstance().getHoveredObject() != null) return;
+
+        switch (mCurrentScreen) {
+            case ATTACKING_SCREEN:
+                if (selected.hasBuilding()) {
+                    Building building = selected.getBuilding();
+
+                    if (building.getOwner() == player) {
+                        mHexChosen = selected;
+                    } else if (player.attackCheck(mHexChosen.getBuilding(), building)) {
+                        player.getClientAttackRequest()
+                                .invoke((data) -> data.setData(mHexChosen.getBuilding(), building));
+                    }
+                } else if (!selected.isClaimed()) {
+                    mHexChosen = null;
+                    switchScreen(Screen.DEFAULT_SCREEN);
+                }
+                break;
+            case SELLING_SCREEN:
+                if (mHexChosen == selected) {
+                    break;
+                }
+                // fallthrough
+            case DEFAULT_SCREEN:
+            case BUILDING_SELECTED_SCREEN:
+                mHexChosen = selected;
+
+                Screen nextScreen = Screen.DEFAULT_SCREEN;
+
+                if (mHexChosen.hasBuilding()) {
+                    Building building = mHexChosen.getBuilding();
+                    if (building == null) break;
+
+                    // Select the building.
+                    mBuildingChosen = building.getReference(Building.class);
+
+                    if (player.isBuildingOwner(building)) {
+                        nextScreen = Screen.BUILDING_SELECTED_SCREEN;
+                    }
+                }
+
+                if (mCurrentScreen != nextScreen) {
+                    switchScreen(nextScreen);
+                }
+
+                break;
+            case PLACING_NEW_BUILDING:
+                mHexChosen = selected;
+
+                if (mHexChosen.isBuildable(player)) {
+                    // place building
+                    player.getClientBuildRequest()
+                            .invoke(
+                                    new BuildData(
+                                            mHexChosen,
+                                            PredefinedBuildings.getIndex(
+                                                    mPredefinedBuildingChosen)));
+                }
+
+                break;
         }
     }
 
@@ -408,7 +496,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         // Set the player for the effects.
         effects.setActivePlayer(mPlayer);
 
-        if (mCurrentScreen != Screen.ATTACKING_SCREEN && mUpdater != null) {
+        if (mCurrentScreen != Screen.ATTACKING_SCREEN) {
             mArcFadeOut = true;
         }
 
@@ -416,26 +504,14 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             case DEFAULT_SCREEN:
                 effects.setHighlightOverlay(
                         (fx) -> {
-                            highlightSelectedTile(fx, StandardHighlightType.VALID);
-
-                            HexagonMap map = player.getMap();
-
-                            if (map == null) {
-                                return;
-                            }
-
-                            fx.pulseHighlight(
-                                    map.cursorToTile(),
-                                    StandardHighlightType.VALID.asSelection(),
-                                    0.6f,
-                                    2f,
-                                    0.05f);
+                            highlightHoveredTile(fx, StandardHighlightType.SELECT);
                         });
                 break;
             case BUILDING_SELECTED_SCREEN:
                 effects.setHighlightOverlay(
                         (fx) -> {
                             highlightSelectedTile(fx, StandardHighlightType.VALID);
+                            highlightHoveredTile(fx, StandardHighlightType.SELECT);
                         });
                 break;
             case ATTACKING_SCREEN:
@@ -450,19 +526,52 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                 effects.setHighlightOverlay(
                         (fx) -> {
                             highlightAttackableTiles(
-                                    fx, StandardHighlightType.ATTACK, StandardHighlightType.VALID);
+                                    fx, StandardHighlightType.ATTACK, StandardHighlightType.SELECT);
+                            highlightHoveredTile(fx, StandardHighlightType.SELECT);
                         });
                 break;
             case SELLING_SCREEN:
+                effects.setHighlightOverlay(
+                        (fx) -> {
+                            if (!Reference.isValid(mBuildingChosen)) {
+                                return;
+                            }
+
+                            fx.highlightTile(
+                                    mBuildingChosen.get().getTile(),
+                                    StandardHighlightType.SELECT_INVALID.asSelection());
+                            highlightHoveredTile(fx, StandardHighlightType.SELECT);
+                        });
                 break;
             case PLACING_NEW_BUILDING:
                 effects.setHighlightOverlay(
                         (fx) -> {
                             highlightBuildableTiles(fx, StandardHighlightType.VALID);
-                            highlightSelectedTile(fx, StandardHighlightType.PLACE);
+
+                            HexagonMap map = player.getMap();
+
+                            if (map == null) {
+                                return;
+                            }
+
+                            HexagonTile hovered = map.cursorToTile();
+
+                            if (hovered == null) {
+                                return;
+                            }
+
+                            boolean valid =
+                                    hovered.isBuildable(player)
+                                            && mPredefinedBuildingChosen.getCost()
+                                                    <= player.getTokens().get();
+
+                            StandardHighlightType hl =
+                                    valid
+                                            ? StandardHighlightType.SELECT
+                                            : StandardHighlightType.SELECT_INVALID;
+
+                            highlightHoveredTile(fx, hl);
                         });
-                break;
-            default:
                 break;
         }
     }
@@ -486,6 +595,22 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             mMenuDrawer.get().setVisibleScreen(mCurrentScreen);
             mVisualsNeedUpdate = true;
         }
+    }
+
+    private void highlightHoveredTile(MapEffects effects, StandardHighlightType highlight) {
+        if (!Reference.isValid(mPlayer)) {
+            return;
+        }
+
+        Player player = mPlayer.get();
+
+        HexagonMap map = player.getMap();
+
+        if (map == null) {
+            return;
+        }
+
+        effects.pulseHighlight(map.cursorToTile(), highlight.asSelection(), 0.6f, 2f, 0.05f);
     }
 
     private void highlightSelectedTile(MapEffects effects, StandardHighlightType highlight) {

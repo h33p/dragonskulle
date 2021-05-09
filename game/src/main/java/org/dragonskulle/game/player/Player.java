@@ -834,7 +834,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return;
         }
 
-        fx.pulseHighlight(attacker, StandardHighlightType.PLACE.asSelection(), 0.2f, 0.5f, 2f);
+        fx.pulseHighlight(attacker, StandardHighlightType.SELECT.asSelection(), 0.2f, 0.5f, 2f);
         fx.pulseHighlight(defender, StandardHighlightType.INVALID.asSelection(), 0.2f, 0.5f, 2f);
         attacker.attackEffect(defender, 1.5f);
     }
