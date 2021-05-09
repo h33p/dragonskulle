@@ -103,6 +103,8 @@ public class App implements NativeResource {
                             rig.addComponent(heightByMap);
 
                             rig.getTransform(Transform3D.class).setPosition(0, -4, 0.5f);
+                            rig.getTransform(Transform3D.class)
+                                    .rotateDeg(0, 0, (float) Math.random() * 360);
 
                             rig.buildChild(
                                     "rotationRig",

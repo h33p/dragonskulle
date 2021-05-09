@@ -77,7 +77,7 @@ public class Light extends Component {
     }
 
     private int writeColToBuffer(int offset, ByteBuffer buffer) {
-        mFinalColour.set(mColour).mul(mIntensity).mul((float) (1.0 / Math.PI));
+        mFinalColour.set(mColour).mul(mIntensity);
         mFinalColour.get(offset, buffer);
         return offset + AttributeDescription.LIGHT_HALF_SIZE;
     }

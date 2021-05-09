@@ -44,19 +44,25 @@ public class PBRHighlightMaterial extends PBRMaterial {
                     new AttributeDescription(
                             1, 0, VK_FORMAT_R32G32B32A32_SFLOAT, OVERLAY_COL_OFFSET),
                     new AttributeDescription(1, 1, VK_FORMAT_R32_SFLOAT, OVERLAY_MINDIST_OFFSET),
-                    new AttributeDescription(1, 2, VK_FORMAT_R32_SFLOAT, OVERLAY_DISTPOW_OFFSET),
-                    new AttributeDescription(1, 3, VK_FORMAT_R32_SFLOAT, OVERLAY_ALPHAMUL_OFFSET));
+                    new AttributeDescription(1, 2, VK_FORMAT_R32_SFLOAT, OVERLAY_MAXDIST_OFFSET),
+                    new AttributeDescription(1, 3, VK_FORMAT_R32_SFLOAT, OVERLAY_MINLERP_OFFSET),
+                    new AttributeDescription(1, 4, VK_FORMAT_R32_SFLOAT, OVERLAY_DISTPOW_OFFSET),
+                    new AttributeDescription(1, 5, VK_FORMAT_R32_SFLOAT, OVERLAY_ALPHAMUL_OFFSET));
         }
     }
 
     private static final int OVERLAY_COL_OFFSET = 0;
     private static final int OVERLAY_MINDIST_OFFSET = OVERLAY_COL_OFFSET + 4 * 4;
-    private static final int OVERLAY_DISTPOW_OFFSET = OVERLAY_MINDIST_OFFSET + 4;
+    private static final int OVERLAY_MAXDIST_OFFSET = OVERLAY_MINDIST_OFFSET + 4;
+    private static final int OVERLAY_MINLERP_OFFSET = OVERLAY_MAXDIST_OFFSET + 4;
+    private static final int OVERLAY_DISTPOW_OFFSET = OVERLAY_MINLERP_OFFSET + 4;
     private static final int OVERLAY_ALPHAMUL_OFFSET = OVERLAY_DISTPOW_OFFSET + 4;
 
     @Getter private Vector4f mOverlayColour = new Vector4f(0f);
 
-    @Getter @Setter private float mMinDist = 0.5f;
+    @Getter @Setter private float mMinDist = 0.1f;
+    @Getter @Setter private float mMaxDist = 0.32f;
+    @Getter @Setter private float mMinLerp = 1f;
     @Getter @Setter private float mDistPow = 5f;
     @Getter @Setter private float mAlphaMul = 4f;
 
@@ -122,6 +128,8 @@ public class PBRHighlightMaterial extends PBRMaterial {
         offset = super.writeVertexInstanceData(offset, buffer, matrix, lights);
         mOverlayColour.get(offset + OVERLAY_COL_OFFSET, buffer);
         buffer.putFloat(offset + OVERLAY_MINDIST_OFFSET, mMinDist);
+        buffer.putFloat(offset + OVERLAY_MAXDIST_OFFSET, mMaxDist);
+        buffer.putFloat(offset + OVERLAY_MINLERP_OFFSET, mMinLerp);
         buffer.putFloat(offset + OVERLAY_DISTPOW_OFFSET, mDistPow);
         buffer.putFloat(offset + OVERLAY_ALPHAMUL_OFFSET, mAlphaMul);
         return offset + OVERLAY_ALPHAMUL_OFFSET + 4;
