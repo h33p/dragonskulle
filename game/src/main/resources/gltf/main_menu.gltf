@@ -145,7 +145,13 @@
                         },
                         {
                             "class_name" : "org.dragonskulle.game.MenuFader",
-                            "enabled" : true
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mTitleString",
+                                    "value" : "title"
+                                }
+                            ]
                         }
                     ]
                 }

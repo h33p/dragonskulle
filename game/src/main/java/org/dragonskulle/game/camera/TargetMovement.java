@@ -88,8 +88,6 @@ public class TargetMovement extends Component implements IFrameUpdate, IOnAwake 
 
             mTmpVec.normalize().mul(Math.min(moveSpeed * deltaTime, dist));
 
-            // mTmpVec2.mulDirection(mTransform.getInvWorldMatrix());
-
             mTransform.translateLocal(mTmpVec.x, mTmpVec.y, mTmpVec.z);
         }
     }

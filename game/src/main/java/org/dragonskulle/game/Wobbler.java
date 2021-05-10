@@ -17,10 +17,10 @@ import org.dragonskulle.core.Reference;
  */
 @Accessors(prefix = "m")
 public class Wobbler extends Component implements IOnAwake, IFrameUpdate {
-    public float mWobbleSpeed = 1.f;
-    public float mWobbleRange = 1.f;
+    @Getter @Setter private float mWobbleSpeed = 1.f;
+    @Getter @Setter private float mWobbleRange = 1.f;
 
-    public boolean mCreateFadeControls = true;
+    @Getter @Setter private boolean mCreateFadeControls = true;
 
     private Reference<MenuFader> mFadeControls;
 
@@ -59,8 +59,6 @@ public class Wobbler extends Component implements IOnAwake, IFrameUpdate {
         if (Reference.isValid(mFadeControls)) {
             mFadeControls.get().setPhaseShift(mPhaseShift);
             mFadeControls.get().setAlphaMul(1f / (mPhaseShift * 3f + 1f));
-            // mFadeControls.get().setTotalTime(mTotalTime);
-            // mFadeControls.get().setFadeSpeed(mWobbleSpeed);
         }
     }
 

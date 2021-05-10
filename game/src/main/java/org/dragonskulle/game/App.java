@@ -251,7 +251,7 @@ public class App implements NativeResource {
                             t.setMargin(0f, 0f, 0f, 0.15f);
                             t.setPivotOffset(0.5f, 0.3f);
 
-                            UIText txt = new UIText("Hex Wars");
+                            UIText txt = new UIText(new Vector4f(0.3f, 0.3f, 0.2f, 1f), "Hex Wars");
                             txt.setDepthShift(-1f);
 
                             title.addComponent(txt);
