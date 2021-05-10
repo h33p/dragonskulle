@@ -4,6 +4,7 @@ package org.dragonskulle.game.building.stat;
 import java.io.DataInput;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Objects;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -37,6 +38,20 @@ public class SyncStat extends SyncInt {
 
     /** The cost of upgrading a stat if there is an error. */
     private static final int sErrorCost = 9999;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        SyncStat syncStat = (SyncStat) o;
+        return mType == syncStat.mType && getValue() == syncStat.getValue();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), mType);
+    }
 
     /** An interface for getting the value of a stat at a given level. */
     public static interface IConfigChooser {
@@ -295,7 +310,7 @@ public class SyncStat extends SyncInt {
         if (!Reference.isValid(mBuilding)) {
             return;
         }
-        mBuilding.get().afterStatChange();
+        mBuilding.get().afterStatChange(this.getType());
     }
 
     /**

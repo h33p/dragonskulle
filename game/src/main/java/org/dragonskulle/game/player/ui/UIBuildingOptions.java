@@ -195,7 +195,6 @@ public class UIBuildingOptions extends Component implements IOnStart, IFixedUpda
      */
     private Player getPlayer() {
         if (!Reference.isValid(mPlayerReference)) {
-
             Player player = getParent().getParent().mGetPlayer.getPlayer();
 
             if (player == null) return null;

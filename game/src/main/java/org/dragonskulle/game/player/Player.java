@@ -1235,7 +1235,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         // Increase the stat level.
         stat.increaseLevel();
         // Update the building on the server.
-        building.afterStatChange();
+        building.afterStatChange(stat.getType());
 
         return true;
     }
