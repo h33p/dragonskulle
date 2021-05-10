@@ -25,9 +25,4 @@ public class DiffBlueStatTypeTest {
         thrown.expect(ArrayIndexOutOfBoundsException.class);
         StatType.getFromID(6);
     }
-
-    @Test
-    public void testGetNiceName() {
-        assertEquals("ATTACK", StatType.ATTACK.getNiceName());
-    }
 }
