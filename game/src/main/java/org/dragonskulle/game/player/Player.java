@@ -975,8 +975,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                             boolean won;
                             if (defender.getOwner().hasLost()) won = true;
                             else won = attacker.attack(defender);
-                            log.fine(won);
-
+                            
                             // If you've won attack
                             if (won) {
                                 attacker.invokeSound(
