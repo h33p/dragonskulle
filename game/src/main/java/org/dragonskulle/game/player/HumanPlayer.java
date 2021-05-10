@@ -475,6 +475,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                                             mHexChosen,
                                             PredefinedBuildings.getIndex(
                                                     mPredefinedBuildingChosen)));
+                } else if (selected.hasBuilding() && selected.getClaimant() == player) {
+                    mBuildingChosen = selected.getClaimedBy().getReference(Building.class);
+                    switchScreen(Screen.BUILDING_SELECTED_SCREEN);
                 }
 
                 break;
@@ -565,7 +568,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
                             boolean valid =
                                     hovered.isBuildable(player)
-                                            && mPredefinedBuildingChosen.getCost()
+                                            && mPredefinedBuildingChosen.getTotalCost(player)
                                                     <= player.getTokens().get();
 
                             StandardHighlightType hl =

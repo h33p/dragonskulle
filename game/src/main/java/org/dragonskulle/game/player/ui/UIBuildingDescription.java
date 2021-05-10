@@ -10,6 +10,7 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.player.BuildingDescriptor;
 import org.dragonskulle.game.player.Player;
 import org.dragonskulle.game.player.PredefinedBuildings;
+import org.dragonskulle.renderer.materials.IColouredMaterial;
 import org.dragonskulle.ui.TransformUI;
 import org.dragonskulle.ui.UIText;
 import org.dragonskulle.ui.UITextRect;
@@ -31,6 +32,7 @@ public class UIBuildingDescription extends Component implements IOnAwake, IFixed
     private Reference<UITextRect> mCostRef;
 
     private int mPrevCost = -1;
+    private boolean mPrevCanAfford = false;
     private Reference<Player> mPlayerRef;
     private BuildingDescriptor mDescriptor;
 
@@ -73,12 +75,26 @@ public class UIBuildingDescription extends Component implements IOnAwake, IFixed
     }
 
     private boolean updateField(Reference<UITextRect> box, String text) {
+        return updateField(box, text, false);
+    }
+
+    private boolean updateField(Reference<UITextRect> box, String text, boolean red) {
         if (!Reference.isValid(box)) return false;
 
         Reference<UIText> label = box.get().getLabelText();
         if (!Reference.isValid(label)) return false;
 
         label.get().setText(text);
+
+        IColouredMaterial mat = label.get().getMaterial(IColouredMaterial.class);
+
+        if (mat != null) {
+            if (red) {
+                mat.getColour().set(0.4f, 0f, 0.05f, 1f);
+            } else {
+                mat.getColour().set(0f, 0f, 0f, 1f);
+            }
+        }
 
         log.fine("ran: " + mInitialised);
 
@@ -144,12 +160,20 @@ public class UIBuildingDescription extends Component implements IOnAwake, IFixed
         int curCost =
                 mDescriptor.getTotalCost(Reference.isValid(mPlayerRef) ? mPlayerRef.get() : null);
 
-        if (curCost == mPrevCost) {
+        boolean canAfford = true;
+
+        if (Reference.isValid(mPlayerRef)) {
+            canAfford = curCost <= mPlayerRef.get().getTokens().get();
+        }
+
+        if (curCost == mPrevCost && canAfford == mPrevCanAfford) {
             return;
         }
 
-        if (updateField(mCostRef, TextUtils.constructField("COST", curCost, TEXT_LENGTH))) {
+        if (updateField(
+                mCostRef, TextUtils.constructField("Cost", curCost, TEXT_LENGTH), !canAfford)) {
             mPrevCost = curCost;
+            mPrevCanAfford = canAfford;
         }
     }
 
