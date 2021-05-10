@@ -34,6 +34,7 @@ import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.SingletonStore;
 import org.dragonskulle.game.App;
 import org.dragonskulle.game.GameConfig.PlayerConfig;
+import org.dragonskulle.game.GameState;
 import org.dragonskulle.game.GameUIAppearance;
 import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.building.stat.SyncStat;
@@ -87,6 +88,8 @@ public class Building extends NetworkableComponent
 
     /** Whether the building is a capital. */
     private final SyncBool mIsCapital = new SyncBool(false);
+
+    private Reference<AudioSource> mJukeBox;
 
     /**
      * Whether actions on this building (sell, upgrade, attack, etc. etc.) are locked.
@@ -176,6 +179,9 @@ public class Building extends NetworkableComponent
     private Reference<GameObject> mGenerationMesh;
     /** The current building mesh. */
     private Reference<GameObject> mVisibleMesh;
+
+    private transient ServerEvent<GameState.InvokeAudioEvent> mOwnerAudioEvent;
+    private transient ServerEvent<GameState.InvokeAudioEvent> mGlobalAudioEvent;
 
     /**
      * Gets an array of stats that will be available to upgrade in the shop.
@@ -344,7 +350,39 @@ public class Building extends NetworkableComponent
             return;
         }
 
+        AudioSource src = new AudioSource();
+        getGameObject().addComponent(src);
+        mJukeBox = src.getReference(AudioSource.class);
+
         assignMesh();
+    }
+
+    @Override
+    protected void onNetworkInitialise() {
+        mOwnerAudioEvent =
+                new ServerEvent<>(
+                        new GameState.InvokeAudioEvent(),
+                        this::triggerAudioEvent,
+                        ServerEvent.EventRecipients.OWNER,
+                        ServerEvent.EventTimeframe.INSTANT);
+
+        mGlobalAudioEvent =
+                new ServerEvent<>(
+                        new GameState.InvokeAudioEvent(),
+                        this::triggerAudioEvent,
+                        ServerEvent.EventRecipients.ALL_CLIENTS,
+                        ServerEvent.EventTimeframe.INSTANT);
+    }
+
+    /**
+     * Trigger audio event by creating an audio source for the event.
+     *
+     * @param data the audio information to be played
+     */
+    private void triggerAudioEvent(GameState.InvokeAudioEvent data) {
+        if (data != null && Reference.isValid(mJukeBox)) {
+            mJukeBox.get().playSound(data.getSoundId().getPath());
+        }
     }
 
     /** Checks whether arc paths need updating, and updates them. */
@@ -586,10 +624,18 @@ public class Building extends NetworkableComponent
      * @param sound the sound to play
      * @param audience the audience who can hear it
      */
-    public void playSound(GameUIAppearance.AudioFiles sound, ServerEvent.EventRecipients audience) {
+    public void invokeSound(
+            GameUIAppearance.AudioFiles sound, ServerEvent.EventRecipients audience) {
         if (this.getOwnerId() < 0) return; // if non human
-        Player owner = this.getOwner();
-        if (owner != null) owner.playSound(sound, audience);
+        switch (audience) {
+            case OWNER:
+                mOwnerAudioEvent.invoke(new GameState.InvokeAudioEvent(sound));
+                break;
+            case ACTIVE_CLIENTS:
+            case ALL_CLIENTS:
+                mGlobalAudioEvent.invoke(new GameState.InvokeAudioEvent(sound));
+                break;
+        }
     }
 
     private class ArcUpdater implements IPathUpdater, IArcHandler {
@@ -700,7 +746,7 @@ public class Building extends NetworkableComponent
         }
     }
 
-    private final int DIE_SIDES = 100;
+    private static final int DIE_SIDES = 100;
 
     private float getAttackVal(Building opponent) {
         HexagonTile myTile = getTile();
