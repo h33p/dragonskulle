@@ -34,7 +34,7 @@ public class TileProp extends Component implements IOnStart {
 
     /**
      * Enable the prop's mesh if it meets the threshold to change. This is called in {@link
-     * BuildingProps#onStatChange} only when the value is changed, because of this we don't need to
+     * BuildingProps#fixedUpdate} only when the value is changed, because of this we don't need to
      * parse the whole {@link org.dragonskulle.game.building.stat.SyncStat}.
      *
      * @param level the level
