@@ -5,9 +5,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+
+import org.dragonskulle.core.Scene;
+import org.dragonskulle.core.Scene.SceneOverride;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.player.BuildingDescriptor;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -17,6 +22,21 @@ import org.junit.Test;
  */
 public class CostTest {
 
+	SceneOverride mOverride;
+	Building mBuilding;
+    @Before
+    public void setup() {
+        Scene scene = new Scene("");
+
+        scene.registerSingleton(new GameState());
+
+        mOverride = new SceneOverride(scene);
+        mBuilding = new Building();
+        mBuilding.onConnectedSyncvars();
+        mBuilding.onStart();
+        
+    }
+	
     /**
      * This will check that there is different stats and costs for a made up predefined Buildings
      */
@@ -34,22 +54,20 @@ public class CostTest {
 
     /** This will test attacking cost */
     @Test
-    public void attackCost() {
-        Building building = new Building();
-        building.onConnectedSyncvars();
-        building.afterStatChange();
+    public void attackCost() {        
+        
 
         // Lvl 1 Attack Lvl 1 Defence Lvl 1 TGen
-        int lvl1All = building.getAttackCost();
+        int lvl1All = mBuilding.getAttackCost();
 
-        ArrayList<SyncStat> stats = building.getUpgradeableStats();
+        ArrayList<SyncStat> stats = mBuilding.getUpgradeableStats();
 
         SyncStat attack = stats.get(0);
         attack.increaseLevel();
 
-        building.afterStatChange();
+        mBuilding.afterStatChange();
 
-        int lvl2Attack = building.getAttackCost();
+        int lvl2Attack = mBuilding.getAttackCost();
         assertTrue(lvl2Attack > lvl1All);
 
         SyncStat defence = stats.get(1);
@@ -57,15 +75,15 @@ public class CostTest {
         defence.increaseLevel();
         defence.increaseLevel();
 
-        building.afterStatChange();
+        mBuilding.afterStatChange();
 
-        int upgradeDefence = building.getAttackCost();
+        int upgradeDefence = mBuilding.getAttackCost();
 
         assertTrue(upgradeDefence > lvl2Attack);
 
-        building.setCapital(true);
+        mBuilding.setCapital(true);
 
-        int setCapital = building.getAttackCost();
+        int setCapital = mBuilding.getAttackCost();
 
         assertTrue(setCapital > upgradeDefence);
     }
@@ -73,26 +91,28 @@ public class CostTest {
     /** This will test that the cost increases when stats are upgraded */
     @Test
     public void upgradeStats() {
-        Building building = new Building();
 
-        building.onConnectedSyncvars();
-        building.afterStatChange();
-        ArrayList<SyncStat> stats = building.getUpgradeableStats();
+        ArrayList<SyncStat> stats = mBuilding.getUpgradeableStats();
 
         // Lvl 1 Attack Lvl 1 Defence Lvl 1 TGen
         int lvl1All = stats.get(0).getCost();
         stats.get(0).increaseLevel();
-        building.afterStatChange();
+        mBuilding.afterStatChange();
 
         // Lvl 2 Attack Lvl 1 Defence Lvl 1 TGen
         int lvl2Attack = stats.get(0).getCost();
         assertTrue(lvl2Attack > lvl1All);
         stats.get(1).increaseLevel();
         stats.get(1).increaseLevel();
-        building.afterStatChange();
+        mBuilding.afterStatChange();
 
         // Lvl 2 Attack Lvl 3 Defence Lvl 1 TGen
         int lvl3Defence = stats.get(0).getCost();
         assertTrue(lvl3Defence > lvl2Attack);
+    }
+    
+    @After
+    public void cleanup() {
+        mOverride.close();
     }
 }
