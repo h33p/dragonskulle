@@ -12,10 +12,10 @@ public class UpgradeAimerAi extends AimerAi implements IOnStart {
 
     @Override
     public void onStart() {
-        mAttackProbability = 0.80f;
+        /*mAttackProbability = 0.80f;
         mBuildProbability = 0.1f;
         mSellProbability = 0.01f;
-        mUpgradeProbability = 0.09f;
+        mUpgradeProbability = 0.09f;*/
 
         super.onStart();
     }

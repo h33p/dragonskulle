@@ -12,10 +12,10 @@ public class BuildingAimerAi extends AimerAi implements IOnStart {
 
     @Override
     public void onStart() {
-        mAttackProbability = 0.05f;
+        /*mAttackProbability = 0.05f;
         mBuildProbability = 0.90f;
         mSellProbability = 0.01f;
-        mUpgradeProbability = 0.04f;
+        mUpgradeProbability = 0.04f;*/
 
         super.onStart();
     }
