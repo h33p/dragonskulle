@@ -288,6 +288,15 @@ public class GameObject {
         }
     }
 
+    protected void getAllEnabledChildren(List<GameObject> ret) {
+        for (GameObject child : mChildren) {
+            if (child.isEnabled()) {
+                ret.add(child);
+                child.getAllEnabledChildren(ret);
+            }
+        }
+    }
+
     /**
      * Finds a child by its name.
      *
@@ -424,14 +433,16 @@ public class GameObject {
     }
 
     /**
-     * Remove component from the GameObject. If a component is removed, the scene's updated flag is
-     * set to true. Set's the component's GameObject to null
+     * Remove component from the GameObject.
+     *
+     * <p>If a component is removed, the scene's updated flag is set to true. Set's the component's
+     * GameObject to null, and {@code onDestroy} is called for it.
      *
      * @param component Component to be removed
      */
     public void removeComponent(Component component) {
         if (mComponents.remove(component)) {
-            component.setGameObject(null);
+            component.onRemove();
         }
     }
 
@@ -511,7 +522,8 @@ public class GameObject {
      * @param enabled New value for mEnabled
      */
     public void setEnabled(boolean enabled) {
-        mEnabled = enabled;
+
+        mEnabled = enabled && (mParent == null || mParent.mEnabled);
 
         for (GameObject child : mChildren) {
             child.setEnabled(enabled);

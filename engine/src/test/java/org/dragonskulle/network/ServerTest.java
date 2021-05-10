@@ -53,7 +53,7 @@ public class ServerTest {
         return new NetworkedTestContext(
                 TEMPLATE_MANAGER,
                 (__, isServer) -> new Scene(isServer ? "server_net_test" : "client_net_test"),
-                (__, man, id) -> man.getServerManager().start(),
+                (__, man, id) -> man.getServerManager().start(false),
                 null,
                 (man) -> {
                     man.getServerManager().spawnNetworkObject(0, TEMPLATE_MANAGER.find("cube"));
@@ -124,14 +124,14 @@ public class ServerTest {
 
                             int testCompId = clientTestComp.get().getNetworkObject().getId();
 
-                            log.info(
+                            log.fine(
                                     "\t-----> "
                                             + testCompId
                                             + " "
                                             + serverTestComp.get().getNetworkObject().getId());
                             assertEquals(
                                     testCompId, serverTestComp.get().getNetworkObject().getId());
-                            log.info("\t-----> " + testCompId);
+                            log.fine("\t-----> " + testCompId);
                             assert (serverTestComp.get().getSyncMe().get() == false);
                             assert (serverTestComp
                                     .get()

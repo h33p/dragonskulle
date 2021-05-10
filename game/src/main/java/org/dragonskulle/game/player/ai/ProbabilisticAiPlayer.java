@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.game.GameConfig.ProbabilisticAiConfig;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonTile;
@@ -20,15 +21,6 @@ import org.dragonskulle.game.player.PredefinedBuildings;
 @Log
 public class ProbabilisticAiPlayer extends AiPlayer {
 
-    /** Probability of placing a new {@link Building}. */
-    protected float mBuildProbability = 0.65f;
-    /** Probability of upgrading an owned {@link Building}. */
-    protected float mUpgradeProbability = 0.155f;
-    /** Probability of attacking an opponent {@link Building}. */
-    protected float mAttackProbability = 0.19f;
-    /** Probability of selling an owned {@link Building}. */
-    protected float mSellProbability = 0.005f;
-
     /** Used to run events for building and attacking. */
     public interface IRunBuildingEvent {
         public boolean runEvent(Building building);
@@ -43,8 +35,6 @@ public class ProbabilisticAiPlayer extends AiPlayer {
         // If only one building assumed that its capital
         if (getPlayer().getNumberOfOwnedBuildings() == 1) {
 
-            log.info("One building left - try to add another");
-
             if (addBuilding()) {
                 return;
             } else if (!getPlayer().inCooldown() && attack()) {
@@ -55,33 +45,33 @@ public class ProbabilisticAiPlayer extends AiPlayer {
             }
 
         } else {
-            log.info(
-                    "AI: I have "
-                            + getPlayer().getNumberOfOwnedBuildings()
-                            + " buildings. Should be  more than  one.");
 
             // Pick a random number to choose whether to place a building or to use a building
             float randomNumber = mRandom.nextFloat();
 
+            ProbabilisticAiConfig cfg = getConfig().getProbabilisticAi();
+
             // Choose an action to take.
-            if (randomNumber <= mBuildProbability) {
+            if (randomNumber <= cfg.getBuildProbability()) {
                 addBuilding();
-            } else if (randomNumber <= mBuildProbability + mUpgradeProbability) {
+            } else if (randomNumber <= cfg.getBuildProbability() + cfg.getUpgradeProbability()) {
                 upgradeBuilding();
             } else if (randomNumber
-                    <= mBuildProbability + mUpgradeProbability + mAttackProbability) {
+                    <= cfg.getBuildProbability()
+                            + cfg.getUpgradeProbability()
+                            + cfg.getAttackProbability()) {
                 // Only attempt to attack if you're not in cooldown.
                 if (!getPlayer().inCooldown()) {
                     attack();
                 }
             } else if (randomNumber
-                    <= mBuildProbability
-                            + mUpgradeProbability
-                            + mAttackProbability
-                            + mSellProbability) {
+                    <= cfg.getBuildProbability()
+                            + cfg.getUpgradeProbability()
+                            + cfg.getAttackProbability()
+                            + cfg.getSellProbability()) {
                 sell();
             } else {
-                log.info("AI probabilites do not sum to one- no action performed.");
+                log.fine("AI probabilites do not sum to one- no action performed.");
             }
         }
     }
@@ -141,7 +131,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      * @return Whether the attempt to pick and add a building was invoked.
      */
     private boolean addBuilding() {
-        log.info("Placing Building");
+        log.fine("Probabilistic: Placing Building");
 
         return attemptRunEvent(this::tryToAddBuilding);
     }
@@ -194,7 +184,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      * @return Whether the attempt to upgrade a building's stats was invoked.
      */
     protected boolean upgradeBuilding() {
-        log.info("AI: Upgrading");
+        log.fine("Probabilistic: Upgrading");
 
         return attemptRunEvent(this::tryToUpgrade);
     }
@@ -238,7 +228,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      * @return Whether the attempt to attack an opponent was invoked.
      */
     private boolean attack() {
-        log.info("AI: Attacking");
+        log.fine("Probabilistic: Attacking");
 
         return attemptRunEvent(this::tryToAttack);
     }
@@ -268,21 +258,21 @@ public class ProbabilisticAiPlayer extends AiPlayer {
      * @return Whether the attempt to sell a building was invoked.
      */
     private boolean sell() {
-        log.info("AI: Selling");
+        log.fine("Probablistic: Selling");
         if (getPlayer().getNumberOfOwnedBuildings() > 1) {
 
             int buildingIndex = mRandom.nextInt(getPlayer().getNumberOfOwnedBuildings());
             Reference<Building> buildingReference =
                     getPlayer().getOwnedBuildings().get(buildingIndex);
             if (!Reference.isValid(buildingReference)) {
-                log.info("AI: could not get building to sell.");
+                log.fine("Probabilistic: could not get building to sell.");
                 return false;
             }
 
             // Get the Building.
             Building building = buildingReference.get();
             if (building.isCapital()) {
-                log.info("Tried selling capital");
+
                 return false;
             }
             getPlayer().getClientSellRequest().invoke(d -> d.setData(building));

@@ -265,7 +265,6 @@ public class Server {
                 }
 
                 if (clientSocket != null) {
-                    log.info("ACCEPT SOCKET: " + clientSocket);
                     mPendingClients.add(clientSocket);
                 }
             }

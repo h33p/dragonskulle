@@ -147,7 +147,7 @@ public class GLFWState implements NativeResource {
 
     /** Creates a GLFW window. */
     private void initWindow(int width, int height, String appName) {
-        log.info("Initialize GLFW window");
+        log.fine("Initialize GLFW window");
 
         if (!glfwInit()) {
             throw new RuntimeException("Cannot initialize GLFW");

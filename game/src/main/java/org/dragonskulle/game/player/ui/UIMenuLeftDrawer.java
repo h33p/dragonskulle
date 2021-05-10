@@ -15,6 +15,7 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.GameUIAppearance;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonTile;
+import org.dragonskulle.game.player.BuildingDescriptor;
 import org.dragonskulle.game.player.Player;
 import org.dragonskulle.game.player.network_data.AttackData;
 import org.dragonskulle.game.player.network_data.SellData;
@@ -42,6 +43,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
     protected final INotifyScreenChange mNotifyScreenChange;
     protected final IGetPlayer mGetPlayer;
     protected final IUpdateBuildingChosen mUpdateBuildingSelected;
+    @Getter protected final ISetPredefinedBuildingChosen mSetPredefinedBuildingChosen;
     private final float mOffsetToTop = 0.25f;
     @Getter private Reference<UIShopSection> mShop;
     private Reference<GameObject> mBuildScreenMenu;
@@ -141,6 +143,11 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         void setBuilding(Reference<Building> tile);
     }
 
+    /** Set the predefined building used on the parent. */
+    public interface ISetPredefinedBuildingChosen {
+        void setPredefinedBuilding(BuildingDescriptor descriptor);
+    }
+
     /**
      * Constructor.
      *
@@ -157,7 +164,8 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
             IGetHexChosen getHexChosen,
             ISetHexChosen setHexChosen,
             INotifyScreenChange notifyScreenChange,
-            IGetPlayer getPlayer) {
+            IGetPlayer getPlayer,
+            ISetPredefinedBuildingChosen setPredefinedBuildingChosen) {
         super();
         this.mGetBuildingChosen = getBuildingChosen;
         this.mSetBuildingChosen = setBuildingChosen;
@@ -165,6 +173,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         this.mSetHexChosen = setHexChosen;
         this.mNotifyScreenChange = notifyScreenChange;
         this.mGetPlayer = getPlayer;
+        this.mSetPredefinedBuildingChosen = setPredefinedBuildingChosen;
 
         this.mUpdateBuildingSelected =
                 () -> {
@@ -403,7 +412,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
             switch (screen) {
                 case DEFAULT_SCREEN:
                     newScreen = null;
-                    setShopState(ShopState.CLOSED);
+                    setShopState(ShopState.DEFAULT);
                     break;
                 case BUILDING_SELECTED_SCREEN:
                     newScreen = mBuildScreenMenu;
@@ -715,22 +724,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
             return;
         }
 
-        int attackLevel = attacker.getAttack().getLevel();
-        int defendLevel = defender.getDefence().getLevel();
-        int difference = attackLevel - defendLevel;
-        String output = "MEDIUM";
-
-        if (difference <= -5) {
-            output = "VERY LOW";
-        } else if (difference <= -3) {
-            output = "LOW";
-        }
-
-        if (difference >= 5) {
-            output = "VERY HIGH";
-        } else if (difference >= 3) {
-            output = "HIGH";
-        }
+        String output = String.format("%.0f%%", attacker.calculateAttackOdds(defender) * 100);
 
         text.get().setText(TextUtils.constructField("Chance", output, 15));
     }

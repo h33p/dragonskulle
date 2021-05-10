@@ -14,10 +14,11 @@
                 0,
                 1,
                 2,
-                69,
-                71,
-                98,
-                111
+                3,
+                70,
+                72,
+                99,
+                112
             ]
         }
     ],
@@ -55,10 +56,6 @@
                                     "value" : 51
                                 }
                             ]
-                        },
-                        {
-                            "class_name" : "org.dragonskulle.game.GameState",
-                            "enabled" : true
                         }
                     ]
                 }
@@ -110,6 +107,25 @@
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.GameState",
+                            "enabled" : true
+                        }
+                    ]
+                }
+            },
+            "name" : "game_state",
+            "translation" : [
+                -2,
+                0,
+                0
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
@@ -118,7 +134,7 @@
         },
         {
             "children" : [
-                3
+                4
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -138,7 +154,7 @@
         },
         {
             "children" : [
-                5
+                6
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -164,7 +180,7 @@
         },
         {
             "children" : [
-                7
+                8
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -190,7 +206,7 @@
         },
         {
             "children" : [
-                9
+                10
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -216,7 +232,7 @@
         },
         {
             "children" : [
-                11
+                12
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -242,7 +258,7 @@
         },
         {
             "children" : [
-                13
+                14
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -259,12 +275,12 @@
         },
         {
             "children" : [
-                4,
-                6,
-                8,
-                10,
-                12,
-                14
+                5,
+                7,
+                9,
+                11,
+                13,
+                15
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -284,7 +300,7 @@
         },
         {
             "children" : [
-                16
+                17
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -304,7 +320,7 @@
         },
         {
             "children" : [
-                18
+                19
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -330,7 +346,7 @@
         },
         {
             "children" : [
-                20
+                21
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -356,7 +372,7 @@
         },
         {
             "children" : [
-                22
+                23
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -382,7 +398,7 @@
         },
         {
             "children" : [
-                24
+                25
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -408,7 +424,7 @@
         },
         {
             "children" : [
-                26
+                27
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -425,12 +441,12 @@
         },
         {
             "children" : [
-                17,
-                19,
-                21,
-                23,
-                25,
-                27
+                18,
+                20,
+                22,
+                24,
+                26,
+                28
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -450,7 +466,7 @@
         },
         {
             "children" : [
-                29
+                30
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -470,7 +486,7 @@
         },
         {
             "children" : [
-                31
+                32
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -496,7 +512,7 @@
         },
         {
             "children" : [
-                33
+                34
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -522,7 +538,7 @@
         },
         {
             "children" : [
-                35
+                36
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -548,7 +564,7 @@
         },
         {
             "children" : [
-                37
+                38
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -574,7 +590,7 @@
         },
         {
             "children" : [
-                39
+                40
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -591,12 +607,12 @@
         },
         {
             "children" : [
-                30,
-                32,
-                34,
-                36,
-                38,
-                40
+                31,
+                33,
+                35,
+                37,
+                39,
+                41
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -616,7 +632,7 @@
         },
         {
             "children" : [
-                42
+                43
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -636,7 +652,7 @@
         },
         {
             "children" : [
-                44
+                45
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -662,7 +678,7 @@
         },
         {
             "children" : [
-                46
+                47
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -688,7 +704,7 @@
         },
         {
             "children" : [
-                48
+                49
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -714,7 +730,7 @@
         },
         {
             "children" : [
-                50
+                51
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -740,7 +756,7 @@
         },
         {
             "children" : [
-                52
+                53
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -757,12 +773,12 @@
         },
         {
             "children" : [
-                43,
-                45,
-                47,
-                49,
-                51,
-                53
+                44,
+                46,
+                48,
+                50,
+                52,
+                54
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -793,7 +809,7 @@
         },
         {
             "children" : [
-                55
+                56
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -801,6 +817,17 @@
                 }
             },
             "mesh" : 5,
+            "name" : "defence_lvl_8"
+        },
+        {
+            "children" : [
+                57
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D"
+                }
+            },
             "name" : "defence_lvl_8"
         },
         {
@@ -812,23 +839,12 @@
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "name" : "defence_lvl_8"
-        },
-        {
-            "children" : [
-                55
-            ],
-            "extensions" : {
-                "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
-                }
-            },
             "mesh" : 5,
             "name" : "defence_lvl_8"
         },
         {
             "children" : [
-                58
+                59
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -845,7 +861,7 @@
         },
         {
             "children" : [
-                55
+                56
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -857,7 +873,7 @@
         },
         {
             "children" : [
-                60
+                61
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -874,7 +890,7 @@
         },
         {
             "children" : [
-                55
+                56
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -886,7 +902,7 @@
         },
         {
             "children" : [
-                62
+                63
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -903,7 +919,7 @@
         },
         {
             "children" : [
-                55
+                56
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -915,7 +931,7 @@
         },
         {
             "children" : [
-                64
+                65
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -932,7 +948,7 @@
         },
         {
             "children" : [
-                55
+                56
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -944,7 +960,7 @@
         },
         {
             "children" : [
-                66
+                67
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -961,12 +977,12 @@
         },
         {
             "children" : [
-                57,
-                59,
-                61,
-                63,
-                65,
-                67
+                58,
+                60,
+                62,
+                64,
+                66,
+                68
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -977,11 +993,11 @@
         },
         {
             "children" : [
-                15,
-                28,
-                41,
-                54,
-                68
+                16,
+                29,
+                42,
+                55,
+                69
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -1096,6 +1112,10 @@
                                     "value" : "defence_lvl10"
                                 }
                             ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.building.FogInvisibility",
+                            "enabled" : true
                         }
                     ]
                 }
@@ -1113,7 +1133,7 @@
         },
         {
             "children" : [
-                70
+                71
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -1143,7 +1163,7 @@
         },
         {
             "children" : [
-                72
+                73
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -1179,7 +1199,7 @@
         },
         {
             "children" : [
-                74
+                75
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -1215,7 +1235,7 @@
         },
         {
             "children" : [
-                76
+                77
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -1251,7 +1271,7 @@
         },
         {
             "children" : [
-                78
+                79
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -1287,7 +1307,7 @@
         },
         {
             "children" : [
-                80
+                81
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -1323,7 +1343,7 @@
         },
         {
             "children" : [
-                82
+                83
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -1382,7 +1402,7 @@
         },
         {
             "children" : [
-                86
+                87
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -1404,9 +1424,9 @@
         },
         {
             "children" : [
-                84,
                 85,
-                87
+                86,
+                88
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -1468,10 +1488,10 @@
         },
         {
             "children" : [
-                89,
                 90,
                 91,
-                92
+                92,
+                93
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -1491,7 +1511,7 @@
         },
         {
             "children" : [
-                94
+                95
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -1527,7 +1547,7 @@
         },
         {
             "children" : [
-                96
+                97
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -1549,16 +1569,16 @@
         },
         {
             "children" : [
-                73,
-                75,
-                77,
-                79,
-                81,
-                83,
-                88,
-                93,
-                95,
-                97
+                74,
+                76,
+                78,
+                80,
+                82,
+                84,
+                89,
+                94,
+                96,
+                98
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -1703,6 +1723,28 @@
                         {
                             "class_name" : "org.dragonskulle.game.building.StickToTile",
                             "enabled" : true
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.network.components.NetworkHexTransform",
+                            "enabled" : true
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.building.FogInvisibility",
+                            "enabled" : true
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.building.TileProp",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mLevel",
+                                    "value" : 1
+                                },
+                                {
+                                    "name" : "mPropName",
+                                    "value" : "token_lvl1"
+                                }
+                            ]
                         }
                     ]
                 }
@@ -1721,7 +1763,7 @@
         },
         {
             "children" : [
-                99
+                100
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -1752,7 +1794,7 @@
         },
         {
             "children" : [
-                101
+                102
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -1783,7 +1825,7 @@
         },
         {
             "children" : [
-                103
+                104
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -1814,7 +1856,7 @@
         },
         {
             "children" : [
-                105
+                106
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -1845,7 +1887,7 @@
         },
         {
             "children" : [
-                107
+                108
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -1876,7 +1918,7 @@
         },
         {
             "children" : [
-                109
+                110
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -1898,12 +1940,12 @@
         },
         {
             "children" : [
-                100,
-                102,
-                104,
-                106,
-                108,
-                110
+                101,
+                103,
+                105,
+                107,
+                109,
+                111
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -2009,6 +2051,10 @@
                         },
                         {
                             "class_name" : "org.dragonskulle.game.building.StickToTile",
+                            "enabled" : true
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.building.FogInvisibility",
                             "enabled" : true
                         }
                     ]

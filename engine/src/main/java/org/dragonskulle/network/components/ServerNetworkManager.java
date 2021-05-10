@@ -3,6 +3,7 @@ package org.dragonskulle.network.components;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -91,12 +92,12 @@ public class ServerNetworkManager {
 
         @Override
         public void clientComponentRequest(
-                ServerClient client, int objectID, int requestID, DataInputStream stream)
+                ServerClient client, int objectID, int requestID, DataInput stream)
                 throws IOException {
             ServerObjectEntry entry = mNetworkObjects.get(objectID);
 
             if (entry == null) {
-                log.info(
+                log.fine(
                         "Client "
                                 + client.getNetworkID()
                                 + " passed incorrect object ID: "
@@ -201,7 +202,8 @@ public class ServerNetworkManager {
     private final AtomicInteger mNetworkObjectCounter = new AtomicInteger(0);
     /** Describes the current state of the game. */
     @Getter private ServerGameState mGameState = ServerGameState.LOBBY;
-
+    /** Whether the server scene should be loaded as a presentation scene. */
+    private boolean mShouldPresent;
     /**
      * The Network objects - this can be moved to game instance but no point until game has been
      * merged in.
@@ -235,9 +237,10 @@ public class ServerNetworkManager {
         mGameEndEventHandler = gameEndEventHandler;
     }
 
-    public void start() {
+    public void start(boolean shouldPresent) {
         if (mGameState == ServerGameState.LOBBY) {
             mGameState = ServerGameState.STARTING;
+            mShouldPresent = shouldPresent;
         }
     }
 
@@ -248,14 +251,16 @@ public class ServerNetworkManager {
 
         mManager.createGameScene(true);
 
-        if (engine.getPresentationScene() == Scene.getActiveScene()) {
+        if (engine.getPresentationScene() == Scene.getActiveScene() && mShouldPresent) {
             engine.loadPresentationScene(mManager.getGameScene());
         } else {
             engine.activateScene(mManager.getGameScene());
         }
 
-        if (mGameStartEventHandler != null) {
-            mGameStartEventHandler.handle(mManager);
+        try (SceneOverride __ = new SceneOverride(mManager.getGameScene())) {
+            if (mGameStartEventHandler != null) {
+                mGameStartEventHandler.handle(mManager);
+            }
         }
 
         for (ServerClient c : mServer.getClients()) {
@@ -330,7 +335,7 @@ public class ServerNetworkManager {
         if (recipients == EventRecipients.OWNER) {
             if (oid < 0) {
                 ByteArrayInputStream bis = new ByteArrayInputStream(msg);
-                DataInputStream dis = new DataInputStream(bis);
+                DataInput dis = new DataInputStream(bis);
                 dis.readByte(); // messageId
                 dis.readInt(); // networkObjectId
                 dis.readInt(); // eventId
@@ -347,7 +352,7 @@ public class ServerNetworkManager {
             }
 
             ByteArrayInputStream bis = new ByteArrayInputStream(msg);
-            DataInputStream dis = new DataInputStream(bis);
+            DataInput dis = new DataInputStream(bis);
             dis.readByte(); // messageId
             dis.readInt(); // networkObjectId
             dis.readInt(); // eventId

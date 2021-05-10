@@ -1,8 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.components.sync;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 
 /**
@@ -18,7 +18,7 @@ public interface INetSerializable {
      * @param clientId client ID which to serialize the changes for
      * @throws IOException the io exception
      */
-    void serialize(DataOutputStream stream, int clientId) throws IOException;
+    void serialize(DataOutput stream, int clientId) throws IOException;
 
     /**
      * Deserialize sync var.
@@ -26,5 +26,5 @@ public interface INetSerializable {
      * @param stream the stream
      * @throws IOException the io exception
      */
-    void deserialize(DataInputStream stream) throws IOException;
+    void deserialize(DataInput stream) throws IOException;
 }

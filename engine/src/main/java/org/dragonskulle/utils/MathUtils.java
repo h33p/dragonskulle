@@ -25,6 +25,14 @@ public class MathUtils {
         return start + (end - start) * time;
     }
 
+    /**
+     * Clamps a value between a range.
+     *
+     * @param val the value to clamp
+     * @param min the minimum value
+     * @param max the maximum value
+     * @return the clamped value
+     */
     public static float clamp(float val, float min, float max) {
         return Math.min(Math.max(val, min), max);
     }
@@ -56,6 +64,13 @@ public class MathUtils {
         return n >> 1;
     }
 
+    /**
+     * Rounds a value to a multiple of step.
+     *
+     * @param val the value to adjust
+     * @param step the steps
+     * @return the adjusted value
+     */
     public static float roundStep(float val, float step) {
         return Math.round(val / step) * step;
     }

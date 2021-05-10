@@ -4,12 +4,14 @@ package org.dragonskulle.game.player.ui;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
+import org.dragonskulle.audio.components.AudioSource;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.game.GameUIAppearance;
 import org.dragonskulle.game.input.GameActions;
 import org.dragonskulle.game.player.HumanPlayer;
 import org.dragonskulle.network.components.NetworkManager;
@@ -30,6 +32,8 @@ import org.joml.Vector4f;
 @Log
 @Accessors(prefix = "m")
 public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
+
+    private final Reference<AudioSource> mEndGameJukeBox;
 
     public interface IHandleEvent {
         void handle();
@@ -78,10 +82,13 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
     /**
      * Create a pause menu.
      *
+     * @param jukebox the audio source which can be used all the time
      * @param networkManager The {@link NetworkManager} being used.
      * @param camera The camera {@link GameObject} being used.
      */
-    public UIPauseMenu(NetworkManager networkManager, GameObject camera) {
+    public UIPauseMenu(
+            NetworkManager networkManager, GameObject camera, Reference<AudioSource> jukebox) {
+        mEndGameJukeBox = jukebox;
         mNetworkManager = networkManager.getReference(NetworkManager.class);
         mCamera = camera;
     }
@@ -278,13 +285,23 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
      * <p>This is a supermethod for {@link #endGame()}, that accepts an optional label to be
      * displayed in the end screen.
      *
-     * @param label label to display on the end screen.
+     * @param didWin true if the player won. It is used to determine which prompt to show and what
+     *     sound to play.
      */
-    public void endGame(String label) {
+    public void endGame(boolean didWin) {
+        String label = didWin ? "You win!" : "You lose!";
+
         if (Reference.isValid(mEndGameRect.getLabelText())) {
             mEndGameRect.getLabelText().get().setText(label);
         }
-
+        if (Reference.isValid(mEndGameJukeBox)) {
+            mEndGameJukeBox
+                    .get()
+                    .playSound(
+                            didWin
+                                    ? GameUIAppearance.AudioFiles.ON_WIN_SOUND.getPath()
+                                    : GameUIAppearance.AudioFiles.ON_LOSE_SOUND.getPath());
+        }
         endGame();
     }
 
@@ -302,11 +319,15 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
         }
     }
 
-    private static void hideMenu(boolean hide, HumanPlayer hp) {
+    private void hideMenu(boolean hide, HumanPlayer hp) {
         Reference<UIMenuLeftDrawer> menuDrawer = hp.getMenuDrawer();
         Reference<UILinkedScrollBar> scrollBar = hp.getScrollBar();
         if (Reference.isValid(menuDrawer)) {
-            menuDrawer.get().setHidden(hide);
+            if (mCurrentState == State.END_GAME) {
+                menuDrawer.get().setHidden(true);
+            } else {
+                menuDrawer.get().setHidden(hide);
+            }
         }
         if (Reference.isValid(scrollBar)) {
             scrollBar.get().getGameObject().setEnabled(!hide);

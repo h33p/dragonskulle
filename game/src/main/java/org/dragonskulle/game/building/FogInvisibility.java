@@ -13,7 +13,7 @@ import org.dragonskulle.game.map.HexagonTile.TileType;
 import org.dragonskulle.renderer.components.Renderable;
 
 /**
- * Make buildings invisible in fog.
+ * Make objects invisible in fog.
  *
  * @author Aurimas Blažulionis
  *     <p>This class is a temporary solution to true object dormancy, where object will become
@@ -25,23 +25,23 @@ public class FogInvisibility extends Component implements IOnStart, ILateFrameUp
 
     /** Internal list of renderables to control the visibility for. */
     private final List<Reference<Renderable>> mRenderables = new ArrayList<>();
-    /** Internal reference to the {@link Building} component on the object. */
-    private Reference<Building> mBuilding;
+    /** Internal reference to the {@link StickToTile} component on the object. */
+    private Reference<StickToTile> mStickToTile;
 
     @Override
     public void onStart() {
         getGameObject().getComponents(Renderable.class, mRenderables);
         getGameObject().getComponentsInChildren(Renderable.class, mRenderables);
-        mBuilding = getGameObject().getComponent(Building.class);
+        mStickToTile = getGameObject().getComponent(StickToTile.class);
     }
 
     @Override
     public void lateFrameUpdate(float deltaTime) {
-        if (!Reference.isValid(mBuilding)) {
+        if (!Reference.isValid(mStickToTile)) {
             return;
         }
 
-        HexagonTile tile = mBuilding.get().getTile();
+        HexagonTile tile = mStickToTile.get().getTile();
 
         boolean visible = tile != null && tile.getTileType() != TileType.FOG;
 
@@ -49,6 +49,11 @@ public class FogInvisibility extends Component implements IOnStart, ILateFrameUp
                 .filter(Reference::isValid)
                 .map(Reference::get)
                 .forEach(r -> r.setEnabled(visible));
+
+        // Remove self, because we will never become invisible afterwards
+        if (visible) {
+            getGameObject().removeComponent(this);
+        }
     }
 
     @Override

@@ -8,6 +8,7 @@ import java.util.Random;
 import java.util.stream.Stream;
 import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.game.GameConfig.AiAimerConfig;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonTile;
 import org.dragonskulle.game.player.BuildingDescriptor;
@@ -24,7 +25,7 @@ import org.dragonskulle.game.player.ai.algorithms.graphs.Node;
  * @author Dragonskulle
  */
 @Log
-public class AimerAi extends AiPlayer {
+public class AimerAi extends ProbabilisticAiPlayer {
 
     /**
      * A Class which holds the Goal Node and Start Node.
@@ -61,30 +62,14 @@ public class AimerAi extends AiPlayer {
     /** The node we previously were on. */
     private Node mNodePreviouslyOn = null;
 
-    /** Whether to use the A* route. */
-    private static final float PLAY_A_STAR = 0.9f;
-
     /** The chance to aim at a capital. */
-    private static final float AIM_AT_CAPITAL = 0.01f;
+    private float mAimAtCapital = 0.0f;
 
-    /** This is the number of tries we should do before resetting. */
-    private static final int TRIES = 20;
-
-    protected ProbabilisticAiPlayer mProbabilisticAi = null;
+    /** The number of times we've attempted A* */
+    private int mAStarAttempts = 0;
 
     /** Basic Constructor. */
     public AimerAi() {}
-
-    @Override
-    public void onStart() {
-
-        if (mProbabilisticAi == null
-                && Reference.isValid(getGameObject().getComponent(ProbabilisticAiPlayer.class))) {
-            mProbabilisticAi = getGameObject().getComponent(ProbabilisticAiPlayer.class).get();
-        }
-
-        super.onStart();
-    }
 
     @Override
     protected void simulateInput() {
@@ -97,12 +82,24 @@ public class AimerAi extends AiPlayer {
 
             // Will perform all necessary checks for A*
             aStar();
-            log.info("A* Ran");
 
             // Whilst it cannot find a path play probabilistically
             if (mPath.size() == 0) {
+                super.simulateInput();
+            } else {
+                // This will mean you need 139 attempts to always aim at the capital.  Need 81
+                // attempts for 0.5
 
-                mProbabilisticAi.simulateInput();
+                mAStarAttempts += 1;
+                mAimAtCapital =
+                        (float)
+                                (Math.pow(
+                                                2,
+                                                (mAStarAttempts
+                                                        / getConfig()
+                                                                .getAiAimer()
+                                                                .getMaxAttempts()))
+                                        - 1);
             }
             return;
         }
@@ -113,8 +110,10 @@ public class AimerAi extends AiPlayer {
             return;
         }
 
+        AiAimerConfig cfg = getConfig().getAiAimer();
+
         // This will choose whether to play as an A* player or as a Probablistic Player
-        if (mRandom.nextFloat() < PLAY_A_STAR) {
+        if (mRandom.nextFloat() < cfg.getPlayAStar()) {
 
             moveBackwards();
 
@@ -142,8 +141,8 @@ public class AimerAi extends AiPlayer {
             }
 
             // Checks if we have been on this tile for ages
-            if (mAttempts > TRIES) {
-                log.info("All tried depleted.");
+            if (mAttempts > cfg.getTries()) {
+                log.fine("All tried depleted.");
                 mPath = new ArrayDeque<Integer>();
                 return;
             }
@@ -158,7 +157,7 @@ public class AimerAi extends AiPlayer {
             }
 
         } else {
-            mProbabilisticAi.simulateInput();
+            super.simulateInput();
         }
     }
 
@@ -169,13 +168,16 @@ public class AimerAi extends AiPlayer {
      * @param nextNode The {@link Node} number for the next {@link HexagonTile}.
      */
     private void attack(HexagonTile nextTile, int nextNode) {
-        log.info("A* Attacking");
+        log.fine("A* Attacking");
         Player nextTilePlayer = nextTile.getClaimant();
 
         // ATTACK
         if (!nextTile.hasBuilding()) {
             // If the building is not on the current node get the next tile
             mGone.push(nextNode);
+            if (mPath.size() == 0) {
+                return;
+            }
             nextNode = mPath.pop();
             if (!Reference.isValid(mGraph.getNode(nextNode).getHexTile())) {
                 mPath.push(nextNode);
@@ -205,6 +207,10 @@ public class AimerAi extends AiPlayer {
 
                     return;
                 }
+                if (mGone.size() == 0) {
+                    mPath = new ArrayDeque<Integer>();
+                    return;
+                }
                 nextNode = mGone.pop();
 
                 if (!Reference.isValid(mGraph.getNode(nextNode).getHexTile())) {
@@ -221,7 +227,7 @@ public class AimerAi extends AiPlayer {
 
             if (building != null && getPlayer().isBuildingOwner(building)) {
                 // Will attack
-                mProbabilisticAi.tryToAttack(building);
+                super.tryToAttack(building);
 
                 // Assumption is that the code at the start of the method will move back
                 // to
@@ -262,7 +268,7 @@ public class AimerAi extends AiPlayer {
      * @param nextNode The {@link Node} number for the next {@link HexagonTile}.
      */
     private void build(HexagonTile tileToBuildOn, int nextNode) {
-        log.info("A* Building");
+        log.fine("A* Building");
 
         // Get a building type that they can afford.
         BuildingDescriptor option = getRandomBuildingType();
@@ -282,6 +288,9 @@ public class AimerAi extends AiPlayer {
      */
     private int moveForwards() {
         // This will point us to the next tile to use
+        if (mPath.size() == 0) {
+            return Integer.MAX_VALUE;
+        }
         int nextNode = mPath.pop();
         if (!Reference.isValid(mGraph.getNode(nextNode).getHexTile())) {
             mPath = new ArrayDeque<Integer>();
@@ -311,6 +320,10 @@ public class AimerAi extends AiPlayer {
     /** Move the player to a node owned by them. */
     private void moveBackwards() {
 
+        if (mGone.size() == 0) {
+            mPath = new ArrayDeque<Integer>();
+            return;
+        }
         int previousNode = mGone.pop();
 
         // This will get you to the first node which you claimed
@@ -326,9 +339,21 @@ public class AimerAi extends AiPlayer {
 
             if (!hexagonTile.get().isClaimed()) {
                 mPath.push(previousNode);
+                if (mGone.size() == 0) {
+                    mPath = new ArrayDeque<Integer>();
+                    return;
+                }
                 previousNode = mGone.pop();
             } else if (!getPlayer().hasClaimedTile(hexagonTile.get())) {
                 mPath.push(previousNode);
+                if (mGone.size() == 0) {
+                    mPath = new ArrayDeque<Integer>();
+                    return;
+                }
+                if (mGone.size() == 0) {
+                    mPath = new ArrayDeque<Integer>();
+                    return;
+                }
                 previousNode = mGone.pop();
             } else {
                 onYourNode = true;
@@ -341,8 +366,14 @@ public class AimerAi extends AiPlayer {
     /** This is what happens when we start the search and moves from the capital. */
     private void atCapital() {
 
+        if (mPath.size() == 0) {
+            return;
+        }
         int nextDoor = mPath.pop();
         mGone.push(nextDoor);
+        if (mPath.size() == 0) {
+            return;
+        }
         int firstElement = mPath.pop();
         if (!Reference.isValid(mGraph.getNode(firstElement).getHexTile())) {
             mPath.push(firstElement);
@@ -382,7 +413,7 @@ public class AimerAi extends AiPlayer {
             if (Reference.isValid(buildingReference)) {
                 Building buildingToAim = buildingReference.get().getRandomAttackableBuilding();
 
-                if (buildingToAim != null) {
+                if (buildingToAim != null && !buildingToAim.getOwner().hasLost()) {
                     return buildingToAim.getOwner();
                 }
             }
@@ -425,7 +456,7 @@ public class AimerAi extends AiPlayer {
             return;
         }
 
-        mCapitalAimer = mRandom.nextFloat() <= AIM_AT_CAPITAL;
+        mCapitalAimer = mRandom.nextFloat() <= mAimAtCapital;
 
         // Will find the tile to attack
         HexagonTile tileToAim = getTileBuilding(opponentPlayer);
@@ -546,8 +577,46 @@ public class AimerAi extends AiPlayer {
 
         buildings.mGoalNode = mGraph.getNode(target);
 
-        buildings.mStartNode = mGraph.getNode(getPlayer().getCapital().getTile());
+        HexagonTile startHex = getStartHex();
+        if (startHex == null) {
+            buildings.mStartNode = null;
+
+        } else {
+
+            buildings.mStartNode = mGraph.getNode(startHex);
+        }
 
         return buildings;
+    }
+
+    private HexagonTile getStartHex() {
+        List<Reference<Building>> ownedBuildings = getPlayer().getOwnedBuildings();
+        if (ownedBuildings.size() == 0) {
+            // This has already been checked but hey ho
+            return null;
+        }
+        int index = mRandom.nextInt(ownedBuildings.size());
+        final int end = index;
+
+        // Goes through the ownedBuildings
+        while (true) {
+            Reference<Building> buildingReference = ownedBuildings.get(index);
+
+            // Checks the building is valid
+            if (Reference.isValid(buildingReference)) {
+                return buildingReference.get().getTile();
+            }
+            index++;
+
+            // If gone over start at 0
+            if (index >= ownedBuildings.size()) {
+                index = 0;
+            }
+
+            // Checks if we've gone through the whole list
+            if (index == end) {
+                return null;
+            }
+        }
     }
 }

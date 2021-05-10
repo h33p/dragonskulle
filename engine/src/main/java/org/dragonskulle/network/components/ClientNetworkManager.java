@@ -1,7 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.components;
 
-import java.io.DataInputStream;
+import java.io.DataInput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
@@ -50,13 +50,13 @@ public class ClientNetworkManager {
     private class Listener implements IClientListener {
         @Override
         public void unknownHost() {
-            log.info("unknown host");
+            log.fine("unknown host");
             mNextConnectionState.set(ConnectionState.CONNECTION_ERROR);
         }
 
         @Override
         public void couldNotConnect() {
-            log.info("could not connect");
+            log.fine("could not connect");
             mNextConnectionState.set(ConnectionState.CONNECTION_ERROR);
         }
 
@@ -67,7 +67,7 @@ public class ClientNetworkManager {
 
         @Override
         public void disconnected() {
-            log.info("disconnected");
+            log.fine("disconnected");
             mNextConnectionState.set(ConnectionState.CONNECTION_ERROR);
         }
 
@@ -84,7 +84,7 @@ public class ClientNetworkManager {
 
         @Override
         public void error(String s) {
-            log.info("error: " + s);
+            log.fine("error");
             mNextConnectionState.set(ConnectionState.CONNECTION_ERROR);
         }
 
@@ -94,13 +94,11 @@ public class ClientNetworkManager {
          * @param stream the payload of the object to be updated
          */
         @Override
-        public void updateNetworkObject(DataInputStream stream) throws IOException {
+        public void updateNetworkObject(DataInput stream) throws IOException {
             int idToUpdate = stream.readInt();
             ClientObjectEntry entry = getNetworkObjectEntry(idToUpdate);
-            if (entry == null) {
-                log.info("Should have spawned! Couldn't find nob id :" + idToUpdate);
-                return;
-            }
+            if (entry == null) return;
+
             entry.mNetworkObject.get().updateFromBytes(stream);
             if (!entry.mSynchronized) {
                 entry.mSynchronized = true;
@@ -114,12 +112,12 @@ public class ClientNetworkManager {
          * @param stream payload containing the server's world state
          */
         @Override
-        public void updateServerState(DataInputStream stream) throws IOException {
+        public void updateServerState(DataInput stream) throws IOException {
             mServerTime = stream.readFloat();
         }
 
         @Override
-        public void spawnNetworkObject(DataInputStream stream) throws IOException {
+        public void spawnNetworkObject(DataInput stream) throws IOException {
             int objectId = stream.readInt();
             int ownerId = stream.readInt();
             int spawnTemplateId = stream.readInt();
@@ -127,13 +125,11 @@ public class ClientNetworkManager {
         }
 
         @Override
-        public void objectEvent(DataInputStream stream) throws IOException {
+        public void objectEvent(DataInput stream) throws IOException {
             int objectId = stream.readInt();
             ClientObjectEntry entry = getNetworkObjectEntry(objectId);
-            if (entry == null) {
-                log.info("Should have spawned! Couldn't find nob id :" + objectId);
-                return;
-            }
+            if (entry == null) return;
+
             NetworkObject nob = entry.mNetworkObject.get();
 
             int eventId = stream.readInt();
@@ -321,7 +317,7 @@ public class ClientNetworkManager {
             if (mTicksWithoutRequests > 3200) {
                 disconnect();
             } else if (mTicksWithoutRequests == 1000) {
-                log.info("1000 ticks without updates! 2200 more till disconnect!");
+                log.fine("1000 ticks without updates! 2200 more till disconnect!");
             }
         } else mTicksWithoutRequests = 0;
 
@@ -339,8 +335,8 @@ public class ClientNetworkManager {
         ConnectionState nextState = mNextConnectionState.getAndSet(null);
 
         if (nextState != null) {
-            log.info(mConnectionState.toString());
-            log.info(nextState.toString());
+            log.fine(mConnectionState.toString());
+            log.fine(nextState.toString());
 
             if (mConnectionState == ConnectionState.JOINED_GAME) {
                 disconnect();
@@ -434,8 +430,7 @@ public class ClientNetworkManager {
         final NetworkObject nob = new NetworkObject(networkObjectId, ownerID, false, mManager);
         go.addComponent(nob);
         Reference<NetworkObject> ref = nob.getReference(NetworkObject.class);
-        log.info("adding a new root object to the scene");
-        log.info("nob to be spawned is : " + nob.toString());
+        log.fine("adding a new root object to the scene");
         go.setEnabled(false);
         mManager.getGameScene().addRootObject(go);
         this.mNetworkObjectReferences.put(nob.getId(), new ClientObjectEntry(ref));

@@ -6,7 +6,8 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.dragonskulle.components.IFrameUpdate;
+import lombok.extern.java.Log;
+import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.stat.StatType;
@@ -23,15 +24,15 @@ import org.dragonskulle.network.components.sync.SyncInt;
  * @author Leela
  */
 @Accessors(prefix = "m")
-public class BuildingProps extends NetworkableComponent implements IOnAwake, IFrameUpdate {
+@Log
+public class BuildingProps extends NetworkableComponent implements IOnAwake, IFixedUpdate {
     private Reference<Building> mBuilding;
     private List<Reference<TileProp>> mProps = new ArrayList<>();
     @Getter private SyncInt mBuildingNetId = new SyncInt(-1);
     @Getter @Setter private String mStat = "";
     private StatType mStatType;
 
-    public void frameUpdate(float deltaTime) {
-
+    public void fixedUpdate(float deltaTime) {
         if (!Reference.isValid(mBuilding)) {
             if (getNetworkObject().isServer()) {
                 getGameObject().destroy();
@@ -65,7 +66,7 @@ public class BuildingProps extends NetworkableComponent implements IOnAwake, IFr
 
     @Override
     public void onAwake() {
-        mStatType = StatType.fromNiceName(mStat);
+        mStatType = StatType.valueOf(mStat);
         getGameObject().getComponents(TileProp.class, mProps);
 
         NetworkObject nob = getNetworkManager().getObjectById(mBuildingNetId.get());

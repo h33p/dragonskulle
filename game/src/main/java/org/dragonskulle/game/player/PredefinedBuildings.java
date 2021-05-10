@@ -35,12 +35,13 @@ public class PredefinedBuildings {
     /**
      * Gets all the buildings which can be placed filtered by the cost of the building.
      *
-     * @param currentTokens the current tokens the player has
+     * @param player the player to get the purchasable buildings for
      * @return a list of purchasable buildings
      */
-    public static List<BuildingDescriptor> getPurchasable(int currentTokens) {
+    public static List<BuildingDescriptor> getPurchasable(Player player) {
+        int currentTokens = player.getTokens().get();
         return buildings.stream()
-                .filter(b -> b.getCost() <= currentTokens)
+                .filter(b -> b.getTotalCost(player) <= currentTokens)
                 .collect(Collectors.toList());
     }
 
@@ -60,7 +61,7 @@ public class PredefinedBuildings {
      * @return the building descriptor, will return {@link #BASE} if out of range.
      */
     public static BuildingDescriptor get(int i) {
-        if (i <= buildings.size()) {
+        if (i >= 0 && i < buildings.size()) {
             return buildings.get(i);
         }
         return PredefinedBuildings.BASE;
