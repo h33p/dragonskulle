@@ -37,7 +37,6 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
 
     /** This is the {@link Reference} to the {@link Player} which is used by this AI Player. */
     protected Reference<Player> mPlayer;
-    
 
     /** Basic Constructor. */
     public AiPlayer() {}
@@ -82,6 +81,7 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
 
     /**
      * This will get the config value for the AI Player
+     *
      * @return The {@link AiConfig} to be used
      */
     protected AiConfig getConfig() {
@@ -92,9 +92,9 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
         GameConfig cfg = GameState.getSceneConfig();
 
         if (cfg != null && cfg.getAi().size() > 0) {
-        	int index = mRandom.nextInt(cfg.getAi().size());
-        	mConfig = cfg.getAi().get(index);
-        	
+            int index = mRandom.nextInt(cfg.getAi().size());
+            mConfig = cfg.getAi().get(index);
+
         } else {
             mConfig = new AiConfig();
         }
