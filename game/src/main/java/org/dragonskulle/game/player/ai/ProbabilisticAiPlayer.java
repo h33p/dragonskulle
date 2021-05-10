@@ -71,7 +71,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
                             + cfg.getSellProbability()) {
                 sell();
             } else {
-                log.warning("AI probabilites do not sum to one- no action performed.");
+                log.fine("AI probabilites do not sum to one- no action performed.");
             }
         }
     }

@@ -1138,7 +1138,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     private boolean sellAttempt(Building building) {
         if (!sellCheck(building)) {
-            log.warning("Unable to pass sell check.");
+            log.fine("Unable to pass sell check.");
             return false;
         }
 
@@ -1231,7 +1231,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     private boolean statAttempt(Building building, StatType statType) {
         if (!statCheck(building, statType)) {
-            log.warning("Unable to pass stat check.");
+            log.fine("Unable to pass stat check.");
             return false;
         }
 
