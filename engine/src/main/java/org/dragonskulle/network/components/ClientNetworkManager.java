@@ -97,9 +97,8 @@ public class ClientNetworkManager {
         public void updateNetworkObject(DataInput stream) throws IOException {
             int idToUpdate = stream.readInt();
             ClientObjectEntry entry = getNetworkObjectEntry(idToUpdate);
-            if (entry == null) {
-                return;
-            }
+            if (entry == null) return;
+
             entry.mNetworkObject.get().updateFromBytes(stream);
             if (!entry.mSynchronized) {
                 entry.mSynchronized = true;
@@ -129,9 +128,8 @@ public class ClientNetworkManager {
         public void objectEvent(DataInput stream) throws IOException {
             int objectId = stream.readInt();
             ClientObjectEntry entry = getNetworkObjectEntry(objectId);
-            if (entry == null) {
-                return;
-            }
+            if (entry == null) return;
+
             NetworkObject nob = entry.mNetworkObject.get();
 
             int eventId = stream.readInt();
