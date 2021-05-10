@@ -318,7 +318,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             } else {
                 buildingToBecomeCapital.setCapital(true);
                 mGameState.get().getNumCapitalsStanding().add(1);
-                log.info("Created Capital.  Network Object: " + getNetworkObject().getOwnerId());
                 return;
             }
         }
@@ -336,13 +335,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             HexagonTile selectedTile = buildable.get(random.nextInt(buildable.size()));
             Building capital = createBuilding(selectedTile.getQ(), selectedTile.getR(), true);
             if (capital == null) {
-                log.info("Failed to create capital");
                 return;
             }
             capital.setCapital(true);
 
             mGameState.get().getNumCapitalsStanding().add(1);
-            log.info("Created Capital.  Network Object: " + getNetworkObject().getOwnerId());
         }
     }
 
@@ -360,12 +357,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         if (tile.isClaimed()) {
-            log.info("Tile already claimed.");
+            log.fine("Tile already claimed.");
             return false;
         }
 
         if (tile.hasBuilding()) {
-            log.info("Building already on tile.");
+            log.fine("Building already on tile.");
             return false;
         }
 
@@ -420,8 +417,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         float distance = random.nextFloat() * (radius - minDistance) + minDistance;
 
         direction.mul(distance).mul(TransformHex.HEX_WIDTH);
-
-        log.info("X: " + direction.x + " Y: " + direction.y);
 
         // Convert to Axial coordinates
         Vector3f cartesian = new Vector3f(direction.x, direction.y, 0f);
@@ -827,13 +822,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private boolean buildAttempt(HexagonTile tile, BuildingDescriptor descriptor) {
 
         if (!buildCheck(tile, descriptor.getTotalCost(this))) {
-            log.info("Unable to pass build check.");
+            log.fine("Unable to pass build check.");
             return false;
         }
 
         Building building = createBuilding(tile.getQ(), tile.getR(), false);
         if (building == null) {
-            log.info("Unable to add building.");
+            log.fine("Unable to add building.");
             return false;
         }
 
@@ -860,7 +855,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
         if (getTokens().get() < buyPrice) {
-            log.info("Not enough tokens to buy building.");
+            log.fine("Not enough tokens to buy building.");
             return false;
         }
         return tile.isBuildable(this);
@@ -947,11 +942,11 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         if (!attackCheck(attacker, defender)) {
-            log.info("Unable to pass attack check.");
+            log.fine("Unable to pass attack check.");
             return false;
         }
         attacker.invokeSound(AudioFiles.ATTACK_INVOKED_SOUND, ServerEvent.EventRecipients.OWNER);
-        log.info("Attacking");
+        log.fine("Attacking");
 
         mLastAttack.set(getNetworkManager().getServerTime());
 
@@ -980,7 +975,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                             boolean won;
                             if (defender.getOwner().hasLost()) won = true;
                             else won = attacker.attack(defender);
-                            log.info("Attack is: " + won);
+                            log.fine(won);
 
                             // If you've won attack
                             if (won) {
@@ -1019,8 +1014,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                                         AudioFiles.DEFENCE_SUCCESS_SOUND,
                                         ServerEvent.EventRecipients.OWNER);
                             }
-
-                            log.info("Done");
                         })
                 .schedule();
 
@@ -1042,12 +1035,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         if (attacker == null) {
-            log.info("Attacker is null.");
+            log.fine("Attacker is null.");
             return false;
         }
 
         if (defender == null) {
-            log.info("Defender is null.");
+            log.fine("Defender is null.");
             return false;
         }
 
@@ -1059,19 +1052,19 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         // Checks you own the building
         if (isBuildingOwner(attacker) == false) {
-            log.info("It's not your building.");
+            log.fine("It's not your building.");
             return false;
         }
 
         // Checks if you have passed an attackable building
         if (!attacker.isBuildingAttackable(defender)) {
-            log.info("Player passed a non-attackable building!");
+            log.fine("Player passed a non-attackable building!");
             return false;
         }
 
         // Checks you're not attacking your own building
         if (defender.getOwnerId() == attacker.getOwnerId()) {
-            log.info("ITS YOUR BUILDING DUMMY");
+            log.fine("Player passed a building which it owns");
             return false;
         }
 
@@ -1146,7 +1139,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     private boolean sellAttempt(Building building) {
         if (!sellCheck(building)) {
-            log.info("Unable to pass sell check.");
+            log.warning("Unable to pass sell check.");
             return false;
         }
 
@@ -1179,12 +1172,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         // Checks that you own the building
         if (isBuildingOwner(building) == false) {
-            log.info("You do not own the building.");
+            log.fine("You do not own the building.");
             return false;
         }
 
         if (building.isCapital()) {
-            log.info("You cannot sell your capital.");
+            log.fine("You cannot sell your capital.");
             return false;
         }
 
@@ -1239,7 +1232,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     private boolean statAttempt(Building building, StatType statType) {
         if (!statCheck(building, statType)) {
-            log.info("Unable to pass stat check.");
+            log.warning("Unable to pass stat check.");
             return false;
         }
 
@@ -1280,24 +1273,24 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         // Checks you own the building
         if (isBuildingOwner(building) == false) {
-            log.info("Building not owned.");
+            log.fine("Building not owned.");
             return false;
         }
 
         SyncStat stat = building.getStat(statType);
 
         if (stat == null) {
-            log.info("Building is missing specified stat.");
+            log.fine("Building is missing specified stat.");
             return false;
         }
 
         if (stat.isUpgradeable() == false) {
-            log.info("Building stat not upgradeable.");
+            log.fine("Building stat not upgradeable.");
             return false;
         }
 
         if (mTokens.get() < stat.getCost()) {
-            log.info("Cannot afford building upgrade.");
+            log.fine("Cannot afford building upgrade.");
             return false;
         }
 

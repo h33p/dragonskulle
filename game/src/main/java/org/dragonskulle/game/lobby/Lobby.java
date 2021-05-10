@@ -680,7 +680,7 @@ public class Lobby extends Component implements IFrameUpdate {
             }
 
         } catch (ParseException e) {
-            log.info("Failed to parse response from get all hosts");
+            log.fine("Failed to parse response from get all hosts");
             return;
         }
         mHostsUpdated.set(true);
