@@ -335,6 +335,10 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
         checkInitialise();
 
+        AudioSource src = new AudioSource();
+        getGameObject().addComponent(src);
+        mJukeBox = src.getReference(AudioSource.class);
+
         if (isCapital()) {
             GLTF gltf = sBuildingTemplates.get();
 
@@ -347,10 +351,6 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
             mVisibleMesh = capital_mesh.getReference();
             return;
         }
-
-        AudioSource src = new AudioSource();
-        getGameObject().addComponent(src);
-        mJukeBox = src.getReference(AudioSource.class);
 
         assignMesh();
     }
