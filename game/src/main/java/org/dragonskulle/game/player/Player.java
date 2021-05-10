@@ -366,11 +366,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
 
-        if (getMap().isIsland(tile)) {
-            log.warning("This is an island and a capital cannot be placed here");
-            return false;
-        }
-
         return true;
     }
 
