@@ -194,7 +194,7 @@ public class NetworkClient {
                 while (mOpen && mSocket.isConnected()) {
                     try {
                         short len = input.readShort();
-                        byte[] bytes = IOUtils.readExactlyNBytes(input, len);
+                        byte[] bytes = IOUtils.readNBytes(input, len);
                         if (mSimLatency <= 0f) {
                             queueRequest(bytes);
                         } else {

@@ -6,6 +6,8 @@ import lombok.experimental.Accessors;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.futures.AwaitFuture.IAwaitFuture;
+import org.dragonskulle.core.futures.ProducerFuture.IProducerFuture;
+import org.dragonskulle.core.futures.ProducerFuture.IThreadedProducer;
 import org.dragonskulle.core.futures.ThenFuture.IThenFuture;
 
 /**
@@ -15,7 +17,7 @@ import org.dragonskulle.core.futures.ThenFuture.IThenFuture;
  */
 @Getter
 @Accessors(prefix = "m")
-public abstract class Future {
+public class Future {
     /**
      * Root of this chain.
      *
@@ -38,15 +40,24 @@ public abstract class Future {
         mRoot = root == null ? this : root;
     }
 
+    public Future() {
+        this(null);
+    }
+
     /**
      * Invoke a future.
      *
      * <p>This will execute the future. A future implementing this method should schedule an end of
-     * loop event that invokes the next future in the chain.
+     * loop event that invokes the next future in the chain, unless it's a no-op by itself.
      *
      * @param scene scene context to execute the future in.
      */
-    protected abstract void invoke(Scene scene);
+    protected void invoke(Scene scene) {
+        mComplete = true;
+        if (mNextFuture != null) {
+            mNextFuture.invoke(scene);
+        }
+    }
 
     /**
      * Schedule the future chain on a given scene.
@@ -136,5 +147,24 @@ public abstract class Future {
      */
     public AwaitFuture syncWith(Future future) {
         return awaitUntil((scene) -> future.isComplete());
+    }
+
+    /**
+     * Build a {@link ProducerFuture}.
+     *
+     * <p>This will build a new {@link ProducerFuture}, and chain it after the current one.
+     *
+     * <p>This future will produce data on separate thread, and then invoke a post production
+     * interface on the main thread.
+     *
+     * @param dataProducer data to produce.
+     * @param postProduction post production action to invoke.
+     * @return the newly constructed {@link ProducerFuture}.
+     */
+    public <T> ProducerFuture<T> threadedProduce(
+            IThreadedProducer<T> dataProducer, IProducerFuture<T> postProduction) {
+        ProducerFuture<T> producer = new ProducerFuture<>(mRoot, dataProducer, postProduction);
+        mNextFuture = producer;
+        return producer;
     }
 }

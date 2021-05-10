@@ -11,6 +11,7 @@ import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.ui.TransformUI;
+import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIText;
 
 /**
@@ -24,6 +25,7 @@ import org.dragonskulle.ui.UIText;
 public class UIShopSection extends Component implements IOnStart {
     @Getter private ShopState mState = ShopState.MY_BUILDING_SELECTED;
     @Setter @Getter private ShopState mLastState = ShopState.CLOSED;
+    private Reference<GameObject> mDefaultPanel;
     private Reference<GameObject> mNewBuildingPanel;
     private Reference<GameObject> mUpgradePanel;
 
@@ -34,7 +36,7 @@ public class UIShopSection extends Component implements IOnStart {
     @Getter(AccessLevel.PROTECTED)
     private final UIMenuLeftDrawer mParent;
 
-    @Setter @Getter private Reference<GameObject> mCurrentPanel = new Reference<>(null);
+    @Setter @Getter private Reference<GameObject> mCurrentPanel;
     private Reference<UIText> mTitleRef;
 
     /**
@@ -59,6 +61,7 @@ public class UIShopSection extends Component implements IOnStart {
     /** The Shop state. This controls what can be seen at what time. */
     public enum ShopState {
         CLOSED,
+        DEFAULT,
         BUILDING_NEW,
         ATTACK_SCREEN,
         MY_BUILDING_SELECTED
@@ -84,6 +87,10 @@ public class UIShopSection extends Component implements IOnStart {
                 case ATTACK_SCREEN:
                     newPanel = null;
                     break;
+                case DEFAULT:
+                    newPanel = mDefaultPanel;
+                    newText = "Choose Action";
+                    break;
                 case BUILDING_NEW:
                     newPanel = mNewBuildingPanel;
                     newText = "Create Building";
@@ -95,6 +102,7 @@ public class UIShopSection extends Component implements IOnStart {
                 case CLOSED:
                     newPanel = null;
                     newText = "";
+                    show(mDefaultPanel, false);
                     show(mCurrentPanel, false);
                     show(mUpgradePanel, false);
                     show(mNewBuildingPanel, false);
@@ -151,6 +159,35 @@ public class UIShopSection extends Component implements IOnStart {
      */
     @Override
     public void onStart() {
+
+        mDefaultPanel =
+                getGameObject()
+                        .buildChild(
+                                "default_object",
+                                new TransformUI(false),
+                                (self) -> {
+                                    GameObject buttonObject =
+                                            new GameObject("build_button", new TransformUI(true));
+                                    UIButton button =
+                                            new UIButton(
+                                                    "Place Building",
+                                                    (__, ___) -> {
+                                                        getParent()
+                                                                .mNotifyScreenChange
+                                                                .call(Screen.PLACING_NEW_BUILDING);
+                                                    });
+                                    buttonObject.addComponent(button);
+                                    TransformUI transformUI =
+                                            buttonObject.getTransform(TransformUI.class);
+                                    transformUI.setParentAnchor(0, 0.1f, 1, 0.19f + 0.25f);
+                                    transformUI.setPivotOffset(0.5f, 0);
+
+                                    self.addChild(buttonObject);
+                                });
+
+        show(mDefaultPanel, true);
+        mCurrentPanel = mDefaultPanel;
+
         UIBuildingUpgrade uiBuildingUpgrade = new UIBuildingUpgrade(this);
         mUpgradePanel =
                 getGameObject()
@@ -162,6 +199,7 @@ public class UIShopSection extends Component implements IOnStart {
 
         UIBuildingOptions uiBuildingOptions =
                 new UIBuildingOptions(this); // TODO this is what needs improving now
+
         mNewBuildingPanel =
                 getGameObject()
                         .buildChild(
@@ -180,7 +218,7 @@ public class UIShopSection extends Component implements IOnStart {
                                 "main_shop_text",
                                 new TransformUI(true),
                                 (self) -> {
-                                    UIText mWindowText = new UIText("");
+                                    UIText mWindowText = new UIText("Choose Action");
                                     self.addComponent(mWindowText);
                                     mTitleRef = mWindowText.getReference(UIText.class);
                                 });

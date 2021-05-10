@@ -1,15 +1,15 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import lombok.extern.java.Log;
 import org.dragonskulle.components.IOnAwake;
+import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.network.components.NetworkableComponent;
@@ -17,6 +17,7 @@ import org.dragonskulle.network.components.requests.ServerEvent;
 import org.dragonskulle.network.components.requests.ServerEvent.EventRecipients;
 import org.dragonskulle.network.components.requests.ServerEvent.EventTimeframe;
 import org.dragonskulle.network.components.sync.INetSerializable;
+import org.dragonskulle.network.components.sync.SyncFloat;
 import org.dragonskulle.network.components.sync.SyncInt;
 
 /**
@@ -25,19 +26,41 @@ import org.dragonskulle.network.components.sync.SyncInt;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-@Log
 public class GameState extends NetworkableComponent implements IOnAwake {
     private static class GameEndEventData implements INetSerializable {
         private int mWinnerId;
 
         @Override
-        public void serialize(DataOutputStream stream, int clientId) throws IOException {
+        public void serialize(DataOutput stream, int clientId) throws IOException {
             stream.writeInt(mWinnerId);
         }
 
         @Override
-        public void deserialize(DataInputStream stream) throws IOException {
+        public void deserialize(DataInput stream) throws IOException {
             mWinnerId = stream.readInt();
+        }
+    }
+
+    public static class InvokeAudioEvent implements INetSerializable {
+
+        public InvokeAudioEvent() {}
+
+        public InvokeAudioEvent(GameUIAppearance.AudioFiles sound) {
+            mSoundId = sound;
+        }
+
+        @Getter
+        @Accessors(prefix = "m")
+        private GameUIAppearance.AudioFiles mSoundId;
+
+        @Override
+        public void serialize(DataOutput stream, int __) throws IOException {
+            stream.writeInt(mSoundId.ordinal());
+        }
+
+        @Override
+        public void deserialize(DataInput stream) throws IOException {
+            mSoundId = GameUIAppearance.AudioFiles.get(stream.readInt());
         }
     }
 
@@ -45,8 +68,10 @@ public class GameState extends NetworkableComponent implements IOnAwake {
         void handle(int winnerId);
     }
 
+    @Getter private GameConfig mConfig = GameConfig.getDefaultConfig();
     @Getter private final SyncInt mNumPlayers = new SyncInt(0);
     @Getter private final SyncInt mNumCapitalsStanding = new SyncInt(0);
+    @Getter private final SyncFloat mStartTime = new SyncFloat();
 
     @Getter private boolean mInGame = true;
 
@@ -68,11 +93,13 @@ public class GameState extends NetworkableComponent implements IOnAwake {
                         },
                         EventRecipients.ALL_CLIENTS,
                         EventTimeframe.INSTANT);
+
+        Scene.getActiveScene().registerSingleton(this);
     }
 
     @Override
     public void onAwake() {
-        Scene.getActiveScene().registerSingleton(this);
+        mStartTime.set(Engine.getInstance().getCurTime());
     }
 
     @Override
@@ -86,5 +113,26 @@ public class GameState extends NetworkableComponent implements IOnAwake {
         if (Reference.isValid(e)) {
             mGameEndListeners.add(e);
         }
+    }
+
+    /**
+     * Retrieve current global inflation level.
+     *
+     * @return float representing inflation. Value of 1 means no inflation, values lower than 1
+     *     represent deflation.
+     */
+    public float getGlobalInflation() {
+        float deltaTime = getNetworkManager().getServerTime() - mStartTime.get();
+        return (float) Math.pow(mConfig.getGlobal().getInflation(), deltaTime);
+    }
+
+    public static GameConfig getSceneConfig() {
+        GameState state = Scene.getActiveScene().getSingleton(GameState.class);
+
+        if (state != null) {
+            return state.getConfig();
+        }
+
+        return null;
     }
 }

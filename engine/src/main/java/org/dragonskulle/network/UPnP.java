@@ -82,20 +82,20 @@ public class UPnP {
                                 socket.receive(packet);
                                 received[idx] = packet.getData();
                                 sLocal = address;
-                                log.info(
+                                log.fine(
                                         "Received response to query on address : "
                                                 + address.getHostAddress());
                             } catch (SocketTimeoutException e) {
-                                log.info(
+                                log.fine(
                                         "Didn't receive response to query on address : "
                                                 + address.getHostAddress());
                             }
                         } catch (SocketException e) {
-                            log.info(
+                            log.warning(
                                     "Failed to create UDP socket on address : "
                                             + address.getHostAddress());
                         } catch (IOException e) {
-                            log.info(
+                            log.warning(
                                     "Failed to broadcast query on address : "
                                             + address.getHostAddress());
                         }
@@ -115,7 +115,7 @@ public class UPnP {
 
         for (byte[] data : received) {
             if (data != null && processResponse(data)) {
-                log.info("UPnP initialised");
+                log.fine("UPnP initialised");
                 sInitialised = true;
                 return;
             }
@@ -174,7 +174,7 @@ public class UPnP {
 
         if (out != null) {
             storePortMapping(port, protocol);
-            log.info("Added port mapping " + protocol + " : " + port);
+            log.fine("Added port mapping " + protocol + " : " + port);
             return true;
         } else {
             log.warning("Failed to add port mapping " + protocol + " : " + port);
@@ -209,10 +209,10 @@ public class UPnP {
 
         if (out != null) {
             removePortMapping(port, protocol);
-            log.info("Deleted port mapping " + protocol + " : " + port);
+            log.fine("Deleted port mapping " + protocol + " : " + port);
             return true;
         } else {
-            log.info("Failed to delete port mapping " + protocol + " : " + port);
+            log.fine("Failed to delete port mapping " + protocol + " : " + port);
             return false;
         }
     }
@@ -257,6 +257,25 @@ public class UPnP {
             for (String protocol : entry.getValue()) {
                 deletePortMapping(entry.getKey(), protocol);
             }
+        }
+    }
+
+    /**
+     * Check if we have mapped a port with a specific protocol during runtime.
+     *
+     * @param port Port to check
+     * @param protocol Protocol to check
+     * @return true if the port is mapped with that protocol, false otherwise
+     */
+    public static boolean checkMappingExists(Integer port, String protocol) {
+        if (sMappings.containsKey(port)) {
+            return sMappings.get(port).stream()
+                            .filter(p -> p.equals(protocol))
+                            .findFirst()
+                            .orElse(null)
+                    != null;
+        } else {
+            return false;
         }
     }
 

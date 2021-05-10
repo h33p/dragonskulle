@@ -31,7 +31,7 @@ public class AppTest {
                         App::createMainScene,
                         (__1, man, __2) -> {
                             if (++cnt[0] >= numClients) {
-                                man.getServerManager().start();
+                                man.getServerManager().start(false);
                             }
                         },
                         Lobby::onClientLoaded,

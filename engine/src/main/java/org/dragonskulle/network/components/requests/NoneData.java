@@ -1,8 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network.components.requests;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.DataInput;
+import java.io.DataOutput;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
 /**
@@ -20,7 +20,7 @@ public class NoneData implements INetSerializable {
      * @param clientId client network ID
      */
     @Override
-    public void serialize(DataOutputStream stream, int clientId) {}
+    public void serialize(DataOutput stream, int clientId) {}
 
     /**
      * Deserialize sync var.
@@ -28,5 +28,5 @@ public class NoneData implements INetSerializable {
      * @param stream the stream
      */
     @Override
-    public void deserialize(DataInputStream stream) {}
+    public void deserialize(DataInput stream) {}
 }

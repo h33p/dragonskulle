@@ -12,6 +12,9 @@ import lombok.experimental.Accessors;
  */
 @Accessors(prefix = "m")
 public class BuildingDescriptor {
+
+    public static final int BASE_COST = 10;
+
     @Getter public final int mAttack;
     @Getter public final int mDefence;
     @Getter public final int mTokenGenerationLevel;
@@ -46,6 +49,32 @@ public class BuildingDescriptor {
         this.mSellPrice = mSellPrice;
         this.mIconPath = mIconPath;
         this.mName = mName;
+    }
+
+    /**
+     * Get building cost, adjusting for inflation.
+     *
+     * @param player player to calculate the price for.
+     * @return cost that accounts for inflation.
+     */
+    public int getTotalCost(Player player) {
+        float globalInflation = player != null ? player.getGlobalInflation() : 1;
+        float playerInflation = player != null ? player.getInflation() : 1;
+        return Math.round((mCost - BASE_COST) * globalInflation + BASE_COST * playerInflation);
+    }
+
+    /**
+     * Get building sell price, adjusting for current inflation.
+     *
+     * @param player player to calculate the price for.
+     * @return price that accounts for inflation.
+     */
+    public int getSellPrice(Player player) {
+        float globalInflation = player != null ? player.getGlobalInflation() : 1;
+        float playerInflation = player != null ? player.getInflation() : 1;
+        return Math.round(
+                (mSellPrice - (BASE_COST / 2)) * globalInflation
+                        + (BASE_COST / 2) * playerInflation);
     }
 
     @Override

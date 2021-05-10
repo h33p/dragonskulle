@@ -2,6 +2,8 @@
 package org.dragonskulle.core;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -21,9 +23,44 @@ public class Scene {
 
     @Getter private final ArrayList<Component> mComponents = new ArrayList<>();
 
+    @Getter private final ArrayList<Component> mEnabledComponents = new ArrayList<>();
+
+    @Getter private final Map<Class<?>, CompList> mInterfaceComponents = new HashMap<>();
+
     @Getter private final String mName;
 
     @Getter private final SingletonStore mSingletons = new SingletonStore();
+
+    private class CompList {
+        private boolean mIsValid = false;
+        private final Class<?> mType;
+        private final ArrayList<Object> mList = new ArrayList<>();
+
+        public CompList(Class<?> type) {
+            mType = type;
+        }
+
+        public void clear() {
+            mIsValid = false;
+            mList.clear();
+        }
+
+        public ArrayList<Object> getList() {
+            if (!mIsValid) {
+                mList.clear();
+
+                for (Component comp : mEnabledComponents) {
+                    if (mType.isInstance(comp)) {
+                        mList.add(comp);
+                    }
+                }
+
+                mIsValid = true;
+            }
+
+            return mList;
+        }
+    }
 
     @Accessors(prefix = "s")
     @Getter
@@ -157,9 +194,11 @@ public class Scene {
     /** Iterates through all GameObjects in the scene and collects their components. */
     public void updateComponentsList() {
         mComponents.clear();
+        mEnabledComponents.clear();
+
+        mInterfaceComponents.values().stream().forEach(CompList::clear);
 
         for (GameObject root : mGameObjects) {
-
             mComponents.addAll(root.getComponents());
 
             ArrayList<GameObject> children = new ArrayList<>();
@@ -170,6 +209,12 @@ public class Scene {
                 mComponents.addAll(child.getComponents());
             }
         }
+
+        mComponents.stream()
+                .filter(component -> component.getGameObject() != null)
+                .filter(component -> component.getGameObject().isEnabled())
+                .filter(Component::isEnabled)
+                .collect(Collectors.toCollection(() -> mEnabledComponents));
     }
 
     /**
@@ -178,11 +223,12 @@ public class Scene {
      * @return A new ArrayList containing all of the enabled components
      */
     protected ArrayList<Component> getEnabledComponents() {
-        return mComponents.stream()
-                .filter(component -> component.getGameObject() != null)
-                .filter(component -> component.getGameObject().isEnabled())
-                .filter(Component::isEnabled)
-                .collect(Collectors.toCollection(ArrayList::new));
+        return mEnabledComponents;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected <T> ArrayList<T> getComponentsByIface(Class<T> type) {
+        return (ArrayList<T>) mInterfaceComponents.computeIfAbsent(type, CompList::new).getList();
     }
 
     /**
