@@ -199,7 +199,8 @@ public class GameAPI {
         }
 
         try {
-            AsyncRequest request = new AsyncRequest(API_URL + "/code/" + id, "DELETE", callback);
+            AsyncRequest request =
+                    new AsyncRequest(API_URL + "hosts/code/" + id, "DELETE", callback);
             request.start();
         } catch (MalformedURLException e) {
             log.warning("Invalid url for delete request");
@@ -219,11 +220,11 @@ public class GameAPI {
         }
 
         try {
-            AsyncRequest request = new AsyncRequest(API_URL + "/code/" + id, "GET", callback);
+            AsyncRequest request = new AsyncRequest(API_URL + "hosts/code/" + id, "GET", callback);
             request.start();
             request.join();
         } catch (MalformedURLException e) {
-            log.warning("Invalid url for delete request");
+            log.warning("Invalid url for get request");
         } catch (InterruptedException e) {
             log.warning("Thread interrupted when making request to API");
         }
