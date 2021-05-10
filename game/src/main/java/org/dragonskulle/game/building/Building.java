@@ -19,6 +19,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.assets.GLTF;
+import org.dragonskulle.audio.components.AudioSource;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
@@ -33,6 +34,8 @@ import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.SingletonStore;
 import org.dragonskulle.game.App;
 import org.dragonskulle.game.GameConfig.PlayerConfig;
+import org.dragonskulle.game.GameState;
+import org.dragonskulle.game.GameUIAppearance;
 import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonMap;
@@ -44,6 +47,7 @@ import org.dragonskulle.game.misc.ArcPath.IPathUpdater;
 import org.dragonskulle.game.player.Player;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
+import org.dragonskulle.network.components.requests.ServerEvent;
 import org.dragonskulle.network.components.sync.SyncBool;
 import org.dragonskulle.network.components.sync.SyncFloat;
 import org.dragonskulle.network.components.sync.SyncInt;
@@ -83,7 +87,9 @@ public class Building extends NetworkableComponent
     @Getter private final SyncStat mClaimDistance = new SyncStat(this);
 
     /** Whether the building is a capital. */
-    private final SyncBool mIsCapital = new SyncBool(false);
+    public final SyncBool mIsCapital = new SyncBool(false);
+
+    private Reference<AudioSource> mJukeBox;
 
     /**
      * Whether actions on this building (sell, upgrade, attack, etc. etc.) are locked.
@@ -156,7 +162,7 @@ public class Building extends NetworkableComponent
 
     /**
      * This is used as a flag to determine when any of the stats have changed, thus requiring a
-     * visible update to UI. It is enabled in {@code afterStatChange} and has to be manually
+     * visible update to UI. It is enabled in {@link this#afterStatChange} and has to be manually
      * disabled once the needed update is finished.
      */
     @Getter
@@ -173,6 +179,9 @@ public class Building extends NetworkableComponent
     private Reference<GameObject> mGenerationMesh;
     /** The current building mesh. */
     private Reference<GameObject> mVisibleMesh;
+
+    private transient ServerEvent<GameState.InvokeAudioEvent> mOwnerAudioEvent;
+    private transient ServerEvent<GameState.InvokeAudioEvent> mGlobalAudioEvent;
 
     /**
      * Gets an array of stats that will be available to upgrade in the shop.
@@ -212,6 +221,13 @@ public class Building extends NetworkableComponent
         initiliseStat(mViewDistance, StatType.VIEW_DISTANCE);
         initiliseStat(mBuildDistance, StatType.BUILD_DISTANCE);
         initiliseStat(mClaimDistance, StatType.CLAIM_DISTANCE);
+    }
+
+    @Override
+    protected void afterNetUpdate() {
+        if (!isCapital() && mIsCapital.isClientDirty()) {
+            assignMesh();
+        }
     }
 
     @Override
@@ -341,7 +357,39 @@ public class Building extends NetworkableComponent
             return;
         }
 
+        AudioSource src = new AudioSource();
+        getGameObject().addComponent(src);
+        mJukeBox = src.getReference(AudioSource.class);
+
         assignMesh();
+    }
+
+    @Override
+    protected void onNetworkInitialise() {
+        mOwnerAudioEvent =
+                new ServerEvent<>(
+                        new GameState.InvokeAudioEvent(),
+                        this::triggerAudioEvent,
+                        ServerEvent.EventRecipients.OWNER,
+                        ServerEvent.EventTimeframe.INSTANT);
+
+        mGlobalAudioEvent =
+                new ServerEvent<>(
+                        new GameState.InvokeAudioEvent(),
+                        this::triggerAudioEvent,
+                        ServerEvent.EventRecipients.ALL_CLIENTS,
+                        ServerEvent.EventTimeframe.INSTANT);
+    }
+
+    /**
+     * Trigger audio event by creating an audio source for the event.
+     *
+     * @param data the audio information to be played
+     */
+    private void triggerAudioEvent(GameState.InvokeAudioEvent data) {
+        if (data != null && Reference.isValid(mJukeBox)) {
+            mJukeBox.get().playSound(data.getSoundId().getPath());
+        }
     }
 
     /** Checks whether arc paths need updating, and updates them. */
@@ -377,7 +425,7 @@ public class Building extends NetworkableComponent
      * </ul>
      */
     public void afterStatChange() {
-        log.info("After stats change.");
+        log.fine("After stats change.");
 
         generateStatBaseCost();
 
@@ -390,12 +438,12 @@ public class Building extends NetworkableComponent
     }
 
     /** Assigns a visible mesh to be displayed depending on the maximum stat level. */
-    private void assignMesh() {
+    public void assignMesh() {
         Map<StatType, Integer> statLevels =
                 getShopStats().stream()
                         .collect(Collectors.toMap(SyncStat::getType, SyncStat::getLevel));
         if (statLevels.values().stream().distinct().count() <= 1) {
-            log.info("the stats are all the same");
+            log.fine("the stats are all the same");
             if (Reference.isValid(mVisibleMesh)) {
                 mVisibleMesh.get().setEnabled(false);
             }
@@ -412,7 +460,6 @@ public class Building extends NetworkableComponent
                 }
             }
             if (max != null) {
-                log.info("this stat is the biggest " + max.getKey());
                 if (Reference.isValid(mVisibleMesh)) {
                     mVisibleMesh.get().setEnabled(false);
                 }
@@ -577,6 +624,26 @@ public class Building extends NetworkableComponent
                 });
     }
 
+    /**
+     * Play a sound on the buildings owner.
+     *
+     * @param sound the sound to play
+     * @param audience the audience who can hear it
+     */
+    public void invokeSound(
+            GameUIAppearance.AudioFiles sound, ServerEvent.EventRecipients audience) {
+        if (this.getOwnerId() < 0) return; // if non human
+        switch (audience) {
+            case OWNER:
+                mOwnerAudioEvent.invoke(new GameState.InvokeAudioEvent(sound));
+                break;
+            case ACTIVE_CLIENTS:
+            case ALL_CLIENTS:
+                mGlobalAudioEvent.invoke(new GameState.InvokeAudioEvent(sound));
+                break;
+        }
+    }
+
     private class ArcUpdater implements IPathUpdater, IArcHandler {
         private final float mAttackStart;
         private final float mAttackTime;
@@ -685,7 +752,7 @@ public class Building extends NetworkableComponent
         }
     }
 
-    private final int DIE_SIDES = 100;
+    private static final int DIE_SIDES = 100;
 
     private float getAttackVal(Building opponent) {
         HexagonTile myTile = getTile();

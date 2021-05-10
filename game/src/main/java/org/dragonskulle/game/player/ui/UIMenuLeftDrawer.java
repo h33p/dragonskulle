@@ -15,6 +15,7 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.GameUIAppearance;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.map.HexagonTile;
+import org.dragonskulle.game.player.BuildingDescriptor;
 import org.dragonskulle.game.player.Player;
 import org.dragonskulle.game.player.network_data.AttackData;
 import org.dragonskulle.game.player.network_data.SellData;
@@ -42,6 +43,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
     protected final INotifyScreenChange mNotifyScreenChange;
     protected final IGetPlayer mGetPlayer;
     protected final IUpdateBuildingChosen mUpdateBuildingSelected;
+    @Getter protected final ISetPredefinedBuildingChosen mSetPredefinedBuildingChosen;
     private final float mOffsetToTop = 0.25f;
     @Getter private Reference<UIShopSection> mShop;
     private Reference<GameObject> mBuildScreenMenu;
@@ -141,6 +143,11 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         void setBuilding(Reference<Building> tile);
     }
 
+    /** Set the predefined building used on the parent. */
+    public interface ISetPredefinedBuildingChosen {
+        void setPredefinedBuilding(BuildingDescriptor descriptor);
+    }
+
     /**
      * Constructor.
      *
@@ -157,7 +164,8 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
             IGetHexChosen getHexChosen,
             ISetHexChosen setHexChosen,
             INotifyScreenChange notifyScreenChange,
-            IGetPlayer getPlayer) {
+            IGetPlayer getPlayer,
+            ISetPredefinedBuildingChosen setPredefinedBuildingChosen) {
         super();
         this.mGetBuildingChosen = getBuildingChosen;
         this.mSetBuildingChosen = setBuildingChosen;
@@ -165,6 +173,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         this.mSetHexChosen = setHexChosen;
         this.mNotifyScreenChange = notifyScreenChange;
         this.mGetPlayer = getPlayer;
+        this.mSetPredefinedBuildingChosen = setPredefinedBuildingChosen;
 
         this.mUpdateBuildingSelected =
                 () -> {
@@ -403,7 +412,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
             switch (screen) {
                 case DEFAULT_SCREEN:
                     newScreen = null;
-                    setShopState(ShopState.CLOSED);
+                    setShopState(ShopState.DEFAULT);
                     break;
                 case BUILDING_SELECTED_SCREEN:
                     newScreen = mBuildScreenMenu;
@@ -726,62 +735,68 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         if (!Reference.isValid(mAttackConfirm)) return;
         UIButton button = mAttackConfirm.get();
 
-        Reference<Building> defenderReference = mGetBuildingChosen.getBuilding();
-        if (!Reference.isValid(defenderReference)) return;
-        Building defender = defenderReference.get();
+        Player player = mGetPlayer.getPlayer();
+        if (player == null) return;
+
+        Reference<UIText> text = button.getLabelText();
+        if (!Reference.isValid(text)) return;
 
         HexagonTile tile = mGetHexChosen.getHex();
         if (tile == null || !tile.hasBuilding()) return;
         Building attacker = tile.getBuilding();
 
-        Reference<UIText> text = button.getLabelText();
-        if (!Reference.isValid(text)) return;
+        if (attacker == null || attacker.getOwner() != player) return;
 
-        Player player = mGetPlayer.getPlayer();
-        if (player == null) return;
+        if (player.inCooldown() || attacker.isActionLocked()) {
 
-        if (player.inCooldown()) {
-            text.get()
-                    .setText(
-                            String.format(
-                                    "[COOLDOWN: %d]", (int) player.getRemainingCooldown() + 1));
-            button.setEnabled(false);
-            return;
-        }
+            float cooldown = player.getRemainingCooldown();
 
-        if (player.isBuildingOwner(defender)) {
-            text.get().setText("[SELECT BUILDING]");
+            cooldown =
+                    Math.max(
+                            cooldown,
+                            attacker.getActionLockTime().get()
+                                    - player.getNetworkManager().getServerTime());
+
+            text.get().setText(String.format("[COOLDOWN: %.1f]", cooldown));
             button.setEnabled(false);
             return;
         }
 
         int cost = attacker.getAttackCost();
-        if (cost <= player.getTokens().get()) {
-            text.get().setText("Attack!");
-            button.setEnabled(true);
-        } else {
+
+        if (cost > player.getTokens().get()) {
             text.get().setText("[TOO EXPENSIVE]");
             button.setEnabled(false);
+            return;
         }
-    }
 
-    /** Exit attack mode if you can't attack. */
-    private void checkAttackMode() {
-        if (mLastScreen != Screen.ATTACKING_SCREEN) return;
+        text.get().setText("[SELECT BUILDING]");
+        button.setEnabled(false);
 
-        HexagonTile tile = mGetHexChosen.getHex();
-        if (tile == null || !tile.hasBuilding()) return;
-        Building attacker = tile.getBuilding();
+        Reference<Building> defenderReference = mGetBuildingChosen.getBuilding();
+        if (!Reference.isValid(defenderReference)) return;
+        Building defender = defenderReference.get();
 
-        if (attacker.getAttackableBuildings().size() == 0) {
-            mNotifyScreenChange.call(Screen.BUILDING_SELECTED_SCREEN);
+        if (player.isBuildingOwner(defender)) {
+            return;
         }
+
+        if (defender.isActionLocked()) {
+            float cooldown =
+                    defender.getActionLockTime().get() - player.getNetworkManager().getServerTime();
+
+            text.get().setText(String.format("[IN ATTACK: %.1f]", cooldown));
+            button.setEnabled(false);
+            return;
+        }
+
+        text.get().setText("Attack!");
+        button.setEnabled(true);
     }
 
     @Override
     public void fixedUpdate(float deltaTime) {
         checkOwnership();
-        checkAttackMode();
         updateSellOptionButton();
         updateAttackOptionButton();
         updateAttackCostText();

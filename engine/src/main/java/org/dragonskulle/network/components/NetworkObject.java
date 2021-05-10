@@ -183,6 +183,9 @@ public class NetworkObject extends Component {
      */
     void beforeNetSerialize() {
         for (Reference<NetworkableComponent> comp : mNetworkableComponents) {
+            if (!Reference.isValid(comp)) {
+                continue;
+            }
             NetworkableComponent nc = comp.get();
             nc.beforeNetSerialize();
         }
@@ -298,6 +301,7 @@ public class NetworkObject extends Component {
         int sz = mTmpVar.size();
 
         for (int i = 0; i < sz; i++) {
+            mTmpVar.get(i).setIsClientDirty(masks[i]);
             if (!masks[i]) continue;
             mTmpVar.get(i).deserialize(stream);
         }

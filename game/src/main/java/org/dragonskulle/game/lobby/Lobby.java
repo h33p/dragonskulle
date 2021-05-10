@@ -688,7 +688,7 @@ public class Lobby extends Component implements IFrameUpdate {
             }
 
         } catch (ParseException e) {
-            log.info("Failed to parse response from get all hosts");
+            log.fine("Failed to parse response from get all hosts");
             return;
         }
         mHostsUpdated.set(true);
@@ -740,15 +740,13 @@ public class Lobby extends Component implements IFrameUpdate {
      * @param netId The network ID of the client
      */
     private static void onHostStartGame(Scene gameScene, NetworkManager manager, int netId) {
-        GameObject humanPlayer =
-                new GameObject(
-                        "human player",
-                        (handle) -> {
-                            handle.addComponent(
-                                    new HumanPlayer(manager.getReference(NetworkManager.class)));
-                        });
+        HumanPlayer humanPlayer = new HumanPlayer(manager.getReference(NetworkManager.class));
 
-        gameScene.addRootObject(humanPlayer);
+        GameObject humanPlayerObject = new GameObject("human player");
+        humanPlayerObject.addComponent(humanPlayer);
+
+        gameScene.addRootObject(humanPlayerObject);
+        gameScene.registerSingleton(humanPlayer);
     }
 
     /**

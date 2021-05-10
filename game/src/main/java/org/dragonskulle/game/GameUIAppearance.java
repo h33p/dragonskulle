@@ -1,6 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game;
 
+import lombok.Getter;
+import lombok.experimental.Accessors;
 import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.audio.components.AudioListener;
 import org.dragonskulle.audio.components.AudioSource;
@@ -20,9 +22,46 @@ import org.dragonskulle.ui.UIManager;
  * @author Aurimas Blažulionis
  */
 public class GameUIAppearance {
+    /** Audio files contain the path of the audio to invoke when called. */
+    @Accessors(prefix = "m")
+    public enum AudioFiles {
+        BGM_SOUND("game_background_nakarada.wav"),
+        BUTTON_DOWN_SOUND("button-down.wav"),
+        BUTTON_UP_SOUND("button-up.wav"),
+        BUILDING_SOUND("building_upgrade.wav"),
+        BUILDING_SELL_SOUND("building_sell.wav"),
+        ATTACK_SUCCESS_SOUND("attack_success.wav"),
+        ATTACK_FAILURE_SOUND("attack_failed.wav"),
+        ATTACK_INVOKED_SOUND("attack_invoke.wav"),
+        ON_GAME_START("game_start.wav"),
+        ON_WIN_SOUND("victory.wav"),
+        ON_LOSE_SOUND("on_lose.wav"),
+        DEFENCE_FAILED_SOUND("attack_success.wav"),
+        DEFENCE_SUCCESS_SOUND("attack_failed.wav");
 
-    private static final String BUTTON_DOWN_SOUND = "button-down.wav";
-    private static final String BUTTON_UP_SOUND = "button-up.wav";
+        private static final AudioFiles[] sValues = values();
+
+        /**
+         * Get an audio file by ordinal index.
+         *
+         * @param ordinal the ordinal index
+         * @return the audio event
+         */
+        protected static AudioFiles get(int ordinal) {
+            return sValues[ordinal];
+        }
+
+        @Getter private final String mPath;
+
+        /**
+         * Constructor.
+         *
+         * @param resourcePath the resource path to the audio
+         */
+        AudioFiles(String resourcePath) {
+            mPath = resourcePath;
+        }
+    }
 
     public static final int INFO_BOX = 0;
     public static final int DRAWER = 1;
@@ -100,7 +139,7 @@ public class GameUIAppearance {
         AudioSource source = getSource();
 
         if (source != null) {
-            source.playSound(BUTTON_UP_SOUND);
+            source.playSound(AudioFiles.BUTTON_UP_SOUND.getPath());
         }
     }
 
@@ -109,12 +148,14 @@ public class GameUIAppearance {
         AudioSource source = getSource();
 
         if (source != null) {
-            source.playSound(BUTTON_DOWN_SOUND);
+            source.playSound(AudioFiles.BUTTON_DOWN_SOUND.getPath());
         }
     }
 
-    private static AudioSource getSource() {
-        AudioSource singleton = Scene.getActiveScene().getSingleton(AudioSource.class);
+    public static AudioSource getSource() {
+        Scene activeScene = Scene.getActiveScene();
+        if (activeScene == null) return null;
+        AudioSource singleton = activeScene.getSingleton(AudioSource.class);
 
         if (singleton == null) {
             Reference<AudioListener> listener = AudioManager.getInstance().getAudioListener();

@@ -24,4 +24,6 @@ public interface ISyncVar extends INetSerializable {
      * @param clientId id of the client to reset the mask for
      */
     default void resetDirtyFlag(int clientId) {}
+
+    default void setIsClientDirty(boolean isDirty) {}
 }

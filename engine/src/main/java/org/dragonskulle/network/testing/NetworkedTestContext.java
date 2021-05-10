@@ -354,7 +354,7 @@ public class NetworkedTestContext {
                                                     if (onClientConnected != null) {
                                                         onClientConnected.handle(manager, netID);
                                                     }
-                                                    log.info("CONNECTED CLIENT");
+                                                    log.fine("CONNECTED CLIENT");
                                                     assert (netID >= 0);
                                                     called[0] = true;
                                                 },

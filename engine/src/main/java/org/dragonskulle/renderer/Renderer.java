@@ -468,7 +468,7 @@ public class Renderer implements NativeResource {
      * @throws RuntimeException when initialization fails.
      */
     public Renderer(String appName, long window) throws RuntimeException {
-        log.info("Initialize renderer");
+        log.fine("Initialize renderer");
         mInstanceBufferSize = 4096;
         this.mWindow = window;
         mInstance = createInstance(appName);
