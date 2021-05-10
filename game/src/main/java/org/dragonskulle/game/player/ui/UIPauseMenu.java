@@ -319,11 +319,15 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
         }
     }
 
-    private static void hideMenu(boolean hide, HumanPlayer hp) {
+    private void hideMenu(boolean hide, HumanPlayer hp) {
         Reference<UIMenuLeftDrawer> menuDrawer = hp.getMenuDrawer();
         Reference<UILinkedScrollBar> scrollBar = hp.getScrollBar();
         if (Reference.isValid(menuDrawer)) {
-            menuDrawer.get().setHidden(hide);
+            if (mCurrentState == State.END_GAME) {
+                menuDrawer.get().setHidden(true);
+            } else {
+                menuDrawer.get().setHidden(hide);
+            }
         }
         if (Reference.isValid(scrollBar)) {
             scrollBar.get().getGameObject().setEnabled(!hide);
