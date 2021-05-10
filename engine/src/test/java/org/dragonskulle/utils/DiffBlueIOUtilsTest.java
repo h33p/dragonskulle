@@ -4,7 +4,6 @@ package org.dragonskulle.utils;
 import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
-import java.io.EOFException;
 import java.io.IOException;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,73 +31,9 @@ public class DiffBlueIOUtilsTest {
     }
 
     @Test
-    public void testReadNBytes3() throws IOException {
-        assertEquals(
-                0,
-                IOUtils.readNBytes(
-                                new ByteArrayInputStream(
-                                        "AAAAAAAAAAAAAAAAAAAAAAAA".getBytes("UTF-8")),
-                                0)
-                        .length);
-    }
-
-    @Test
     public void testReadNBytes4() throws IOException {
-        assertEquals(
-                24,
-                IOUtils.readNBytes(
-                                new ByteArrayInputStream(
-                                        "AAAAAAAAAAAAAAAAAAAAAAAA".getBytes("UTF-8")),
-                                8192)
-                        .length);
-    }
-
-    @Test
-    public void testReadNBytes5() throws IOException {
         thrown.expect(IllegalArgumentException.class);
         IOUtils.readNBytes(
-                new ByteArrayInputStream("AAAAAAAAAAAAAAAAAAAAAAAA".getBytes("UTF-8")), -1);
-    }
-
-    @Test
-    public void testReadExactlyNBytes() throws IOException {
-        byte[] actualReadExactlyNBytesResult =
-                IOUtils.readExactlyNBytes(
-                        new ByteArrayInputStream("AAAAAAAAAAAAAAAAAAAAAAAA".getBytes("UTF-8")), 3);
-        assertEquals(3, actualReadExactlyNBytesResult.length);
-        assertEquals('A', actualReadExactlyNBytesResult[0]);
-        assertEquals('A', actualReadExactlyNBytesResult[1]);
-        assertEquals('A', actualReadExactlyNBytesResult[2]);
-    }
-
-    @Test
-    public void testReadExactlyNBytes2() throws IOException {
-        thrown.expect(EOFException.class);
-        IOUtils.readExactlyNBytes(new ByteArrayInputStream(new byte[] {}), 3);
-    }
-
-    @Test
-    public void testReadExactlyNBytes3() throws IOException {
-        assertEquals(
-                0,
-                IOUtils.readExactlyNBytes(
-                                new ByteArrayInputStream(
-                                        "AAAAAAAAAAAAAAAAAAAAAAAA".getBytes("UTF-8")),
-                                0)
-                        .length);
-    }
-
-    @Test
-    public void testReadExactlyNBytes4() throws IOException {
-        thrown.expect(EOFException.class);
-        IOUtils.readExactlyNBytes(
-                new ByteArrayInputStream("AAAAAAAAAAAAAAAAAAAAAAAA".getBytes("UTF-8")), 8192);
-    }
-
-    @Test
-    public void testReadExactlyNBytes5() throws IOException {
-        thrown.expect(IOException.class);
-        IOUtils.readExactlyNBytes(
                 new ByteArrayInputStream("AAAAAAAAAAAAAAAAAAAAAAAA".getBytes("UTF-8")), -1);
     }
 }
