@@ -36,9 +36,6 @@ public class HighlightControls extends Component implements IOnAwake, IFrameUpda
     }
 
     public void setHighlight(float r, float g, float b, float a) {
-        if (mHighlightMaterials == null) {
-            return;
-        }
         mTargetColour.set(r, g, b, a);
     }
 
