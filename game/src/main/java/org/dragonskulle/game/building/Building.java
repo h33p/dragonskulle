@@ -19,6 +19,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.assets.GLTF;
+import org.dragonskulle.audio.components.AudioSource;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
