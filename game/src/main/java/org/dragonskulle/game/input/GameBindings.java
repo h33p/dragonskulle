@@ -51,5 +51,9 @@ public class GameBindings extends Bindings {
         addBinding(GLFW.GLFW_KEY_F3, RenderDebug.DEBUG_ACTION);
 
         addBinding(GLFW.GLFW_KEY_ESCAPE, GameActions.TOGGLE_PAUSE);
+
+        addBinding(GLFW.GLFW_KEY_F, GameActions.ATTACK_MODE);
+        addBinding(GLFW.GLFW_KEY_B, GameActions.BUILD_MODE);
+        addBinding(GLFW.GLFW_KEY_G, GameActions.SELL_MODE);
     }
 }

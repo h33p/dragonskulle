@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
+import org.dragonskulle.game.GameConfig.ProbabilisticAiConfig;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.map.HexagonTile;
@@ -19,15 +20,6 @@ import org.dragonskulle.game.player.PredefinedBuildings;
  */
 @Log
 public class ProbabilisticAiPlayer extends AiPlayer {
-
-    /** Probability of placing a new {@link Building}. */
-    protected float mBuildProbability = 0.65f;
-    /** Probability of upgrading an owned {@link Building}. */
-    protected float mUpgradeProbability = 0.155f;
-    /** Probability of attacking an opponent {@link Building}. */
-    protected float mAttackProbability = 0.19f;
-    /** Probability of selling an owned {@link Building}. */
-    protected float mSellProbability = 0.005f;
 
     /** Used to run events for building and attacking. */
     public interface IRunBuildingEvent {
@@ -63,22 +55,26 @@ public class ProbabilisticAiPlayer extends AiPlayer {
             // Pick a random number to choose whether to place a building or to use a building
             float randomNumber = mRandom.nextFloat();
 
+            ProbabilisticAiConfig cfg = getConfig().getProbabilisticAi();
+
             // Choose an action to take.
-            if (randomNumber <= mBuildProbability) {
+            if (randomNumber <= cfg.getBuildProbability()) {
                 addBuilding();
-            } else if (randomNumber <= mBuildProbability + mUpgradeProbability) {
+            } else if (randomNumber <= cfg.getBuildProbability() + cfg.getUpgradeProbability()) {
                 upgradeBuilding();
             } else if (randomNumber
-                    <= mBuildProbability + mUpgradeProbability + mAttackProbability) {
+                    <= cfg.getBuildProbability()
+                            + cfg.getUpgradeProbability()
+                            + cfg.getAttackProbability()) {
                 // Only attempt to attack if you're not in cooldown.
                 if (!getPlayer().inCooldown()) {
                     attack();
                 }
             } else if (randomNumber
-                    <= mBuildProbability
-                            + mUpgradeProbability
-                            + mAttackProbability
-                            + mSellProbability) {
+                    <= cfg.getBuildProbability()
+                            + cfg.getUpgradeProbability()
+                            + cfg.getAttackProbability()
+                            + cfg.getSellProbability()) {
                 sell();
             } else {
                 log.info("AI probabilites do not sum to one- no action performed.");

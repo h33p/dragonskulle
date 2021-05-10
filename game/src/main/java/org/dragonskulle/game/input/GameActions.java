@@ -28,4 +28,8 @@ public class GameActions extends Actions {
     public static final Action MIDDLE_CLICK = new Action("MIDDLE_CLICK");
 
     public static final Action TOGGLE_PAUSE = new Action("TOGGLE_PAUSE");
+
+    public static final Action ATTACK_MODE = new Action("ATTACK_MODE");
+    public static final Action SELL_MODE = new Action("SELL_MODE");
+    public static final Action BUILD_MODE = new Action("BUILD_MODE");
 }

@@ -165,5 +165,8 @@ public class ArcPath extends Component implements IFrameUpdate {
     }
 
     @Override
-    protected void onDestroy() {}
+    protected void onDestroy() {
+        mSpawnedObjects.stream().forEach(SpawnedEntry::destroy);
+        mSpawnedObjects.clear();
+    }
 }

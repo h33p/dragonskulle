@@ -53,7 +53,7 @@ public class ServerTest {
         return new NetworkedTestContext(
                 TEMPLATE_MANAGER,
                 (__, isServer) -> new Scene(isServer ? "server_net_test" : "client_net_test"),
-                (__, man, id) -> man.getServerManager().start(),
+                (__, man, id) -> man.getServerManager().start(false),
                 null,
                 (man) -> {
                     man.getServerManager().spawnNetworkObject(0, TEMPLATE_MANAGER.find("cube"));
