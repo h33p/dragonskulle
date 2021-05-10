@@ -719,7 +719,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         Reference<UIText> text = textRect.getLabelText();
         if (!Reference.isValid(text)) return;
 
-        if (player.isBuildingOwner(defender) || !player.attackCheck(attacker, defender)) {
+        if (player.isBuildingOwner(defender)) {
             text.get().setText(TextUtils.constructField("Chance", "---", 15));
             return;
         }
