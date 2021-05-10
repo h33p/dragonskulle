@@ -129,11 +129,16 @@ public class MathUtils {
         dest.flip();
     }
 
-    public static void clampVector(Vector3f mTmpVec2, float minimax) {
-        log.info("vect:" + mTmpVec2.toString());
-        mTmpVec2.set(
-                clamp(mTmpVec2.x(), -minimax, minimax),
-                clamp(mTmpVec2.y(), -minimax, minimax),
-                clamp(mTmpVec2.z(), -minimax, minimax));
+    /**
+     * Clamps each value in the vector within +-value.
+     *
+     * @param vect the vector to clamp
+     * @param minimax the absolute offset allowed in each direction
+     */
+    public static void clampVector(Vector3f vect, float minimax) {
+        vect.set(
+                clamp(vect.x(), -minimax, minimax),
+                clamp(vect.y(), -minimax, minimax),
+                clamp(vect.z(), -minimax, minimax));
     }
 }

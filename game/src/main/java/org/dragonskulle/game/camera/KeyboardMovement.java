@@ -8,6 +8,7 @@ import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.Transform3D;
+import org.dragonskulle.game.GameConfig;
 import org.dragonskulle.game.camera.ScrollTranslate.IZoomNotify;
 import org.dragonskulle.game.input.GameActions;
 import org.dragonskulle.utils.MathUtils;
@@ -26,9 +27,10 @@ public class KeyboardMovement extends Component implements IFrameUpdate, IOnAwak
 
     @Getter @Setter public float mRotateSpeed = 180f;
 
-    @Getter @Setter private float mZoomLevel = 0.f;
+    @Getter @Setter private float mZoomLevel = 0f;
 
     private transient Transform3D mTransform;
+    private static final int MAP_SIZE = GameConfig.getDefaultConfig().getGlobal().getMapSize();
 
     @Override
     public void onAwake() {
@@ -59,7 +61,7 @@ public class KeyboardMovement extends Component implements IFrameUpdate, IOnAwak
             Vector3f mTmpForward = new Vector3f();
             mTmpForward.set(xAxis, yAxis, 0f).rotate(rot);
             pos.add(mTmpForward);
-            MathUtils.clampVector(pos, 42f);
+            MathUtils.clampVector(pos, MAP_SIZE - 10);
             mTransform.setPosition(pos);
             rot.rotateXYZ(0f, 0f, MathUtils.DEG_TO_RAD * -rotAxis);
             mTransform.setRotation(rot);
