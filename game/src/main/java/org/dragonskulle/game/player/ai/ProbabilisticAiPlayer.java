@@ -272,7 +272,7 @@ public class ProbabilisticAiPlayer extends AiPlayer {
             // Get the Building.
             Building building = buildingReference.get();
             if (building.isCapital()) {
-                
+
                 return false;
             }
             getPlayer().getClientSellRequest().invoke(d -> d.setData(building));

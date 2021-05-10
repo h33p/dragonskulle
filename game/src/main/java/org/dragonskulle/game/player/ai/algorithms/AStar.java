@@ -9,7 +9,6 @@ import java.util.HashSet;
 import java.util.Set;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import lombok.extern.java.Log;
 import org.dragonskulle.game.player.ai.algorithms.graphs.Connection;
 import org.dragonskulle.game.player.ai.algorithms.graphs.Graph;
 

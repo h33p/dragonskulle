@@ -4,7 +4,6 @@ package org.dragonskulle.game.player.ai.algorithms.graphs;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
