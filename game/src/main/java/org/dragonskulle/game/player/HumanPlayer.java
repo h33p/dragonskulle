@@ -326,7 +326,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         if (player == null) return;
 
         if (Reference.isValid(mTokenCounter)) {
-            mTokenCounter.get().setLabelReference(player.getTokens().get());
+            mTokenCounter.get().setVisibleTokens(player.getTokens().get());
         }
     }
 
