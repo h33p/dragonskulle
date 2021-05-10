@@ -7,6 +7,7 @@ import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.audio.components.AudioListener;
 import org.dragonskulle.audio.components.AudioSource;
 import org.dragonskulle.components.Transform3D;
+import org.dragonskulle.components.lambda.LambdaFrameUpdate;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
@@ -88,7 +89,14 @@ public class App implements NativeResource {
                         "light",
                         (light) -> {
                             light.addComponent(new Light());
-                            light.getTransform(Transform3D.class).setRotationDeg(-60f, 0f, -30f);
+                            final Transform3D tran = light.getTransform(Transform3D.class);
+                            tran.setRotationDeg(-60f, 0f, -30f);
+                            LambdaFrameUpdate time =
+                                    new LambdaFrameUpdate(
+                                            (dt) -> {
+                                                tran.rotateDeg(0.001f, 0.001f, 0.001f);
+                                            });
+                            light.addComponent(time);
                         }));
 
         GameObject cameraRig =
