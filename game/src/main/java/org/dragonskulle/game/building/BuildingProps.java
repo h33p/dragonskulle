@@ -6,7 +6,6 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import lombok.extern.java.Log;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.Reference;
@@ -22,9 +21,9 @@ import org.dragonskulle.network.components.sync.SyncInt;
  *
  * @author Oscar L
  * @author Leela
+ * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-@Log
 public class BuildingProps extends NetworkableComponent implements IOnAwake, IFixedUpdate {
     private Reference<Building> mBuilding;
     private List<Reference<TileProp>> mProps = new ArrayList<>();

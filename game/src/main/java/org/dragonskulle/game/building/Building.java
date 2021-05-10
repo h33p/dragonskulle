@@ -90,6 +90,9 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
     private Reference<AudioSource> mJukeBox;
 
+    /** List of networked prop templates to spawn. */
+    private static final String[] PROPS = {"defence_prop", "attack_prop", "token_generation_prop"};
+
     /**
      * Whether actions on this building (sell, upgrade, attack, etc. etc.) are locked.
      *
@@ -538,13 +541,12 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
             int ownerId = getNetworkObject().getOwnerId();
             int objId = getNetworkObject().getId();
 
-            String[] props = {"defence_prop", "attack_prop", "token_generation_prop"};
             int propId = 0;
 
             // Defence is always spawned on the tile.
             Reference<NetworkObject> nob =
                     serverMan.spawnNetworkObject(
-                            ownerId, getNetworkManager().findTemplateByName(props[propId++]));
+                            ownerId, getNetworkManager().findTemplateByName(PROPS[propId++]));
             nob.get()
                     .getGameObject()
                     .getComponent(BuildingProps.class)
@@ -557,12 +559,12 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
                     .setPosition(tile.getQ(), tile.getR());
 
             for (HexagonTile hexagonTile : tiles) {
-                if (propId >= props.length) break;
+                if (propId >= PROPS.length) break;
                 if (hexagonTile == tile) continue;
                 if (hexagonTile.getTileType() != TileType.LAND) continue;
                 nob =
                         serverMan.spawnNetworkObject(
-                                ownerId, getNetworkManager().findTemplateByName(props[propId++]));
+                                ownerId, getNetworkManager().findTemplateByName(PROPS[propId++]));
                 nob.get()
                         .getGameObject()
                         .getComponent(BuildingProps.class)
