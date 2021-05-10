@@ -805,17 +805,7 @@ public class Lobby extends Component implements IFrameUpdate {
             GameObject playerObj = player.get().getGameObject();
 
             // Choose which AI to add
-            Random random = new Random();
-            float randomNumber = random.nextFloat();
-            if (randomNumber <= 0.25f) {
-                playerObj.addComponent(new AimerAi());
-            } else if (randomNumber <= 0.5f) {
-                playerObj.addComponent(new BuildingAimerAi());
-            } else if (randomNumber <= 0.75) {
-                playerObj.addComponent(new AttackingAimerAi());
-            } else {
-                playerObj.addComponent(new UpgradeAimerAi());
-            }
+            playerObj.addComponent(new AimerAi());
         }
     }
 

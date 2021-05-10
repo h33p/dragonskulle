@@ -20,6 +20,7 @@ import org.dragonskulle.core.futures.Future;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.lobby.GameAPI;
 import org.dragonskulle.game.map.HexagonTile.TileType;
+import org.dragonskulle.game.player.ai.AiType;
 import org.dragonskulle.network.components.sync.INetSerializable;
 import org.dragonskulle.network.components.sync.ISyncVar;
 
@@ -108,6 +109,20 @@ public class GameConfig implements ISyncVar {
     /** Constructor for {@link GameConfig}. */
     public GameConfig() {
         mAi.add(new AiConfig());
+       
+        AiAimerConfig normalAimer = new AiAimerConfig();
+        
+        ProbabilisticAiConfig builder = new ProbabilisticAiConfig(0.90f,0.04f, 0.05f, 0.01f);
+        mAi.add(new AiConfig(1,2, builder, normalAimer));
+        
+        ProbabilisticAiConfig upgrader = new ProbabilisticAiConfig(0.24f, 0.5f, 0.25f, 0.01f);
+        mAi.add(new AiConfig(1,2, upgrader, normalAimer));
+        
+        ProbabilisticAiConfig attacker = new ProbabilisticAiConfig(0.1f, 0.09f, 0.8f, 0.01f);
+        mAi.add(new AiConfig(1,2, attacker, normalAimer));
+        
+        
+        
     }
 
     /**
@@ -240,7 +255,10 @@ public class GameConfig implements ISyncVar {
         }
 
         public ProbabilisticAiConfig() {
+        	// Probabilistic
             this(0.65f, 0.155f, 0.19f, 0.005f);
+           
+            
         }
 
         @Override
@@ -311,15 +329,16 @@ public class GameConfig implements ISyncVar {
         /** Properties for aimer AI. */
         private AiAimerConfig mAiAimer;
 
-        public AiConfig(float lowerBoundTime, float upperBoundTime) {
+        public AiConfig(float lowerBoundTime, float upperBoundTime, ProbabilisticAiConfig probabilisticAi, AiAimerConfig aimerAi) {
             mLowerBoundTime = lowerBoundTime;
             mUpperBoundTime = upperBoundTime;
-            mProbabilisticAi = new ProbabilisticAiConfig();
-            mAiAimer = new AiAimerConfig();
+            mProbabilisticAi = probabilisticAi;
+            mAiAimer = aimerAi;
         }
 
         public AiConfig() {
-            this(1, 2);
+        	
+            this(1, 2, new ProbabilisticAiConfig(), new AiAimerConfig());
         }
 
         @Override
