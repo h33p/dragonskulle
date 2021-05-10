@@ -87,7 +87,7 @@ public class Building extends NetworkableComponent
     @Getter private final SyncStat mClaimDistance = new SyncStat(this);
 
     /** Whether the building is a capital. */
-    private final SyncBool mIsCapital = new SyncBool(false);
+    public final SyncBool mIsCapital = new SyncBool(false);
 
     private Reference<AudioSource> mJukeBox;
 
@@ -162,7 +162,7 @@ public class Building extends NetworkableComponent
 
     /**
      * This is used as a flag to determine when any of the stats have changed, thus requiring a
-     * visible update to UI. It is enabled in {@code afterStatChange} and has to be manually
+     * visible update to UI. It is enabled in {@link this#afterStatChange} and has to be manually
      * disabled once the needed update is finished.
      */
     @Getter
@@ -221,6 +221,13 @@ public class Building extends NetworkableComponent
         initiliseStat(mViewDistance, StatType.VIEW_DISTANCE);
         initiliseStat(mBuildDistance, StatType.BUILD_DISTANCE);
         initiliseStat(mClaimDistance, StatType.CLAIM_DISTANCE);
+    }
+
+    @Override
+    protected void afterNetUpdate() {
+        if (!isCapital() && mIsCapital.isClientDirty()) {
+            assignMesh();
+        }
     }
 
     @Override
@@ -431,7 +438,7 @@ public class Building extends NetworkableComponent
     }
 
     /** Assigns a visible mesh to be displayed depending on the maximum stat level. */
-    private void assignMesh() {
+    public void assignMesh() {
         Map<StatType, Integer> statLevels =
                 getShopStats().stream()
                         .collect(Collectors.toMap(SyncStat::getType, SyncStat::getLevel));
