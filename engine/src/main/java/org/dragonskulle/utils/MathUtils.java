@@ -2,12 +2,15 @@
 package org.dragonskulle.utils;
 
 import java.nio.ByteBuffer;
+import lombok.extern.java.Log;
+import org.joml.Vector3f;
 
 /**
  * Basic additional math utilities.
  *
  * @author Aurimas Blažulionis
  */
+@Log
 public class MathUtils {
 
     public static final float DEG_TO_RAD = (float) Math.PI / 180.f;
@@ -124,5 +127,13 @@ public class MathUtils {
             }
         }
         dest.flip();
+    }
+
+    public static void clampVector(Vector3f mTmpVec2, float minimax) {
+        log.info("vect:" + mTmpVec2.toString());
+        mTmpVec2.set(
+                clamp(mTmpVec2.x(), -minimax, minimax),
+                clamp(mTmpVec2.y(), -minimax, minimax),
+                clamp(mTmpVec2.z(), -minimax, minimax));
     }
 }
