@@ -732,15 +732,13 @@ public class Lobby extends Component implements IFrameUpdate {
      * @param netId The network ID of the client
      */
     private static void onHostStartGame(Scene gameScene, NetworkManager manager, int netId) {
-        GameObject humanPlayer =
-                new GameObject(
-                        "human player",
-                        (handle) -> {
-                            handle.addComponent(
-                                    new HumanPlayer(manager.getReference(NetworkManager.class)));
-                        });
+        HumanPlayer humanPlayer = new HumanPlayer(manager.getReference(NetworkManager.class));
 
-        gameScene.addRootObject(humanPlayer);
+        GameObject humanPlayerObject = new GameObject("human player");
+        humanPlayerObject.addComponent(humanPlayer);
+
+        gameScene.addRootObject(humanPlayerObject);
+        gameScene.registerSingleton(humanPlayer);
     }
 
     /**
