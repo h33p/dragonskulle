@@ -121,7 +121,7 @@ public class Cursor {
      */
     public static void setCustomCursor(long window, CursorType cursorType) {
         Settings instance = Settings.getInstance();
-        float scale = instance.retrieveFloat(SETTINGS_STRING, 0.4f);
+        float scale = MathUtils.clamp(instance.retrieveFloat(SETTINGS_STRING, 0.4f), 0f, 1f);
         try {
             setCustomCursor(window, scale, cursorType);
         } catch (IOException e) {
