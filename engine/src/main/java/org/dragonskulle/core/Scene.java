@@ -21,15 +21,24 @@ import org.dragonskulle.components.Component;
 public class Scene {
     @Getter private final ArrayList<GameObject> mGameObjects = new ArrayList<>();
 
-    @Getter private final ArrayList<Component> mComponents = new ArrayList<>();
+    private final ArrayList<Component> mComponents = new ArrayList<>();
 
-    @Getter private final ArrayList<Component> mEnabledComponents = new ArrayList<>();
+    private final ArrayList<Component> mToStartComponents = new ArrayList<>();
+    private boolean mToStartComponentsDirty = false;
 
-    @Getter private final Map<Class<?>, CompList> mInterfaceComponents = new HashMap<>();
+    private final ArrayList<Component> mNotAwakeComponents = new ArrayList<>();
+    private boolean mNotAwakeComponentsDirty = false;
+
+    private final ArrayList<Component> mEnabledComponents = new ArrayList<>();
+    private boolean mEnabledComponentsDirty = false;
+
+    private final Map<Class<?>, CompList> mInterfaceComponents = new HashMap<>();
 
     @Getter private final String mName;
 
     @Getter private final SingletonStore mSingletons = new SingletonStore();
+
+    private boolean mComponentListDirty = true;
 
     private class CompList {
         private boolean mIsValid = false;
@@ -49,7 +58,7 @@ public class Scene {
             if (!mIsValid) {
                 mList.clear();
 
-                for (Component comp : mEnabledComponents) {
+                for (Component comp : getEnabledComponents()) {
                     if (mType.isInstance(comp)) {
                         mList.add(comp);
                     }
@@ -81,6 +90,10 @@ public class Scene {
         }
     }
 
+    public void dirtyComponentLists() {
+        mComponentListDirty = true;
+    }
+
     /**
      * Constructor for a Scene.
      *
@@ -97,6 +110,8 @@ public class Scene {
      */
     public void addRootObject(GameObject object) {
         mGameObjects.add(object);
+        object.setScene(this);
+        dirtyComponentLists();
     }
 
     /**
@@ -119,6 +134,8 @@ public class Scene {
      */
     public void removeRootObject(GameObject object) {
         mGameObjects.remove(object);
+        object.setScene(null);
+        dirtyComponentLists();
     }
 
     /**
@@ -132,6 +149,7 @@ public class Scene {
         if (mGameObjects.remove(object)) {
             object.engineDestroy();
         }
+        dirtyComponentLists();
     }
 
     /**
@@ -143,7 +161,10 @@ public class Scene {
         if (mGameObjects.remove(object)) {
             target.addRootObject(object);
             object.recreateReferences();
+            object.setScene(target);
         }
+        dirtyComponentLists();
+        target.dirtyComponentLists();
     }
 
     /**
@@ -193,8 +214,16 @@ public class Scene {
 
     /** Iterates through all GameObjects in the scene and collects their components. */
     public void updateComponentsList() {
+
+        if (!mComponentListDirty) return;
+
+        mComponentListDirty = false;
+
+        mEnabledComponentsDirty = true;
+        mToStartComponentsDirty = true;
+        mNotAwakeComponentsDirty = true;
+
         mComponents.clear();
-        mEnabledComponents.clear();
 
         mInterfaceComponents.values().stream().forEach(CompList::clear);
 
@@ -209,12 +238,11 @@ public class Scene {
                 mComponents.addAll(child.getComponents());
             }
         }
+    }
 
-        mComponents.stream()
-                .filter(component -> component.getGameObject() != null)
-                .filter(component -> component.getGameObject().isEnabled())
-                .filter(Component::isEnabled)
-                .collect(Collectors.toCollection(() -> mEnabledComponents));
+    void dirtyEnabledComponents() {
+        mEnabledComponentsDirty = true;
+        mInterfaceComponents.values().stream().forEach(CompList::clear);
     }
 
     /**
@@ -223,36 +251,75 @@ public class Scene {
      * @return A new ArrayList containing all of the enabled components
      */
     protected ArrayList<Component> getEnabledComponents() {
+        updateComponentsList();
+
+        if (mEnabledComponentsDirty) {
+            mEnabledComponents.clear();
+            mComponents.stream()
+                    .filter(component -> component.getGameObject() != null)
+                    .filter(component -> component.getGameObject().isEnabled())
+                    .filter(component -> component.isAwake())
+                    .filter(component -> component.isStarted())
+                    .filter(Component::isEnabled)
+                    .collect(Collectors.toCollection(() -> mEnabledComponents));
+            mEnabledComponentsDirty = false;
+        }
+
         return mEnabledComponents;
     }
 
     @SuppressWarnings("unchecked")
     protected <T> ArrayList<T> getComponentsByIface(Class<T> type) {
+        updateComponentsList();
         return (ArrayList<T>) mInterfaceComponents.computeIfAbsent(type, CompList::new).getList();
     }
 
     /**
      * Get a list of all components that aren't awake yet.
      *
-     * @return A new ArrayList containing all of the non awake components
+     * @return An ArrayList containing all of the non awake components
      */
     protected ArrayList<Component> getNotAwakeComponents() {
-        return mComponents.stream()
-                .filter(component -> !component.isAwake())
-                .collect(Collectors.toCollection(ArrayList::new));
+        updateComponentsList();
+
+        if (mNotAwakeComponentsDirty) {
+
+            mNotAwakeComponents.clear();
+            mComponents.stream()
+                    .filter(component -> component.getGameObject() != null)
+                    .filter(component -> !component.isAwake())
+                    .collect(Collectors.toCollection(() -> mNotAwakeComponents));
+
+            mNotAwakeComponentsDirty = false;
+        }
+
+        return mNotAwakeComponents;
+    }
+
+    void dirtyToStartComponents() {
+        mToStartComponentsDirty = true;
     }
 
     /**
      * Get a list of all components that are enabled but have not been started yet.
      *
-     * @return A new ArrayList containing all of the enabled but not started components
+     * @return An ArrayList containing all of the enabled but not started components
      */
     protected ArrayList<Component> getEnabledButNotStartedComponents() {
-        return mComponents.stream()
-                .filter(component -> component.getGameObject().isEnabled())
-                .filter(Component::isEnabled)
-                .filter(component -> !component.isStarted())
-                .collect(Collectors.toCollection(ArrayList::new));
+        updateComponentsList();
+
+        if (mToStartComponentsDirty) {
+            mToStartComponents.clear();
+            mComponents.stream()
+                    .filter(component -> component.getGameObject() != null)
+                    .filter(component -> component.getGameObject().isEnabled())
+                    .filter(component -> component.isAwake())
+                    .filter(component -> !component.isStarted())
+                    .collect(Collectors.toCollection(() -> mToStartComponents));
+            mToStartComponentsDirty = false;
+        }
+
+        return mToStartComponents;
     }
 
     @Override

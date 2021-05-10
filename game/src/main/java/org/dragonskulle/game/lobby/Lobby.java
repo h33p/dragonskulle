@@ -805,6 +805,8 @@ public class Lobby extends Component implements IFrameUpdate {
                     manager.getServerManager()
                             .spawnNetworkObject(i, manager.findTemplateByName("player"));
             GameObject playerObj = player.get().getGameObject();
+
+            // Choose which AI to add
             playerObj.addComponent(new AimerAi());
         }
     }

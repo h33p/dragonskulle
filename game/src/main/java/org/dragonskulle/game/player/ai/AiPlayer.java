@@ -56,7 +56,7 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
      * @param deltaTime The time since the last fixed update
      * @return A boolean to say whether the AI player can play
      */
-    protected boolean shouldPlayGame(float deltaTime) {
+    private boolean shouldPlayGame(float deltaTime) {
         mTimeSinceStart += deltaTime;
 
         // Checks to see how long since last time AI player played and if longer than how long they
@@ -79,7 +79,12 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
                         + cfg.getLowerBoundTime();
     }
 
-    public AiConfig getConfig() {
+    /**
+     * This will get the config value for the AI Player
+     *
+     * @return The {@link AiConfig} to be used
+     */
+    protected AiConfig getConfig() {
         if (mConfig != null) {
             return mConfig;
         }
@@ -87,7 +92,9 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
         GameConfig cfg = GameState.getSceneConfig();
 
         if (cfg != null && cfg.getAi().size() > 0) {
-            mConfig = cfg.getAi().get(0);
+            int index = mRandom.nextInt(cfg.getAi().size());
+            mConfig = cfg.getAi().get(index);
+
         } else {
             mConfig = new AiConfig();
         }

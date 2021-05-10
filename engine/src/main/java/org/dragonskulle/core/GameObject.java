@@ -31,6 +31,7 @@ public class GameObject {
     @Getter private Transform mTransform = new Transform3D();
     @Getter private final String mName;
     @Getter private boolean mEnabled;
+    @Getter private Scene mScene;
     /** How deep the object is within the game object structure. */
     @Getter private int mDepth = 0;
 
@@ -45,6 +46,7 @@ public class GameObject {
                             cloned.mRoot = cloner.deepClone(toClone.mRoot, clones);
                             cloned.mParent = cloner.deepClone(toClone.mParent, clones);
                             cloned.mTransform = cloner.deepClone(toClone.mTransform, clones);
+                            // cloned.mScene = toClone.getScene();
                             for (Component comp : toClone.mComponents) {
                                 cloned.mComponents.add(cloner.deepClone(comp, clones));
                             }
@@ -333,6 +335,8 @@ public class GameObject {
 
         // Add the component
         mComponents.add(component);
+
+        dirtyComponentLists();
     }
 
     /**
@@ -351,6 +355,8 @@ public class GameObject {
         child.mParent = this;
         child.setDepth(mDepth + 1);
         mChildren.add(child);
+        child.setScene(mScene);
+        dirtyComponentLists();
     }
 
     /**
@@ -368,8 +374,10 @@ public class GameObject {
             child.mParent = this;
             child.setEnabled(mEnabled && child.isEnabled());
             child.setDepth(this.mDepth + 1);
+            child.setScene(mScene);
         }
         mChildren.addAll(children);
+        dirtyComponentLists();
     }
 
     /**
@@ -444,6 +452,7 @@ public class GameObject {
         if (mComponents.remove(component)) {
             component.onRemove();
         }
+        dirtyComponentLists();
     }
 
     /**
@@ -453,12 +462,16 @@ public class GameObject {
      */
     public void removeChild(GameObject child) {
         mChildren.remove(child);
+        child.setScene(null);
+        dirtyComponentLists();
     }
 
     /**
      * Add the GameObject to the list of objects that need to be destroyed in the Engine instance.
      */
     public void destroy() {
+        setEnabled(false);
+        dirtyComponentLists();
         Engine.getInstance().mDestroyedObjects.add(this);
     }
 
@@ -472,10 +485,14 @@ public class GameObject {
         for (GameObject c : mChildren) {
             c.recreateReferences();
         }
+        dirtyComponentLists();
     }
 
     public GameObject createClone() {
-        return Engine.getCloner().deepClone(this);
+        GameObject ret = Engine.getCloner().deepClone(this);
+        ret.setScene(mScene);
+        dirtyComponentLists();
+        return ret;
     }
 
     /**
@@ -517,17 +534,31 @@ public class GameObject {
     }
 
     /**
-     * Setter for mEnabled. This value is recursively set for all children
+     * Mark an object for disabling at the end of the main loop iteration.
      *
-     * @param enabled New value for mEnabled
+     * @param enabled New value for mEnabled.
      */
     public void setEnabled(boolean enabled) {
+        Engine.getInstance().mDisabledObjects.put(this, enabled);
+    }
+
+    /**
+     * Setter for mEnabled. This value is recursively set for all children
+     *
+     * @param enabled New value for mEnabled.
+     */
+    public void setEnabledImmediate(boolean enabled) {
+        if (enabled == mEnabled) {
+            return;
+        }
 
         mEnabled = enabled && (mParent == null || mParent.mEnabled);
 
         for (GameObject child : mChildren) {
-            child.setEnabled(enabled);
+            child.setEnabledImmediate(enabled);
         }
+
+        dirtyComponentLists();
     }
 
     /**
@@ -558,6 +589,26 @@ public class GameObject {
                 .map(component -> component.getReference(type))
                 .filter(Reference::isValid)
                 .collect(Collectors.toCollection(() -> ret));
+    }
+
+    /**
+     * Sets the scene of the object.
+     *
+     * @param scene target scene.
+     */
+    void setScene(Scene scene) {
+        mScene = scene;
+        dirtyComponentLists();
+
+        for (GameObject obj : mChildren) {
+            obj.setScene(scene);
+        }
+    }
+
+    public void dirtyComponentLists() {
+        if (mScene != null) {
+            mScene.dirtyComponentLists();
+        }
     }
 
     /**

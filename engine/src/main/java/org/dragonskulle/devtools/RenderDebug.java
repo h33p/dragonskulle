@@ -39,6 +39,8 @@ public class RenderDebug extends Component implements IOnAwake, IFrameUpdate {
 
     private boolean mLastPressed = false;
 
+    private float mLastTime = 0f;
+
     @Override
     public void onAwake() {
         mText = getGameObject().getComponent(UIText.class);
@@ -57,8 +59,15 @@ public class RenderDebug extends Component implements IOnAwake, IFrameUpdate {
     public void frameUpdate(float deltaTime) {
         boolean debugPressed = DEBUG_ACTION.isActivated();
 
+        if (Engine.getInstance().getCurTime() - mLastTime < 0.016f) {
+            return;
+        }
+
+        mLastTime = Engine.getInstance().getCurTime();
+
         if (Reference.isValid(mText)) {
             if (debugPressed && !mLastPressed) {
+                System.out.println("SET TOGGLE!");
                 mText.get().setEnabled(!mText.get().isEnabled());
             }
 
