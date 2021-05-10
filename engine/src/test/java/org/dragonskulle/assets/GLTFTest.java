@@ -86,7 +86,7 @@ public class GLTFTest {
             ArrayList<Reference<Component>> outList = new ArrayList<>();
             cube.getComponents(Component.class, outList);
             for (Reference<Component> comp : outList) {
-                log.info(comp.get().toString());
+                log.fine(comp.get().toString());
             }
             Reference<UIText> uiText = cube.getComponent(UIText.class);
             assertNotNull(uiText);

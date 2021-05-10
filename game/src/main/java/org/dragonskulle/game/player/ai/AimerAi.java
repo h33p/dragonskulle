@@ -82,7 +82,6 @@ public class AimerAi extends ProbabilisticAiPlayer {
 
             // Will perform all necessary checks for A*
             aStar();
-            log.info("A* Ran");
 
             // Whilst it cannot find a path play probabilistically
             if (mPath.size() == 0) {
@@ -143,7 +142,7 @@ public class AimerAi extends ProbabilisticAiPlayer {
 
             // Checks if we have been on this tile for ages
             if (mAttempts > cfg.getTries()) {
-                log.info("All tried depleted.");
+                log.fine("All tried depleted.");
                 mPath = new ArrayDeque<Integer>();
                 return;
             }
@@ -169,7 +168,7 @@ public class AimerAi extends ProbabilisticAiPlayer {
      * @param nextNode The {@link Node} number for the next {@link HexagonTile}.
      */
     private void attack(HexagonTile nextTile, int nextNode) {
-        log.info("A* Attacking");
+        log.fine("A* Attacking");
         Player nextTilePlayer = nextTile.getClaimant();
 
         // ATTACK
@@ -269,7 +268,7 @@ public class AimerAi extends ProbabilisticAiPlayer {
      * @param nextNode The {@link Node} number for the next {@link HexagonTile}.
      */
     private void build(HexagonTile tileToBuildOn, int nextNode) {
-        log.info("A* Building");
+        log.fine("A* Building");
 
         // Get a building type that they can afford.
         BuildingDescriptor option = getRandomBuildingType();

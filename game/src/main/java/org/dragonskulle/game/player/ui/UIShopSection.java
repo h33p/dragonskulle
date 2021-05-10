@@ -78,7 +78,7 @@ public class UIShopSection extends Component implements IOnStart {
      */
     protected void setState(ShopState state) {
         if (state != getLastState()) {
-            log.info("Setting visible state to " + state);
+            log.fine("Setting visible state to " + state);
 
             String newText = "";
             Reference<GameObject> newPanel;
@@ -140,7 +140,7 @@ public class UIShopSection extends Component implements IOnStart {
      * @param newPanel the new panel
      */
     private void swapPanels(Reference<GameObject> newPanel) {
-        log.info("Swapping panels.");
+        log.fine("Swapping panels.");
         // if there is a screen being shown
         // deactivate the panel
         if (Reference.isValid(mCurrentPanel)) {

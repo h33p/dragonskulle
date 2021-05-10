@@ -214,7 +214,7 @@ public class AudioManager {
 
         mInitialized = true;
 
-        log.info("Initialize AudioManager: " + mSources.size() + " sources available");
+        log.fine("Initialize AudioManager: " + mSources.size() + " sources available");
     }
 
     /**

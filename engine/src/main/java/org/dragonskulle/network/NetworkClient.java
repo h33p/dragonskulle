@@ -217,7 +217,7 @@ public class NetworkClient {
             }
 
             dispose();
-            log.info("cancelled successfully");
+            log.fine("cancelled successfully");
         }
     }
 
@@ -298,7 +298,7 @@ public class NetworkClient {
                 mClientListener.hostStartedGame();
                 break;
             default:
-                log.info("unsure of what to do with message as unknown type byte " + messageType);
+                log.fine("unsure of what to do with message as unknown type byte ");
                 break;
         }
         return messageType;

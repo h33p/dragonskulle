@@ -4,7 +4,6 @@ package org.dragonskulle.game.player.ai.algorithms.graphs;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import lombok.extern.java.Log;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.map.HexagonMap;
 import org.dragonskulle.game.map.HexagonTile;
@@ -17,7 +16,6 @@ import org.dragonskulle.game.player.ai.AimerAi;
  *
  * @author Dragonskulle
  */
-@Log
 public class Graph {
 
     /** The hash map which will hold the node id to the Node. */

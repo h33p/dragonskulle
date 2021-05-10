@@ -200,7 +200,7 @@ public class App implements NativeResource {
         TemplateManager templates = new TemplateManager();
 
         for (GameObject obj : mNetworkTemplatesGltf.get().getDefaultScene().getGameObjects()) {
-            log.info(obj.getName());
+            log.fine(obj.getName());
         }
 
         templates.addAllObjects(
