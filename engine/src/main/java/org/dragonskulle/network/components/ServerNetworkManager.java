@@ -97,7 +97,7 @@ public class ServerNetworkManager {
             ServerObjectEntry entry = mNetworkObjects.get(objectID);
 
             if (entry == null) {
-                log.info(
+                log.fine(
                         "Client "
                                 + client.getNetworkID()
                                 + " passed incorrect object ID: "

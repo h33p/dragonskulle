@@ -124,14 +124,14 @@ public class ServerTest {
 
                             int testCompId = clientTestComp.get().getNetworkObject().getId();
 
-                            log.info(
+                            log.fine(
                                     "\t-----> "
                                             + testCompId
                                             + " "
                                             + serverTestComp.get().getNetworkObject().getId());
                             assertEquals(
                                     testCompId, serverTestComp.get().getNetworkObject().getId());
-                            log.info("\t-----> " + testCompId);
+                            log.fine("\t-----> " + testCompId);
                             assert (serverTestComp.get().getSyncMe().get() == false);
                             assert (serverTestComp
                                     .get()

@@ -59,7 +59,7 @@ public class Settings {
                 TypeReference<HashMap<String, String>> typeRef =
                         new TypeReference<HashMap<String, String>>() {};
                 mSettings = new ObjectMapper().readValue(sFile, typeRef);
-                log.info("Loaded Settings");
+                log.fine("Loaded Settings");
                 sIsLoaded = true;
             } else {
                 log.warning("failed to load settings file");

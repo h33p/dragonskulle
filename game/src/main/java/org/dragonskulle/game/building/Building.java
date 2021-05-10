@@ -418,7 +418,7 @@ public class Building extends NetworkableComponent
      * </ul>
      */
     public void afterStatChange() {
-        log.info("After stats change.");
+        log.fine("After stats change.");
 
         generateStatBaseCost();
 
@@ -436,7 +436,7 @@ public class Building extends NetworkableComponent
                 getShopStats().stream()
                         .collect(Collectors.toMap(SyncStat::getType, SyncStat::getLevel));
         if (statLevels.values().stream().distinct().count() <= 1) {
-            log.info("the stats are all the same");
+            log.fine("the stats are all the same");
             if (Reference.isValid(mVisibleMesh)) {
                 mVisibleMesh.get().setEnabled(false);
             }
@@ -453,7 +453,6 @@ public class Building extends NetworkableComponent
                 }
             }
             if (max != null) {
-                log.info("this stat is the biggest " + max.getKey());
                 if (Reference.isValid(mVisibleMesh)) {
                     mVisibleMesh.get().setEnabled(false);
                 }

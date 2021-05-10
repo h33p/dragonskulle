@@ -171,7 +171,7 @@ public class ServerClient {
         mRunning = true;
 
         try {
-            log.info("Spawned client thread");
+            log.fine("Spawned client thread");
 
             BufferedInputStream bIn = new BufferedInputStream(mSocket.getInputStream());
             DataInput input = new DataInputStream(bIn);
@@ -233,7 +233,7 @@ public class ServerClient {
                 mServerListener.clientLoaded(this);
                 break;
             default:
-                log.info("The server received invalid request: " + messageType);
+                log.fine("The server received invalid request");
                 break;
         }
     }
