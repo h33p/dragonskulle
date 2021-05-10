@@ -41,6 +41,29 @@ public class GameState extends NetworkableComponent implements IOnAwake {
         }
     }
 
+    public static class InvokeAudioEvent implements INetSerializable {
+
+        public InvokeAudioEvent() {}
+
+        public InvokeAudioEvent(GameUIAppearance.AudioFiles sound) {
+            mSoundId = sound;
+        }
+
+        @Getter
+        @Accessors(prefix = "m")
+        private GameUIAppearance.AudioFiles mSoundId;
+
+        @Override
+        public void serialize(DataOutput stream, int __) throws IOException {
+            stream.writeInt(mSoundId.ordinal());
+        }
+
+        @Override
+        public void deserialize(DataInput stream) throws IOException {
+            mSoundId = GameUIAppearance.AudioFiles.get(stream.readInt());
+        }
+    }
+
     public static interface IGameEndEvent {
         void handle(int winnerId);
     }

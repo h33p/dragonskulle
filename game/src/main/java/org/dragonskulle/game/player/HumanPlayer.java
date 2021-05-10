@@ -5,6 +5,7 @@ import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.dragonskulle.audio.components.AudioSource;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IFrameUpdate;
@@ -18,6 +19,7 @@ import org.dragonskulle.core.Scene;
 import org.dragonskulle.game.App;
 import org.dragonskulle.game.GameState;
 import org.dragonskulle.game.GameState.IGameEndEvent;
+import org.dragonskulle.game.GameUIAppearance;
 import org.dragonskulle.game.building.Building;
 import org.dragonskulle.game.camera.TargetMovement;
 import org.dragonskulle.game.input.GameActions;
@@ -194,7 +196,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     @Override
     public void onStart() {
-
         // Create the slider used for zooming.
         UILinkedScrollBar component = new UILinkedScrollBar();
         getGameObject()
@@ -251,6 +252,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         getGameObject().addComponent(path);
 
         mArcPath = path.getReference(ArcPath.class);
+        // this shouldnt have to happen to play on start
+        AudioSource src = new AudioSource();
+        getGameObject().addComponent(src);
+        src.playSound(GameUIAppearance.AudioFiles.ON_GAME_START.getPath());
     }
 
     @Override
@@ -284,10 +289,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
                                     if (Reference.isValid(mPlayer)) {
                                         int id = mPlayer.get().getNetworkObject().getOwnerId();
-
-                                        String res = id == winnerId ? "You win!" : "You lose!";
-
-                                        pauseMenu.get().endGame(res);
+                                        boolean didWin = id == winnerId;
+                                        pauseMenu.get().endGame(didWin);
                                     }
                                 });
 
