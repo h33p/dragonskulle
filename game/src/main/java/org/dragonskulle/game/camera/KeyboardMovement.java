@@ -8,12 +8,9 @@ import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.Transform3D;
-import org.dragonskulle.game.GameConfig;
 import org.dragonskulle.game.camera.ScrollTranslate.IZoomNotify;
 import org.dragonskulle.game.input.GameActions;
 import org.dragonskulle.utils.MathUtils;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
 
 /**
  * Allows to control object with keyboard.
@@ -30,7 +27,6 @@ public class KeyboardMovement extends Component implements IFrameUpdate, IOnAwak
     @Getter @Setter private float mZoomLevel = 0f;
 
     private transient Transform3D mTransform;
-    private static final int MAP_SIZE = GameConfig.getDefaultConfig().getGlobal().getMapSize();
 
     @Override
     public void onAwake() {
@@ -40,7 +36,6 @@ public class KeyboardMovement extends Component implements IFrameUpdate, IOnAwak
     @Override
     public void frameUpdate(float deltaTime) {
         if (mTransform != null) {
-
             float moveSpeed = MathUtils.lerp(mMinMoveSpeed, mMaxMoveSpeed, mZoomLevel);
 
             float xAxis = GameActions.RIGHT.isActivated() ? 1 : 0;
@@ -55,16 +50,8 @@ public class KeyboardMovement extends Component implements IFrameUpdate, IOnAwak
             rotAxis -= GameActions.ROTATE_LEFT.isActivated() ? 1 : 0;
             rotAxis *= mRotateSpeed * deltaTime;
 
-            // Extracted from Transform as to not modify the normal transform code
-            Vector3f pos = mTransform.getPosition();
-            Quaternionf rot = mTransform.getRotation();
-            Vector3f mTmpForward = new Vector3f();
-            mTmpForward.set(xAxis, yAxis, 0f).rotate(rot);
-            pos.add(mTmpForward);
-            MathUtils.clampVector(pos, MAP_SIZE - 10);
-            mTransform.setPosition(pos);
-            rot.rotateXYZ(0f, 0f, MathUtils.DEG_TO_RAD * -rotAxis);
-            mTransform.setRotation(rot);
+            mTransform.translateLocal(xAxis, yAxis, 0);
+            mTransform.rotateDeg(0, 0, -rotAxis);
         }
     }
 
