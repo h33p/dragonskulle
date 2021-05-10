@@ -20,7 +20,6 @@ import org.dragonskulle.game.player.ai.algorithms.graphs.Graph;
  * @author DragonSkulle
  */
 @Accessors(prefix = "m")
-@Log
 public class AStar {
 
     /** This will hold the nodes to be visited with the nodeId being the key. */

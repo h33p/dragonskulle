@@ -17,7 +17,6 @@ import org.dragonskulle.game.player.ai.AimerAi;
  *
  * @author Dragonskulle
  */
-@Log
 public class Graph {
 
     /** The hash map which will hold the node id to the Node. */
