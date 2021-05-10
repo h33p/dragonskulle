@@ -21,15 +21,17 @@ import org.dragonskulle.game.building.stat.SyncStat.IValueCalculator;
 @Log
 @Accessors(prefix = "m")
 public enum StatType {
-    ATTACK((level) -> level), // The attack value is identical to the current level number.
+    ATTACK(
+            (level) -> level,
+            "ATTACK"), // The attack value is identical to the current level number.
     BUILD_DISTANCE(2), // Regardless of the level, the build distance will always be the same.
     CLAIM_DISTANCE(1), // Regardless of the level, the claim distance will always be the same.
-    DEFENCE((level) -> level), // The defence value is identical to the current level number.
+    DEFENCE(
+            (level) -> level,
+            "DEFENCE"), // The defence value is identical to the current level number.
     TOKEN_GENERATION(
-            (level) ->
-                    Math.max(
-                            level - 1,
-                            0)), // The number of tokens to generate is identical to the current
+            (level) -> Math.max(level - 1, 0),
+            "TOKEN_GENERATION"), // The number of tokens to generate is identical to the current
     // level number minus
     VIEW_DISTANCE(3); // Regardless of the level, the view distance will always be the same.
 

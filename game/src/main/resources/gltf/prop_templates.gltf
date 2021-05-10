@@ -12,13 +12,13 @@
             "name" : "Scene",
             "nodes" : [
                 0,
-                22,
-                51,
-                52,
-                53,
-                54,
-                56,
-                57
+                13,
+                40,
+                41,
+                42,
+                43,
+                45,
+                46
             ]
         }
     ],
@@ -50,134 +50,18 @@
                 }
             },
             "mesh" : 0,
-            "name" : "Drivetrain"
-        },
-        {
-            "extensions" : {
-                "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
-                }
-            },
-            "mesh" : 1,
-            "name" : "Wheel"
-        },
-        {
-            "children" : [
-                2
-            ],
-            "extensions" : {
-                "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
-                }
-            },
-            "name" : "Wheel.001",
-            "translation" : [
-                -0.09645088016986847,
-                0.0860745832324028,
-                0.052036479115486145
-            ]
-        },
-        {
-            "extensions" : {
-                "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
-                }
-            },
-            "mesh" : 1,
-            "name" : "Wheel"
-        },
-        {
-            "children" : [
-                4
-            ],
-            "extensions" : {
-                "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
-                }
-            },
-            "name" : "Wheel.002",
-            "translation" : [
-                -0.09645088016986847,
-                -0.08607500046491623,
-                0.052036479115486145
-            ]
-        },
-        {
-            "extensions" : {
-                "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
-                }
-            },
-            "mesh" : 1,
-            "name" : "Wheel"
-        },
-        {
-            "children" : [
-                6
-            ],
-            "extensions" : {
-                "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
-                }
-            },
-            "name" : "Wheel.003",
-            "translation" : [
-                0.09645099937915802,
-                -0.08607500046491623,
-                0.052036479115486145
-            ]
-        },
-        {
-            "extensions" : {
-                "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
-                }
-            },
-            "mesh" : 1,
-            "name" : "Wheel"
-        },
-        {
-            "children" : [
-                8
-            ],
-            "extensions" : {
-                "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
-                }
-            },
-            "name" : "Wheel.004",
-            "translation" : [
-                0.09645099937915802,
-                0.08607500046491623,
-                0.052036479115486145
-            ]
-        },
-        {
-            "children" : [
-                1,
-                3,
-                5,
-                7,
-                9
-            ],
-            "extensions" : {
-                "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
-                }
-            },
-            "mesh" : 2,
             "name" : "war_wagon"
         },
         {
             "children" : [
-                10
+                1
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "name" : "lvl1",
+            "name" : "attack_lvl1",
             "rotation" : [
                 0,
                 0,
@@ -191,31 +75,24 @@
             ]
         },
         {
-            "children" : [
-                1,
-                3,
-                5,
-                7,
-                9
-            ],
             "extensions" : {
                 "DSKULLE_game_object" : {
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "mesh" : 2,
+            "mesh" : 0,
             "name" : "war_wagon"
         },
         {
             "children" : [
-                12
+                3
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "name" : "lvl10",
+            "name" : "attack_lvl10",
             "rotation" : [
                 0,
                 0,
@@ -229,31 +106,24 @@
             ]
         },
         {
-            "children" : [
-                1,
-                3,
-                5,
-                7,
-                9
-            ],
             "extensions" : {
                 "DSKULLE_game_object" : {
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "mesh" : 2,
+            "mesh" : 0,
             "name" : "war_wagon"
         },
         {
             "children" : [
-                14
+                5
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "name" : "lvl2",
+            "name" : "attack_lvl2",
             "rotation" : [
                 0,
                 0,
@@ -267,31 +137,24 @@
             ]
         },
         {
-            "children" : [
-                1,
-                3,
-                5,
-                7,
-                9
-            ],
             "extensions" : {
                 "DSKULLE_game_object" : {
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "mesh" : 2,
+            "mesh" : 0,
             "name" : "war_wagon"
         },
         {
             "children" : [
-                16
+                7
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "name" : "lvl4",
+            "name" : "attack_lvl4",
             "rotation" : [
                 0,
                 0,
@@ -305,11 +168,16 @@
             ]
         },
         {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D"
+                }
+            },
+            "mesh" : 0,
+            "name" : "war_wagon"
+        },
+        {
             "children" : [
-                1,
-                3,
-                5,
-                7,
                 9
             ],
             "extensions" : {
@@ -317,19 +185,7 @@
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "mesh" : 2,
-            "name" : "war_wagon"
-        },
-        {
-            "children" : [
-                18
-            ],
-            "extensions" : {
-                "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
-                }
-            },
-            "name" : "lvl6",
+            "name" : "attack_lvl6",
             "rotation" : [
                 0,
                 0,
@@ -343,31 +199,24 @@
             ]
         },
         {
-            "children" : [
-                1,
-                3,
-                5,
-                7,
-                9
-            ],
             "extensions" : {
                 "DSKULLE_game_object" : {
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "mesh" : 2,
+            "mesh" : 0,
             "name" : "war_wagon"
         },
         {
             "children" : [
-                20
+                11
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "name" : "lvl8",
+            "name" : "attack_lvl8",
             "rotation" : [
                 0,
                 0,
@@ -382,16 +231,120 @@
         },
         {
             "children" : [
-                11,
-                13,
-                15,
-                17,
-                19,
-                21
+                2,
+                4,
+                6,
+                8,
+                10,
+                12
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.building.BuildingProps",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mStat",
+                                    "value" : "ATTACK"
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.building.TileProp",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mLevel",
+                                    "value" : 1
+                                },
+                                {
+                                    "name" : "mPropName",
+                                    "value" : "attack_lvl1"
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.building.TileProp",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mLevel",
+                                    "value" : 2
+                                },
+                                {
+                                    "name" : "mPropName",
+                                    "value" : "attack_lvl2"
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.building.TileProp",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mLevel",
+                                    "value" : 4
+                                },
+                                {
+                                    "name" : "mPropName",
+                                    "value" : "attack_lvl4"
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.building.TileProp",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mLevel",
+                                    "value" : 6
+                                },
+                                {
+                                    "name" : "mPropName",
+                                    "value" : "attack_lvl6"
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.building.TileProp",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mLevel",
+                                    "value" : 8
+                                },
+                                {
+                                    "name" : "mPropName",
+                                    "value" : "attack_lvl8"
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.building.TileProp",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mLevel",
+                                    "value" : 10
+                                },
+                                {
+                                    "name" : "mPropName",
+                                    "value" : "attack_lvl10"
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.network.components.NetworkHexTransform",
+                            "enabled" : true
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.building.StickToTile",
+                            "enabled" : true
+                        }
+                    ]
                 }
             },
             "name" : "attack_prop"
@@ -402,7 +355,38 @@
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "mesh" : 3,
+            "mesh" : 1,
+            "name" : "Small Furnace"
+        },
+        {
+            "children" : [
+                14
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D"
+                }
+            },
+            "name" : "token_lvl1",
+            "rotation" : [
+                0,
+                0,
+                0.2495741993188858,
+                0.968355655670166
+            ],
+            "translation" : [
+                0.1551540195941925,
+                0.15702460706233978,
+                0.014999998733401299
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D"
+                }
+            },
+            "mesh" : 2,
             "name" : "Big Furnace",
             "translation" : [
                 0,
@@ -416,7 +400,7 @@
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "mesh" : 4,
+            "mesh" : 3,
             "name" : "roof"
         },
         {
@@ -425,7 +409,7 @@
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "mesh" : 5,
+            "mesh" : 4,
             "name" : "wall 1",
             "translation" : [
                 0,
@@ -439,7 +423,7 @@
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "mesh" : 6,
+            "mesh" : 5,
             "name" : "wall 1.002",
             "translation" : [
                 0,
@@ -448,48 +432,18 @@
             ]
         },
         {
-            "extensions" : {
-                "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
-                }
-            },
-            "mesh" : 7,
-            "name" : "wall3.001",
-            "translation" : [
-                0.031192224472761154,
-                -0.21155332028865814,
-                0
-            ]
-        },
-        {
-            "extensions" : {
-                "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
-                }
-            },
-            "mesh" : 8,
-            "name" : "wall3.002",
-            "translation" : [
-                0.031192224472761154,
-                0.21155300736427307,
-                0
-            ]
-        },
-        {
             "children" : [
-                23,
-                24,
-                25,
-                26,
-                27,
-                28
+                16,
+                17,
+                18,
+                19
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "name" : "lvl10.001"
+            "name" : "token_lvl10"
         },
         {
             "extensions" : {
@@ -497,36 +451,24 @@
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "mesh" : 9,
-            "name" : "Anvil",
-            "translation" : [
-                0,
-                0,
-                0.036763086915016174
+            "mesh" : 6,
+            "name" : "Anvil Base",
+            "scale" : [
+                0.9999976754188538,
+                1,
+                1
             ]
         },
         {
             "children" : [
-                30
+                21
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "mesh" : 10,
-            "name" : "Anvil Base"
-        },
-        {
-            "children" : [
-                31
-            ],
-            "extensions" : {
-                "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
-                }
-            },
-            "name" : "lvl2.001",
+            "name" : "token_lvl2",
             "rotation" : [
                 0,
                 0,
@@ -540,27 +482,29 @@
             ]
         },
         {
-            "children" : [
-                30
-            ],
             "extensions" : {
                 "DSKULLE_game_object" : {
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "mesh" : 10,
-            "name" : "Anvil Base"
+            "mesh" : 6,
+            "name" : "Anvil Base",
+            "scale" : [
+                0.9999976754188538,
+                1,
+                1
+            ]
         },
         {
             "children" : [
-                33
+                23
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "name" : "lvl3",
+            "name" : "token_lvl3",
             "rotation" : [
                 0,
                 0,
@@ -574,27 +518,29 @@
             ]
         },
         {
-            "children" : [
-                30
-            ],
             "extensions" : {
                 "DSKULLE_game_object" : {
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "mesh" : 10,
-            "name" : "Anvil Base"
+            "mesh" : 6,
+            "name" : "Anvil Base",
+            "scale" : [
+                0.9999976754188538,
+                1,
+                1
+            ]
         },
         {
             "children" : [
-                35
+                25
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "name" : "lvl4.001",
+            "name" : "token_lvl4",
             "rotation" : [
                 0,
                 0,
@@ -613,12 +559,12 @@
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "mesh" : 11,
+            "mesh" : 1,
             "name" : "Small Furnace"
         },
         {
             "children" : [
-                37
+                27
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
@@ -644,7 +590,7 @@
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "mesh" : 12,
+            "mesh" : 7,
             "name" : "wall 1.001",
             "translation" : [
                 0.206455796957016,
@@ -658,7 +604,7 @@
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "mesh" : 13,
+            "mesh" : 8,
             "name" : "wall 2.001",
             "translation" : [
                 0.206455796957016,
@@ -667,30 +613,9 @@
             ]
         },
         {
-            "extensions" : {
-                "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
-                }
-            },
-            "mesh" : 14,
-            "name" : "wall3"
-        },
-        {
             "children" : [
-                38,
-                39,
-                40,
-                41
-            ],
-            "extensions" : {
-                "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
-                }
-            },
-            "name" : "lvl5"
-        },
-        {
-            "children" : [
+                28,
+                29,
                 30
             ],
             "extensions" : {
@@ -698,19 +623,32 @@
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "mesh" : 10,
-            "name" : "Anvil Base"
+            "name" : "token_lvl5"
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D"
+                }
+            },
+            "mesh" : 6,
+            "name" : "Anvil Base",
+            "scale" : [
+                0.9999976754188538,
+                1,
+                1
+            ]
         },
         {
             "children" : [
-                43
+                32
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "name" : "lvl6.001",
+            "name" : "token_lvl6",
             "rotation" : [
                 0,
                 0,
@@ -724,61 +662,101 @@
             ]
         },
         {
-            "children" : [
-                30
-            ],
             "extensions" : {
                 "DSKULLE_game_object" : {
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "mesh" : 10,
-            "name" : "Anvil Base"
-        },
-        {
-            "children" : [
-                45
-            ],
-            "extensions" : {
-                "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
-                }
-            },
-            "name" : "lvl8.001",
-            "rotation" : [
-                0,
-                0,
-                0.2644776403903961,
-                0.964391827583313
-            ],
-            "translation" : [
-                -0.055245768278837204,
-                -0.09716217964887619,
-                0.014602914452552795
+            "mesh" : 6,
+            "name" : "Anvil Base",
+            "scale" : [
+                0.9999976754188538,
+                1,
+                1
             ]
         },
         {
             "children" : [
-                30
+                34
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "mesh" : 10,
-            "name" : "Anvil Base"
+            "name" : "token_lvl7",
+            "rotation" : [
+                0,
+                0,
+                0.14905034005641937,
+                0.9888296127319336
+            ],
+            "translation" : [
+                -0.12450453639030457,
+                0.002365652471780777,
+                0.014602910727262497
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D"
+                }
+            },
+            "mesh" : 6,
+            "name" : "Anvil Base",
+            "scale" : [
+                0.9999976754188538,
+                1,
+                1
+            ]
         },
         {
             "children" : [
-                47
+                36
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "name" : "lvl9",
+            "name" : "token_lvl8",
+            "rotation" : [
+                0,
+                0,
+                0.38543498516082764,
+                0.9227350354194641
+            ],
+            "translation" : [
+                -0.05000155791640282,
+                -0.1167328953742981,
+                0.014602914452552795
+            ]
+        },
+        {
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D"
+                }
+            },
+            "mesh" : 6,
+            "name" : "Anvil Base",
+            "scale" : [
+                0.9999976754188538,
+                1,
+                1
+            ]
+        },
+        {
+            "children" : [
+                38
+            ],
+            "extensions" : {
+                "DSKULLE_game_object" : {
+                    "transform" : "org.dragonskulle.components.Transform3D"
+                }
+            },
+            "name" : "token_lvl9",
             "rotation" : [
                 0,
                 0,
@@ -786,60 +764,172 @@
                 0.9526658654212952
             ],
             "translation" : [
-                -0.07755948603153229,
-                0.060289155691862106,
+                -0.06627564132213593,
+                0.1130659431219101,
                 0.014602916315197945
             ]
         },
         {
-            "extensions" : {
-                "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
-                }
-            },
-            "mesh" : 11,
-            "name" : "Small Furnace"
-        },
-        {
             "children" : [
-                49
+                15,
+                20,
+                22,
+                24,
+                26,
+                31,
+                33,
+                35,
+                37,
+                39
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.TransformHex",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.building.BuildingProps",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mStat",
+                                    "value" : "TOKEN_GENERATION"
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.building.TileProp",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mLevel",
+                                    "value" : 2
+                                },
+                                {
+                                    "name" : "mPropName",
+                                    "value" : "token_lvl2"
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.building.TileProp",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mLevel",
+                                    "value" : 3
+                                },
+                                {
+                                    "name" : "mPropName",
+                                    "value" : "token_lvl3"
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.building.TileProp",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mLevel",
+                                    "value" : 4
+                                },
+                                {
+                                    "name" : "mPropName",
+                                    "value" : "token_lvl4"
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.building.TileProp",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mLevel",
+                                    "value" : 5
+                                },
+                                {
+                                    "name" : "mPropName",
+                                    "value" : "token_lvl5"
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.building.TileProp",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mLevel",
+                                    "value" : 6
+                                },
+                                {
+                                    "name" : "mPropName",
+                                    "value" : "token_lvl6"
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.building.TileProp",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mLevel",
+                                    "value" : 7
+                                },
+                                {
+                                    "name" : "mPropName",
+                                    "value" : "token_lvl7"
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.building.TileProp",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mLevel",
+                                    "value" : 8
+                                },
+                                {
+                                    "name" : "mPropName",
+                                    "value" : "token_lvl8"
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.building.TileProp",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mLevel",
+                                    "value" : 9
+                                },
+                                {
+                                    "name" : "mPropName",
+                                    "value" : "token_lvl9"
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.building.TileProp",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mLevel",
+                                    "value" : 10
+                                },
+                                {
+                                    "name" : "mPropName",
+                                    "value" : "token_lvl10"
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.building.StickToTile",
+                            "enabled" : true
+                        }
+                    ]
                 }
             },
-            "name" : "Small Furnace",
-            "rotation" : [
-                0,
-                0,
-                0.2495741993188858,
-                0.968355655670166
-            ],
-            "translation" : [
-                0.1551540195941925,
-                0.15702460706233978,
-                0.014999998733401299
-            ]
-        },
-        {
-            "children" : [
-                29,
-                32,
-                34,
-                36,
-                42,
-                44,
-                46,
-                48,
-                50
-            ],
-            "extensions" : {
-                "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
-                }
-            },
-            "mesh" : 15,
+            "mesh" : 9,
             "name" : "token_generation_prop"
         },
         {
@@ -848,7 +938,7 @@
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "mesh" : 16,
+            "mesh" : 10,
             "name" : "defence_lvl_2"
         },
         {
@@ -857,7 +947,7 @@
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "mesh" : 17,
+            "mesh" : 11,
             "name" : "defence_lvl_4"
         },
         {
@@ -866,7 +956,7 @@
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "mesh" : 18,
+            "mesh" : 12,
             "name" : "defence_lvl_6"
         },
         {
@@ -875,7 +965,7 @@
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "mesh" : 19,
+            "mesh" : 13,
             "name" : "ladder",
             "rotation" : [
                 0,
@@ -891,14 +981,14 @@
         },
         {
             "children" : [
-                55
+                44
             ],
             "extensions" : {
                 "DSKULLE_game_object" : {
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "mesh" : 20,
+            "mesh" : 14,
             "name" : "defence_lvl_8"
         },
         {
@@ -907,7 +997,7 @@
                     "transform" : "org.dragonskulle.components.Transform3D"
                 }
             },
-            "mesh" : 21,
+            "mesh" : 15,
             "name" : "defence_lvl_10"
         }
     ],
@@ -924,6 +1014,20 @@
         }
     ],
     "materials" : [
+        {
+            "doubleSided" : true,
+            "name" : "Base Roof.005",
+            "pbrMetallicRoughness" : {
+                "baseColorFactor" : [
+                    0.06662599742412567,
+                    0.02028854563832283,
+                    0.004024720750749111,
+                    1
+                ],
+                "metallicFactor" : 0,
+                "roughnessFactor" : 0.38235294818878174
+            }
+        },
         {
             "doubleSided" : true,
             "name" : "Anvil Metal",
@@ -953,16 +1057,16 @@
         },
         {
             "doubleSided" : true,
-            "name" : "Base Roof.005",
+            "name" : "Rock.001",
             "pbrMetallicRoughness" : {
                 "baseColorFactor" : [
-                    0.06662599742412567,
-                    0.02028854563832283,
-                    0.004024720750749111,
+                    0.14731159806251526,
+                    0.14731159806251526,
+                    0.14731159806251526,
                     1
                 ],
                 "metallicFactor" : 0,
-                "roughnessFactor" : 0.38235294818878174
+                "roughnessFactor" : 0.5
             }
         },
         {
@@ -995,20 +1099,6 @@
         },
         {
             "doubleSided" : true,
-            "name" : "Rock.001",
-            "pbrMetallicRoughness" : {
-                "baseColorFactor" : [
-                    0.14731159806251526,
-                    0.14731159806251526,
-                    0.14731159806251526,
-                    1
-                ],
-                "metallicFactor" : 0,
-                "roughnessFactor" : 0.5
-            }
-        },
-        {
-            "doubleSided" : true,
             "name" : "Base Roof",
             "pbrMetallicRoughness" : {
                 "baseColorFactor" : [
@@ -1024,7 +1114,7 @@
     ],
     "meshes" : [
         {
-            "name" : "Circle.003",
+            "name" : "Cube.004",
             "primitives" : [
                 {
                     "attributes" : {
@@ -1034,12 +1124,7 @@
                     },
                     "indices" : 3,
                     "material" : 0
-                }
-            ]
-        },
-        {
-            "name" : "Circle.004",
-            "primitives" : [
+                },
                 {
                     "attributes" : {
                         "POSITION" : 4,
@@ -1048,12 +1133,7 @@
                     },
                     "indices" : 7,
                     "material" : 1
-                }
-            ]
-        },
-        {
-            "name" : "Cube.001",
-            "primitives" : [
+                },
                 {
                     "attributes" : {
                         "POSITION" : 8,
@@ -1066,7 +1146,7 @@
             ]
         },
         {
-            "name" : "Circle.001",
+            "name" : "Circle.002",
             "primitives" : [
                 {
                     "attributes" : {
@@ -1084,12 +1164,12 @@
                         "TEXCOORD_0" : 18
                     },
                     "indices" : 19,
-                    "material" : 0
+                    "material" : 1
                 }
             ]
         },
         {
-            "name" : "Cube.007",
+            "name" : "Circle.001",
             "primitives" : [
                 {
                     "attributes" : {
@@ -1098,7 +1178,30 @@
                         "TEXCOORD_0" : 22
                     },
                     "indices" : 23,
-                    "material" : 2
+                    "material" : 4
+                },
+                {
+                    "attributes" : {
+                        "POSITION" : 24,
+                        "NORMAL" : 25,
+                        "TEXCOORD_0" : 26
+                    },
+                    "indices" : 27,
+                    "material" : 1
+                }
+            ]
+        },
+        {
+            "name" : "Cube.007",
+            "primitives" : [
+                {
+                    "attributes" : {
+                        "POSITION" : 28,
+                        "NORMAL" : 29,
+                        "TEXCOORD_0" : 30
+                    },
+                    "indices" : 31,
+                    "material" : 0
                 }
             ]
         },
@@ -1107,12 +1210,12 @@
             "primitives" : [
                 {
                     "attributes" : {
-                        "POSITION" : 24,
-                        "NORMAL" : 25,
-                        "TEXCOORD_0" : 26
+                        "POSITION" : 32,
+                        "NORMAL" : 33,
+                        "TEXCOORD_0" : 34
                     },
-                    "indices" : 27,
-                    "material" : 2
+                    "indices" : 35,
+                    "material" : 0
                 }
             ]
         },
@@ -1121,45 +1224,17 @@
             "primitives" : [
                 {
                     "attributes" : {
-                        "POSITION" : 28,
-                        "NORMAL" : 29,
-                        "TEXCOORD_0" : 30
+                        "POSITION" : 36,
+                        "NORMAL" : 37,
+                        "TEXCOORD_0" : 38
                     },
-                    "indices" : 27,
-                    "material" : 2
+                    "indices" : 35,
+                    "material" : 0
                 }
             ]
         },
         {
-            "name" : "Cube.008",
-            "primitives" : [
-                {
-                    "attributes" : {
-                        "POSITION" : 31,
-                        "NORMAL" : 32,
-                        "TEXCOORD_0" : 33
-                    },
-                    "indices" : 34,
-                    "material" : 4
-                }
-            ]
-        },
-        {
-            "name" : "Cube.009",
-            "primitives" : [
-                {
-                    "attributes" : {
-                        "POSITION" : 35,
-                        "NORMAL" : 36,
-                        "TEXCOORD_0" : 37
-                    },
-                    "indices" : 38,
-                    "material" : 4
-                }
-            ]
-        },
-        {
-            "name" : "Plane",
+            "name" : "Cube",
             "primitives" : [
                 {
                     "attributes" : {
@@ -1168,13 +1243,8 @@
                         "TEXCOORD_0" : 41
                     },
                     "indices" : 42,
-                    "material" : 0
-                }
-            ]
-        },
-        {
-            "name" : "Cube",
-            "primitives" : [
+                    "material" : 4
+                },
                 {
                     "attributes" : {
                         "POSITION" : 43,
@@ -1182,30 +1252,7 @@
                         "TEXCOORD_0" : 45
                     },
                     "indices" : 46,
-                    "material" : 3
-                }
-            ]
-        },
-        {
-            "name" : "Circle.002",
-            "primitives" : [
-                {
-                    "attributes" : {
-                        "POSITION" : 47,
-                        "NORMAL" : 48,
-                        "TEXCOORD_0" : 49
-                    },
-                    "indices" : 50,
-                    "material" : 5
-                },
-                {
-                    "attributes" : {
-                        "POSITION" : 51,
-                        "NORMAL" : 52,
-                        "TEXCOORD_0" : 53
-                    },
-                    "indices" : 54,
-                    "material" : 0
+                    "material" : 1
                 }
             ]
         },
@@ -1214,12 +1261,12 @@
             "primitives" : [
                 {
                     "attributes" : {
-                        "POSITION" : 55,
-                        "NORMAL" : 56,
-                        "TEXCOORD_0" : 57
+                        "POSITION" : 47,
+                        "NORMAL" : 48,
+                        "TEXCOORD_0" : 49
                     },
-                    "indices" : 58,
-                    "material" : 2
+                    "indices" : 50,
+                    "material" : 0
                 }
             ]
         },
@@ -1228,26 +1275,12 @@
             "primitives" : [
                 {
                     "attributes" : {
-                        "POSITION" : 59,
-                        "NORMAL" : 60,
-                        "TEXCOORD_0" : 61
+                        "POSITION" : 51,
+                        "NORMAL" : 52,
+                        "TEXCOORD_0" : 53
                     },
-                    "indices" : 58,
-                    "material" : 2
-                }
-            ]
-        },
-        {
-            "name" : "Cube.005",
-            "primitives" : [
-                {
-                    "attributes" : {
-                        "POSITION" : 62,
-                        "NORMAL" : 63,
-                        "TEXCOORD_0" : 64
-                    },
-                    "indices" : 65,
-                    "material" : 4
+                    "indices" : 50,
+                    "material" : 0
                 }
             ]
         },
@@ -1256,12 +1289,12 @@
             "primitives" : [
                 {
                     "attributes" : {
-                        "POSITION" : 66,
-                        "NORMAL" : 67,
-                        "TEXCOORD_0" : 68
+                        "POSITION" : 54,
+                        "NORMAL" : 55,
+                        "TEXCOORD_0" : 56
                     },
-                    "indices" : 69,
-                    "material" : 4
+                    "indices" : 57,
+                    "material" : 5
                 }
             ]
         },
@@ -1270,12 +1303,12 @@
             "primitives" : [
                 {
                     "attributes" : {
-                        "POSITION" : 70,
-                        "NORMAL" : 71,
-                        "TEXCOORD_0" : 72
+                        "POSITION" : 58,
+                        "NORMAL" : 59,
+                        "TEXCOORD_0" : 60
                     },
-                    "indices" : 73,
-                    "material" : 1
+                    "indices" : 61,
+                    "material" : 2
                 }
             ]
         },
@@ -1284,12 +1317,12 @@
             "primitives" : [
                 {
                     "attributes" : {
-                        "POSITION" : 74,
-                        "NORMAL" : 75,
-                        "TEXCOORD_0" : 76
+                        "POSITION" : 62,
+                        "NORMAL" : 63,
+                        "TEXCOORD_0" : 64
                     },
-                    "indices" : 73,
-                    "material" : 3
+                    "indices" : 61,
+                    "material" : 4
                 }
             ]
         },
@@ -1298,12 +1331,12 @@
             "primitives" : [
                 {
                     "attributes" : {
-                        "POSITION" : 77,
-                        "NORMAL" : 78,
-                        "TEXCOORD_0" : 79
+                        "POSITION" : 65,
+                        "NORMAL" : 66,
+                        "TEXCOORD_0" : 67
                     },
-                    "indices" : 80,
-                    "material" : 3
+                    "indices" : 68,
+                    "material" : 4
                 }
             ]
         },
@@ -1312,11 +1345,11 @@
             "primitives" : [
                 {
                     "attributes" : {
-                        "POSITION" : 81,
-                        "NORMAL" : 82,
-                        "TEXCOORD_0" : 83
+                        "POSITION" : 69,
+                        "NORMAL" : 70,
+                        "TEXCOORD_0" : 71
                     },
-                    "indices" : 84,
+                    "indices" : 72,
                     "material" : 6
                 }
             ]
@@ -1326,12 +1359,12 @@
             "primitives" : [
                 {
                     "attributes" : {
-                        "POSITION" : 85,
-                        "NORMAL" : 86,
-                        "TEXCOORD_0" : 87
+                        "POSITION" : 73,
+                        "NORMAL" : 74,
+                        "TEXCOORD_0" : 75
                     },
-                    "indices" : 88,
-                    "material" : 3
+                    "indices" : 76,
+                    "material" : 4
                 }
             ]
         },
@@ -1340,12 +1373,12 @@
             "primitives" : [
                 {
                     "attributes" : {
-                        "POSITION" : 89,
-                        "NORMAL" : 90,
-                        "TEXCOORD_0" : 91
+                        "POSITION" : 77,
+                        "NORMAL" : 78,
+                        "TEXCOORD_0" : 79
                     },
-                    "indices" : 92,
-                    "material" : 3
+                    "indices" : 80,
+                    "material" : 4
                 }
             ]
         }
@@ -1353,74 +1386,6 @@
     "accessors" : [
         {
             "bufferView" : 0,
-            "componentType" : 5126,
-            "count" : 768,
-            "max" : [
-                0.10999996960163116,
-                0.09107466042041779,
-                0.05709179490804672
-            ],
-            "min" : [
-                -0.11000002920627594,
-                -0.09107497334480286,
-                0.04709178954362869
-            ],
-            "type" : "VEC3"
-        },
-        {
-            "bufferView" : 1,
-            "componentType" : 5126,
-            "count" : 768,
-            "type" : "VEC3"
-        },
-        {
-            "bufferView" : 2,
-            "componentType" : 5126,
-            "count" : 768,
-            "type" : "VEC2"
-        },
-        {
-            "bufferView" : 3,
-            "componentType" : 5123,
-            "count" : 2280,
-            "type" : "SCALAR"
-        },
-        {
-            "bufferView" : 4,
-            "componentType" : 5126,
-            "count" : 2808,
-            "max" : [
-                0.009512814693152905,
-                0.052403245121240616,
-                0.05240323767066002
-            ],
-            "min" : [
-                -0.007757663726806641,
-                -0.05240325257182121,
-                -0.05240326747298241
-            ],
-            "type" : "VEC3"
-        },
-        {
-            "bufferView" : 5,
-            "componentType" : 5126,
-            "count" : 2808,
-            "type" : "VEC3"
-        },
-        {
-            "bufferView" : 6,
-            "componentType" : 5126,
-            "count" : 2808,
-            "type" : "VEC2"
-        },
-        {
-            "bufferView" : 7,
-            "componentType" : 5123,
-            "count" : 7776,
-            "type" : "SCALAR"
-        },
-        {
-            "bufferView" : 8,
             "componentType" : 5126,
             "count" : 160,
             "max" : [
@@ -1436,325 +1401,93 @@
             "type" : "VEC3"
         },
         {
-            "bufferView" : 9,
+            "bufferView" : 1,
             "componentType" : 5126,
             "count" : 160,
             "type" : "VEC3"
         },
         {
-            "bufferView" : 10,
+            "bufferView" : 2,
             "componentType" : 5126,
             "count" : 160,
             "type" : "VEC2"
         },
         {
-            "bufferView" : 11,
+            "bufferView" : 3,
             "componentType" : 5123,
             "count" : 660,
             "type" : "SCALAR"
         },
         {
+            "bufferView" : 4,
+            "componentType" : 5126,
+            "count" : 384,
+            "max" : [
+                0.10999996960163116,
+                0.09107466042041779,
+                0.05709179490804672
+            ],
+            "min" : [
+                -0.11000002920627594,
+                -0.09107497334480286,
+                0.04709178954362869
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 5,
+            "componentType" : 5126,
+            "count" : 384,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 6,
+            "componentType" : 5126,
+            "count" : 384,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 7,
+            "componentType" : 5123,
+            "count" : 2280,
+            "type" : "SCALAR"
+        },
+        {
+            "bufferView" : 8,
+            "componentType" : 5126,
+            "count" : 5120,
+            "max" : [
+                0.1059638112783432,
+                0.13847824931144714,
+                0.10443972051143646
+            ],
+            "min" : [
+                -0.10420854389667511,
+                -0.13847824931144714,
+                -0.0003667883574962616
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 9,
+            "componentType" : 5126,
+            "count" : 5120,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 10,
+            "componentType" : 5126,
+            "count" : 5120,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 11,
+            "componentType" : 5123,
+            "count" : 31104,
+            "type" : "SCALAR"
+        },
+        {
             "bufferView" : 12,
-            "componentType" : 5126,
-            "count" : 620,
-            "max" : [
-                0.042050041258335114,
-                0.042050041258335114,
-                0.10021330416202545
-            ],
-            "min" : [
-                -0.042050041258335114,
-                -0.04205004498362541,
-                0.005116954445838928
-            ],
-            "type" : "VEC3"
-        },
-        {
-            "bufferView" : 13,
-            "componentType" : 5126,
-            "count" : 620,
-            "type" : "VEC3"
-        },
-        {
-            "bufferView" : 14,
-            "componentType" : 5126,
-            "count" : 620,
-            "type" : "VEC2"
-        },
-        {
-            "bufferView" : 15,
-            "componentType" : 5123,
-            "count" : 3348,
-            "type" : "SCALAR"
-        },
-        {
-            "bufferView" : 16,
-            "componentType" : 5126,
-            "count" : 447,
-            "max" : [
-                0.04566439986228943,
-                0.04566439613699913,
-                0.22438041865825653
-            ],
-            "min" : [
-                -0.05470358207821846,
-                -0.057146064937114716,
-                9.231890807370746e-10
-            ],
-            "type" : "VEC3"
-        },
-        {
-            "bufferView" : 17,
-            "componentType" : 5126,
-            "count" : 447,
-            "type" : "VEC3"
-        },
-        {
-            "bufferView" : 18,
-            "componentType" : 5126,
-            "count" : 447,
-            "type" : "VEC2"
-        },
-        {
-            "bufferView" : 19,
-            "componentType" : 5123,
-            "count" : 2196,
-            "type" : "SCALAR"
-        },
-        {
-            "bufferView" : 20,
-            "componentType" : 5126,
-            "count" : 127,
-            "max" : [
-                0.23112964630126953,
-                0.2493603527545929,
-                0.26877039670944214
-            ],
-            "min" : [
-                -0.045650653541088104,
-                -0.2500399947166443,
-                0.19078518450260162
-            ],
-            "type" : "VEC3"
-        },
-        {
-            "bufferView" : 21,
-            "componentType" : 5126,
-            "count" : 127,
-            "type" : "VEC3"
-        },
-        {
-            "bufferView" : 22,
-            "componentType" : 5126,
-            "count" : 127,
-            "type" : "VEC2"
-        },
-        {
-            "bufferView" : 23,
-            "componentType" : 5123,
-            "count" : 324,
-            "type" : "SCALAR"
-        },
-        {
-            "bufferView" : 24,
-            "componentType" : 5126,
-            "count" : 86,
-            "max" : [
-                0.020000040531158447,
-                0.020000040531158447,
-                0.18862324953079224
-            ],
-            "min" : [
-                -0.020000040531158447,
-                -0.020000040531158447,
-                -0.014999999664723873
-            ],
-            "type" : "VEC3"
-        },
-        {
-            "bufferView" : 25,
-            "componentType" : 5126,
-            "count" : 86,
-            "type" : "VEC3"
-        },
-        {
-            "bufferView" : 26,
-            "componentType" : 5126,
-            "count" : 86,
-            "type" : "VEC2"
-        },
-        {
-            "bufferView" : 27,
-            "componentType" : 5123,
-            "count" : 198,
-            "type" : "SCALAR"
-        },
-        {
-            "bufferView" : 28,
-            "componentType" : 5126,
-            "count" : 86,
-            "max" : [
-                0.020000040531158447,
-                0.020000040531158447,
-                0.18862324953079224
-            ],
-            "min" : [
-                -0.020000040531158447,
-                -0.020000040531158447,
-                -0.014999999664723873
-            ],
-            "type" : "VEC3"
-        },
-        {
-            "bufferView" : 29,
-            "componentType" : 5126,
-            "count" : 86,
-            "type" : "VEC3"
-        },
-        {
-            "bufferView" : 30,
-            "componentType" : 5126,
-            "count" : 86,
-            "type" : "VEC2"
-        },
-        {
-            "bufferView" : 31,
-            "componentType" : 5126,
-            "count" : 127,
-            "max" : [
-                0.1587231159210205,
-                0.014622226357460022,
-                0.24048684537410736
-            ],
-            "min" : [
-                -0.013668820261955261,
-                -0.014039610512554646,
-                0.005506022833287716
-            ],
-            "type" : "VEC3"
-        },
-        {
-            "bufferView" : 32,
-            "componentType" : 5126,
-            "count" : 127,
-            "type" : "VEC3"
-        },
-        {
-            "bufferView" : 33,
-            "componentType" : 5126,
-            "count" : 127,
-            "type" : "VEC2"
-        },
-        {
-            "bufferView" : 34,
-            "componentType" : 5123,
-            "count" : 324,
-            "type" : "SCALAR"
-        },
-        {
-            "bufferView" : 35,
-            "componentType" : 5126,
-            "count" : 127,
-            "max" : [
-                0.1587231159210205,
-                0.014622231014072895,
-                0.24048684537410736
-            ],
-            "min" : [
-                -0.013668820261955261,
-                -0.014039605855941772,
-                0.005506022833287716
-            ],
-            "type" : "VEC3"
-        },
-        {
-            "bufferView" : 36,
-            "componentType" : 5126,
-            "count" : 127,
-            "type" : "VEC3"
-        },
-        {
-            "bufferView" : 37,
-            "componentType" : 5126,
-            "count" : 127,
-            "type" : "VEC2"
-        },
-        {
-            "bufferView" : 38,
-            "componentType" : 5123,
-            "count" : 324,
-            "type" : "SCALAR"
-        },
-        {
-            "bufferView" : 39,
-            "componentType" : 5126,
-            "count" : 1274,
-            "max" : [
-                0.012500000186264515,
-                0.02598038874566555,
-                0.016269290819764137
-            ],
-            "min" : [
-                -0.012500000186264515,
-                -0.0261711236089468,
-                0
-            ],
-            "type" : "VEC3"
-        },
-        {
-            "bufferView" : 40,
-            "componentType" : 5126,
-            "count" : 1274,
-            "type" : "VEC3"
-        },
-        {
-            "bufferView" : 41,
-            "componentType" : 5126,
-            "count" : 1274,
-            "type" : "VEC2"
-        },
-        {
-            "bufferView" : 42,
-            "componentType" : 5123,
-            "count" : 4614,
-            "type" : "SCALAR"
-        },
-        {
-            "bufferView" : 43,
-            "componentType" : 5126,
-            "count" : 85,
-            "max" : [
-                0.018381543457508087,
-                0.018381543457508087,
-                0.036763086915016174
-            ],
-            "min" : [
-                -0.018381543457508087,
-                -0.018381543457508087,
-                0
-            ],
-            "type" : "VEC3"
-        },
-        {
-            "bufferView" : 44,
-            "componentType" : 5126,
-            "count" : 85,
-            "type" : "VEC3"
-        },
-        {
-            "bufferView" : 45,
-            "componentType" : 5126,
-            "count" : 85,
-            "type" : "VEC2"
-        },
-        {
-            "bufferView" : 46,
-            "componentType" : 5123,
-            "count" : 324,
-            "type" : "SCALAR"
-        },
-        {
-            "bufferView" : 47,
             "componentType" : 5126,
             "count" : 674,
             "max" : [
@@ -1770,25 +1503,25 @@
             "type" : "VEC3"
         },
         {
-            "bufferView" : 48,
+            "bufferView" : 13,
             "componentType" : 5126,
             "count" : 674,
             "type" : "VEC3"
         },
         {
-            "bufferView" : 49,
+            "bufferView" : 14,
             "componentType" : 5126,
             "count" : 674,
             "type" : "VEC2"
         },
         {
-            "bufferView" : 50,
+            "bufferView" : 15,
             "componentType" : 5123,
             "count" : 3660,
             "type" : "SCALAR"
         },
         {
-            "bufferView" : 51,
+            "bufferView" : 16,
             "componentType" : 5126,
             "count" : 288,
             "max" : [
@@ -1804,121 +1537,319 @@
             "type" : "VEC3"
         },
         {
-            "bufferView" : 52,
+            "bufferView" : 17,
             "componentType" : 5126,
             "count" : 288,
             "type" : "VEC3"
         },
         {
-            "bufferView" : 53,
+            "bufferView" : 18,
             "componentType" : 5126,
             "count" : 288,
             "type" : "VEC2"
         },
         {
-            "bufferView" : 54,
+            "bufferView" : 19,
             "componentType" : 5123,
             "count" : 1242,
             "type" : "SCALAR"
         },
         {
-            "bufferView" : 55,
+            "bufferView" : 20,
             "componentType" : 5126,
-            "count" : 85,
+            "count" : 620,
             "max" : [
-                0.020000040531158447,
-                0.020000040531158447,
-                0.2377890944480896
+                0.042050041258335114,
+                0.042050041258335114,
+                0.10021330416202545
             ],
             "min" : [
-                -0.020000040531158447,
-                -0.020000040531158447,
-                -0.014999999664723873
+                -0.042050041258335114,
+                -0.04205004498362541,
+                0.005116954445838928
             ],
             "type" : "VEC3"
         },
         {
-            "bufferView" : 56,
+            "bufferView" : 21,
             "componentType" : 5126,
-            "count" : 85,
+            "count" : 620,
             "type" : "VEC3"
         },
         {
-            "bufferView" : 57,
+            "bufferView" : 22,
             "componentType" : 5126,
-            "count" : 85,
+            "count" : 620,
             "type" : "VEC2"
         },
         {
-            "bufferView" : 58,
+            "bufferView" : 23,
             "componentType" : 5123,
-            "count" : 198,
+            "count" : 3348,
             "type" : "SCALAR"
         },
         {
-            "bufferView" : 59,
+            "bufferView" : 24,
             "componentType" : 5126,
-            "count" : 85,
+            "count" : 447,
             "max" : [
-                0.020000040531158447,
-                0.020000040531158447,
-                0.2377890944480896
+                0.04566439986228943,
+                0.04566439613699913,
+                0.22438041865825653
             ],
             "min" : [
-                -0.020000040531158447,
-                -0.020000040531158447,
-                -0.014999999664723873
+                -0.05470358207821846,
+                -0.057146064937114716,
+                9.231890807370746e-10
             ],
             "type" : "VEC3"
         },
         {
-            "bufferView" : 60,
+            "bufferView" : 25,
             "componentType" : 5126,
-            "count" : 85,
+            "count" : 447,
             "type" : "VEC3"
         },
         {
-            "bufferView" : 61,
+            "bufferView" : 26,
             "componentType" : 5126,
-            "count" : 85,
+            "count" : 447,
             "type" : "VEC2"
         },
         {
-            "bufferView" : 62,
+            "bufferView" : 27,
+            "componentType" : 5123,
+            "count" : 2196,
+            "type" : "SCALAR"
+        },
+        {
+            "bufferView" : 28,
             "componentType" : 5126,
-            "count" : 129,
+            "count" : 127,
             "max" : [
-                0.22078648209571838,
-                0.19805581867694855,
-                0.24645978212356567
+                0.23112964630126953,
+                0.2493603527545929,
+                0.26877039670944214
             ],
             "min" : [
-                0.19212467968463898,
-                -0.19873546063899994,
-                0.005506015848368406
+                -0.045650653541088104,
+                -0.2500399947166443,
+                0.19078518450260162
             ],
             "type" : "VEC3"
         },
         {
-            "bufferView" : 63,
+            "bufferView" : 29,
             "componentType" : 5126,
-            "count" : 129,
+            "count" : 127,
             "type" : "VEC3"
         },
         {
-            "bufferView" : 64,
+            "bufferView" : 30,
             "componentType" : 5126,
-            "count" : 129,
+            "count" : 127,
             "type" : "VEC2"
         },
         {
-            "bufferView" : 65,
+            "bufferView" : 31,
             "componentType" : 5123,
             "count" : 324,
             "type" : "SCALAR"
         },
         {
-            "bufferView" : 66,
+            "bufferView" : 32,
+            "componentType" : 5126,
+            "count" : 86,
+            "max" : [
+                0.020000040531158447,
+                0.020000040531158447,
+                0.18862324953079224
+            ],
+            "min" : [
+                -0.020000040531158447,
+                -0.020000040531158447,
+                -0.014999999664723873
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 33,
+            "componentType" : 5126,
+            "count" : 86,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 34,
+            "componentType" : 5126,
+            "count" : 86,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 35,
+            "componentType" : 5123,
+            "count" : 198,
+            "type" : "SCALAR"
+        },
+        {
+            "bufferView" : 36,
+            "componentType" : 5126,
+            "count" : 86,
+            "max" : [
+                0.020000040531158447,
+                0.020000040531158447,
+                0.18862324953079224
+            ],
+            "min" : [
+                -0.020000040531158447,
+                -0.020000040531158447,
+                -0.014999999664723873
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 37,
+            "componentType" : 5126,
+            "count" : 86,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 38,
+            "componentType" : 5126,
+            "count" : 86,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 39,
+            "componentType" : 5126,
+            "count" : 85,
+            "max" : [
+                0.018381543457508087,
+                0.018381543457508087,
+                0.036763086915016174
+            ],
+            "min" : [
+                -0.018381543457508087,
+                -0.018381543457508087,
+                0
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 40,
+            "componentType" : 5126,
+            "count" : 85,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 41,
+            "componentType" : 5126,
+            "count" : 85,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 42,
+            "componentType" : 5123,
+            "count" : 324,
+            "type" : "SCALAR"
+        },
+        {
+            "bufferView" : 43,
+            "componentType" : 5126,
+            "count" : 891,
+            "max" : [
+                0.012500029988586903,
+                0.02598038874566555,
+                0.053032293915748596
+            ],
+            "min" : [
+                -0.012500029988586903,
+                -0.0261711236089468,
+                0.03676300123333931
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 44,
+            "componentType" : 5126,
+            "count" : 891,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 45,
+            "componentType" : 5126,
+            "count" : 891,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 46,
+            "componentType" : 5123,
+            "count" : 4614,
+            "type" : "SCALAR"
+        },
+        {
+            "bufferView" : 47,
+            "componentType" : 5126,
+            "count" : 85,
+            "max" : [
+                0.020000040531158447,
+                0.020000040531158447,
+                0.2377890944480896
+            ],
+            "min" : [
+                -0.020000040531158447,
+                -0.020000040531158447,
+                -0.014999999664723873
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 48,
+            "componentType" : 5126,
+            "count" : 85,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 49,
+            "componentType" : 5126,
+            "count" : 85,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 50,
+            "componentType" : 5123,
+            "count" : 198,
+            "type" : "SCALAR"
+        },
+        {
+            "bufferView" : 51,
+            "componentType" : 5126,
+            "count" : 85,
+            "max" : [
+                0.020000040531158447,
+                0.020000040531158447,
+                0.2377890944480896
+            ],
+            "min" : [
+                -0.020000040531158447,
+                -0.020000040531158447,
+                -0.014999999664723873
+            ],
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 52,
+            "componentType" : 5126,
+            "count" : 85,
+            "type" : "VEC3"
+        },
+        {
+            "bufferView" : 53,
+            "componentType" : 5126,
+            "count" : 85,
+            "type" : "VEC2"
+        },
+        {
+            "bufferView" : 54,
             "componentType" : 5126,
             "count" : 210,
             "max" : [
@@ -1934,25 +1865,25 @@
             "type" : "VEC3"
         },
         {
-            "bufferView" : 67,
+            "bufferView" : 55,
             "componentType" : 5126,
             "count" : 210,
             "type" : "VEC3"
         },
         {
-            "bufferView" : 68,
+            "bufferView" : 56,
             "componentType" : 5126,
             "count" : 210,
             "type" : "VEC2"
         },
         {
-            "bufferView" : 69,
+            "bufferView" : 57,
             "componentType" : 5123,
             "count" : 498,
             "type" : "SCALAR"
         },
         {
-            "bufferView" : 70,
+            "bufferView" : 58,
             "componentType" : 5126,
             "count" : 160,
             "max" : [
@@ -1968,25 +1899,25 @@
             "type" : "VEC3"
         },
         {
-            "bufferView" : 71,
+            "bufferView" : 59,
             "componentType" : 5126,
             "count" : 160,
             "type" : "VEC3"
         },
         {
-            "bufferView" : 72,
+            "bufferView" : 60,
             "componentType" : 5126,
             "count" : 160,
             "type" : "VEC2"
         },
         {
-            "bufferView" : 73,
+            "bufferView" : 61,
             "componentType" : 5123,
             "count" : 396,
             "type" : "SCALAR"
         },
         {
-            "bufferView" : 74,
+            "bufferView" : 62,
             "componentType" : 5126,
             "count" : 160,
             "max" : [
@@ -2002,19 +1933,19 @@
             "type" : "VEC3"
         },
         {
-            "bufferView" : 75,
+            "bufferView" : 63,
             "componentType" : 5126,
             "count" : 160,
             "type" : "VEC3"
         },
         {
-            "bufferView" : 76,
+            "bufferView" : 64,
             "componentType" : 5126,
             "count" : 160,
             "type" : "VEC2"
         },
         {
-            "bufferView" : 77,
+            "bufferView" : 65,
             "componentType" : 5126,
             "count" : 123,
             "max" : [
@@ -2030,25 +1961,25 @@
             "type" : "VEC3"
         },
         {
-            "bufferView" : 78,
+            "bufferView" : 66,
             "componentType" : 5126,
             "count" : 123,
             "type" : "VEC3"
         },
         {
-            "bufferView" : 79,
+            "bufferView" : 67,
             "componentType" : 5126,
             "count" : 123,
             "type" : "VEC2"
         },
         {
-            "bufferView" : 80,
+            "bufferView" : 68,
             "componentType" : 5123,
             "count" : 324,
             "type" : "SCALAR"
         },
         {
-            "bufferView" : 81,
+            "bufferView" : 69,
             "componentType" : 5126,
             "count" : 11680,
             "max" : [
@@ -2064,25 +1995,25 @@
             "type" : "VEC3"
         },
         {
-            "bufferView" : 82,
+            "bufferView" : 70,
             "componentType" : 5126,
             "count" : 11680,
             "type" : "VEC3"
         },
         {
-            "bufferView" : 83,
+            "bufferView" : 71,
             "componentType" : 5126,
             "count" : 11680,
             "type" : "VEC2"
         },
         {
-            "bufferView" : 84,
+            "bufferView" : 72,
             "componentType" : 5123,
             "count" : 28992,
             "type" : "SCALAR"
         },
         {
-            "bufferView" : 85,
+            "bufferView" : 73,
             "componentType" : 5126,
             "count" : 802,
             "max" : [
@@ -2098,25 +2029,25 @@
             "type" : "VEC3"
         },
         {
-            "bufferView" : 86,
+            "bufferView" : 74,
             "componentType" : 5126,
             "count" : 802,
             "type" : "VEC3"
         },
         {
-            "bufferView" : 87,
+            "bufferView" : 75,
             "componentType" : 5126,
             "count" : 802,
             "type" : "VEC2"
         },
         {
-            "bufferView" : 88,
+            "bufferView" : 76,
             "componentType" : 5123,
             "count" : 1956,
             "type" : "SCALAR"
         },
         {
-            "bufferView" : 89,
+            "bufferView" : 77,
             "componentType" : 5126,
             "count" : 2939,
             "max" : [
@@ -2132,19 +2063,19 @@
             "type" : "VEC3"
         },
         {
-            "bufferView" : 90,
+            "bufferView" : 78,
             "componentType" : 5126,
             "count" : 2939,
             "type" : "VEC3"
         },
         {
-            "bufferView" : 91,
+            "bufferView" : 79,
             "componentType" : 5126,
             "count" : 2939,
             "type" : "VEC2"
         },
         {
-            "bufferView" : 92,
+            "bufferView" : 80,
             "componentType" : 5123,
             "count" : 8112,
             "type" : "SCALAR"
@@ -2153,473 +2084,413 @@
     "bufferViews" : [
         {
             "buffer" : 0,
-            "byteLength" : 9216,
+            "byteLength" : 1920,
             "byteOffset" : 0
         },
         {
             "buffer" : 0,
-            "byteLength" : 9216,
-            "byteOffset" : 9216
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 6144,
-            "byteOffset" : 18432
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 4560,
-            "byteOffset" : 24576
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 33696,
-            "byteOffset" : 29136
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 33696,
-            "byteOffset" : 62832
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 22464,
-            "byteOffset" : 96528
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 15552,
-            "byteOffset" : 118992
-        },
-        {
-            "buffer" : 0,
             "byteLength" : 1920,
-            "byteOffset" : 134544
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 1920,
-            "byteOffset" : 136464
+            "byteOffset" : 1920
         },
         {
             "buffer" : 0,
             "byteLength" : 1280,
-            "byteOffset" : 138384
+            "byteOffset" : 3840
         },
         {
             "buffer" : 0,
             "byteLength" : 1320,
-            "byteOffset" : 139664
+            "byteOffset" : 5120
         },
         {
             "buffer" : 0,
-            "byteLength" : 7440,
-            "byteOffset" : 140984
+            "byteLength" : 4608,
+            "byteOffset" : 6440
         },
         {
             "buffer" : 0,
-            "byteLength" : 7440,
-            "byteOffset" : 148424
+            "byteLength" : 4608,
+            "byteOffset" : 11048
         },
         {
             "buffer" : 0,
-            "byteLength" : 4960,
-            "byteOffset" : 155864
+            "byteLength" : 3072,
+            "byteOffset" : 15656
         },
         {
             "buffer" : 0,
-            "byteLength" : 6696,
-            "byteOffset" : 160824
+            "byteLength" : 4560,
+            "byteOffset" : 18728
         },
         {
             "buffer" : 0,
-            "byteLength" : 5364,
-            "byteOffset" : 167520
+            "byteLength" : 61440,
+            "byteOffset" : 23288
         },
         {
             "buffer" : 0,
-            "byteLength" : 5364,
-            "byteOffset" : 172884
+            "byteLength" : 61440,
+            "byteOffset" : 84728
         },
         {
             "buffer" : 0,
-            "byteLength" : 3576,
-            "byteOffset" : 178248
+            "byteLength" : 40960,
+            "byteOffset" : 146168
         },
         {
             "buffer" : 0,
-            "byteLength" : 4392,
-            "byteOffset" : 181824
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 1524,
-            "byteOffset" : 186216
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 1524,
-            "byteOffset" : 187740
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 1016,
-            "byteOffset" : 189264
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 648,
-            "byteOffset" : 190280
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 1032,
-            "byteOffset" : 190928
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 1032,
-            "byteOffset" : 191960
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 688,
-            "byteOffset" : 192992
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 396,
-            "byteOffset" : 193680
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 1032,
-            "byteOffset" : 194076
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 1032,
-            "byteOffset" : 195108
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 688,
-            "byteOffset" : 196140
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 1524,
-            "byteOffset" : 196828
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 1524,
-            "byteOffset" : 198352
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 1016,
-            "byteOffset" : 199876
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 648,
-            "byteOffset" : 200892
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 1524,
-            "byteOffset" : 201540
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 1524,
-            "byteOffset" : 203064
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 1016,
-            "byteOffset" : 204588
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 648,
-            "byteOffset" : 205604
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 15288,
-            "byteOffset" : 206252
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 15288,
-            "byteOffset" : 221540
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 10192,
-            "byteOffset" : 236828
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 9228,
-            "byteOffset" : 247020
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 1020,
-            "byteOffset" : 256248
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 1020,
-            "byteOffset" : 257268
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 680,
-            "byteOffset" : 258288
-        },
-        {
-            "buffer" : 0,
-            "byteLength" : 648,
-            "byteOffset" : 258968
+            "byteLength" : 62208,
+            "byteOffset" : 187128
         },
         {
             "buffer" : 0,
             "byteLength" : 8088,
-            "byteOffset" : 259616
+            "byteOffset" : 249336
         },
         {
             "buffer" : 0,
             "byteLength" : 8088,
-            "byteOffset" : 267704
+            "byteOffset" : 257424
         },
         {
             "buffer" : 0,
             "byteLength" : 5392,
-            "byteOffset" : 275792
+            "byteOffset" : 265512
         },
         {
             "buffer" : 0,
             "byteLength" : 7320,
-            "byteOffset" : 281184
+            "byteOffset" : 270904
         },
         {
             "buffer" : 0,
             "byteLength" : 3456,
-            "byteOffset" : 288504
+            "byteOffset" : 278224
         },
         {
             "buffer" : 0,
             "byteLength" : 3456,
-            "byteOffset" : 291960
+            "byteOffset" : 281680
         },
         {
             "buffer" : 0,
             "byteLength" : 2304,
-            "byteOffset" : 295416
+            "byteOffset" : 285136
         },
         {
             "buffer" : 0,
             "byteLength" : 2484,
-            "byteOffset" : 297720
+            "byteOffset" : 287440
         },
         {
             "buffer" : 0,
-            "byteLength" : 1020,
-            "byteOffset" : 300204
+            "byteLength" : 7440,
+            "byteOffset" : 289924
         },
         {
             "buffer" : 0,
-            "byteLength" : 1020,
-            "byteOffset" : 301224
+            "byteLength" : 7440,
+            "byteOffset" : 297364
         },
         {
             "buffer" : 0,
-            "byteLength" : 680,
-            "byteOffset" : 302244
+            "byteLength" : 4960,
+            "byteOffset" : 304804
         },
         {
             "buffer" : 0,
-            "byteLength" : 396,
-            "byteOffset" : 302924
+            "byteLength" : 6696,
+            "byteOffset" : 309764
         },
         {
             "buffer" : 0,
-            "byteLength" : 1020,
-            "byteOffset" : 303320
+            "byteLength" : 5364,
+            "byteOffset" : 316460
         },
         {
             "buffer" : 0,
-            "byteLength" : 1020,
-            "byteOffset" : 304340
+            "byteLength" : 5364,
+            "byteOffset" : 321824
         },
         {
             "buffer" : 0,
-            "byteLength" : 680,
-            "byteOffset" : 305360
+            "byteLength" : 3576,
+            "byteOffset" : 327188
         },
         {
             "buffer" : 0,
-            "byteLength" : 1548,
-            "byteOffset" : 306040
+            "byteLength" : 4392,
+            "byteOffset" : 330764
         },
         {
             "buffer" : 0,
-            "byteLength" : 1548,
-            "byteOffset" : 307588
+            "byteLength" : 1524,
+            "byteOffset" : 335156
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 1524,
+            "byteOffset" : 336680
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 1016,
+            "byteOffset" : 338204
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 648,
+            "byteOffset" : 339220
         },
         {
             "buffer" : 0,
             "byteLength" : 1032,
-            "byteOffset" : 309136
+            "byteOffset" : 339868
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 1032,
+            "byteOffset" : 340900
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 688,
+            "byteOffset" : 341932
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 396,
+            "byteOffset" : 342620
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 1032,
+            "byteOffset" : 343016
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 1032,
+            "byteOffset" : 344048
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 688,
+            "byteOffset" : 345080
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 1020,
+            "byteOffset" : 345768
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 1020,
+            "byteOffset" : 346788
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 680,
+            "byteOffset" : 347808
         },
         {
             "buffer" : 0,
             "byteLength" : 648,
-            "byteOffset" : 310168
+            "byteOffset" : 348488
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 10692,
+            "byteOffset" : 349136
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 10692,
+            "byteOffset" : 359828
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 7128,
+            "byteOffset" : 370520
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 9228,
+            "byteOffset" : 377648
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 1020,
+            "byteOffset" : 386876
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 1020,
+            "byteOffset" : 387896
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 680,
+            "byteOffset" : 388916
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 396,
+            "byteOffset" : 389596
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 1020,
+            "byteOffset" : 389992
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 1020,
+            "byteOffset" : 391012
+        },
+        {
+            "buffer" : 0,
+            "byteLength" : 680,
+            "byteOffset" : 392032
         },
         {
             "buffer" : 0,
             "byteLength" : 2520,
-            "byteOffset" : 310816
+            "byteOffset" : 392712
         },
         {
             "buffer" : 0,
             "byteLength" : 2520,
-            "byteOffset" : 313336
+            "byteOffset" : 395232
         },
         {
             "buffer" : 0,
             "byteLength" : 1680,
-            "byteOffset" : 315856
+            "byteOffset" : 397752
         },
         {
             "buffer" : 0,
             "byteLength" : 996,
-            "byteOffset" : 317536
+            "byteOffset" : 399432
         },
         {
             "buffer" : 0,
             "byteLength" : 1920,
-            "byteOffset" : 318532
+            "byteOffset" : 400428
         },
         {
             "buffer" : 0,
             "byteLength" : 1920,
-            "byteOffset" : 320452
+            "byteOffset" : 402348
         },
         {
             "buffer" : 0,
             "byteLength" : 1280,
-            "byteOffset" : 322372
+            "byteOffset" : 404268
         },
         {
             "buffer" : 0,
             "byteLength" : 792,
-            "byteOffset" : 323652
+            "byteOffset" : 405548
         },
         {
             "buffer" : 0,
             "byteLength" : 1920,
-            "byteOffset" : 324444
+            "byteOffset" : 406340
         },
         {
             "buffer" : 0,
             "byteLength" : 1920,
-            "byteOffset" : 326364
+            "byteOffset" : 408260
         },
         {
             "buffer" : 0,
             "byteLength" : 1280,
-            "byteOffset" : 328284
+            "byteOffset" : 410180
         },
         {
             "buffer" : 0,
             "byteLength" : 1476,
-            "byteOffset" : 329564
+            "byteOffset" : 411460
         },
         {
             "buffer" : 0,
             "byteLength" : 1476,
-            "byteOffset" : 331040
+            "byteOffset" : 412936
         },
         {
             "buffer" : 0,
             "byteLength" : 984,
-            "byteOffset" : 332516
+            "byteOffset" : 414412
         },
         {
             "buffer" : 0,
             "byteLength" : 648,
-            "byteOffset" : 333500
+            "byteOffset" : 415396
         },
         {
             "buffer" : 0,
             "byteLength" : 140160,
-            "byteOffset" : 334148
+            "byteOffset" : 416044
         },
         {
             "buffer" : 0,
             "byteLength" : 140160,
-            "byteOffset" : 474308
+            "byteOffset" : 556204
         },
         {
             "buffer" : 0,
             "byteLength" : 93440,
-            "byteOffset" : 614468
+            "byteOffset" : 696364
         },
         {
             "buffer" : 0,
             "byteLength" : 57984,
-            "byteOffset" : 707908
+            "byteOffset" : 789804
         },
         {
             "buffer" : 0,
             "byteLength" : 9624,
-            "byteOffset" : 765892
+            "byteOffset" : 847788
         },
         {
             "buffer" : 0,
             "byteLength" : 9624,
-            "byteOffset" : 775516
+            "byteOffset" : 857412
         },
         {
             "buffer" : 0,
             "byteLength" : 6416,
-            "byteOffset" : 785140
+            "byteOffset" : 867036
         },
         {
             "buffer" : 0,
             "byteLength" : 3912,
-            "byteOffset" : 791556
+            "byteOffset" : 873452
         },
         {
             "buffer" : 0,
             "byteLength" : 35268,
-            "byteOffset" : 795468
+            "byteOffset" : 877364
         },
         {
             "buffer" : 0,
             "byteLength" : 35268,
-            "byteOffset" : 830736
+            "byteOffset" : 912632
         },
         {
             "buffer" : 0,
             "byteLength" : 23512,
-            "byteOffset" : 866004
+            "byteOffset" : 947900
         },
         {
             "buffer" : 0,
             "byteLength" : 16224,
-            "byteOffset" : 889516
+            "byteOffset" : 971412
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 905740,
+            "byteLength" : 987636,
             "uri" : "prop_templates.bin"
         }
     ]

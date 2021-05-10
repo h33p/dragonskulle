@@ -19,7 +19,6 @@ import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.assets.GLTF;
 import org.dragonskulle.components.IFixedUpdate;
-import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.components.Transform3D;
@@ -42,6 +41,7 @@ import org.dragonskulle.game.misc.ArcPath.IPathUpdater;
 import org.dragonskulle.game.player.Player;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
+import org.dragonskulle.network.components.ServerNetworkManager;
 import org.dragonskulle.network.components.sync.SyncBool;
 import org.dragonskulle.network.components.sync.SyncFloat;
 import org.dragonskulle.network.components.sync.SyncInt;
@@ -61,11 +61,7 @@ import org.joml.Vector3i;
  */
 @Accessors(prefix = "m")
 @Log
-public class Building extends NetworkableComponent
-        implements IOnAwake, IOnStart, IFrameUpdate, IFixedUpdate {
-
-    /** The base prop mesh. */
-    private Reference<BuildingProps> mBuildingProps;
+public class Building extends NetworkableComponent implements IOnAwake, IOnStart, IFixedUpdate {
 
     /** A map between {@link StatType}s and their {@link SyncStat} values. */
     EnumMap<StatType, SyncStat> mStats = new EnumMap<StatType, SyncStat>(StatType.class);
@@ -146,7 +142,7 @@ public class Building extends NetworkableComponent
     @Getter private int mStatBaseCost = 0;
 
     /** Store the {@link HexagonMap} that the {@link Building} is on. */
-    private Reference<HexagonMap> mMap = new Reference<HexagonMap>(null);
+    private Reference<HexagonMap> mMap = null;
 
     /**
      * This is used as a flag to determine when any of the stats have changed, thus requiring a
@@ -238,10 +234,6 @@ public class Building extends NetworkableComponent
         mDefenceMesh = defenceMesh.getReference();
         mAttackMesh = attackMesh.getReference();
         mGenerationMesh = generationMesh.getReference();
-
-        BuildingProps props = new BuildingProps(this);
-        getGameObject().addComponent(props);
-        mBuildingProps = props.getReference(BuildingProps.class);
     }
 
     /** Initialise the building only when it is properly on the map and the tile is synced. */
@@ -272,16 +264,6 @@ public class Building extends NetworkableComponent
         generateTileLists();
 
         mInitialised = true;
-    }
-
-    @Override
-    public void frameUpdate(float deltaTime) {
-        TransformHex hexTransform = getGameObject().getTransform(TransformHex.class);
-        HexagonTile tile = getTile();
-
-        if (hexTransform != null && tile != null) {
-            hexTransform.setHeight(tile.getSurfaceHeight());
-        }
     }
 
     @Override
@@ -398,7 +380,6 @@ public class Building extends NetworkableComponent
      */
     public void afterStatChange(StatType type) {
         afterStatChange();
-        if (Reference.isValid(mBuildingProps)) mBuildingProps.get().onStatChange(type);
     }
 
     /** Assigns a visible mesh to be displayed depending on the maximum stat level. */
@@ -502,13 +483,57 @@ public class Building extends NetworkableComponent
 
             int distance = mClaimDistance.getValue();
 
-            List<HexagonTile> tiles =
-                    map.getTilesInRadius(getTile(), distance, true, new ArrayList<>());
+            HexagonTile tile = getTile();
+
+            List<HexagonTile> tiles = map.getTilesInRadius(tile, distance, true, new ArrayList<>());
 
             mClaimedTiles.clear();
 
             for (HexagonTile hexagonTile : tiles) {
                 hexagonTile.setClaimedBy(this);
+            }
+
+            // Add props on the object.
+            ServerNetworkManager serverMan = getNetworkManager().getServerManager();
+
+            int ownerId = getNetworkObject().getOwnerId();
+            int objId = getNetworkObject().getId();
+
+            String[] props = {"defence_prop", "attack_prop", "token_generation_prop"};
+            int propId = 0;
+
+            // Defence is always spawned on the tile.
+            Reference<NetworkObject> nob =
+                    serverMan.spawnNetworkObject(
+                            ownerId, getNetworkManager().findTemplateByName(props[propId++]));
+            nob.get()
+                    .getGameObject()
+                    .getComponent(BuildingProps.class)
+                    .get()
+                    .getBuildingNetId()
+                    .set(objId);
+            nob.get()
+                    .getGameObject()
+                    .getTransform(TransformHex.class)
+                    .setPosition(tile.getQ(), tile.getR());
+
+            for (HexagonTile hexagonTile : tiles) {
+                if (propId >= props.length) break;
+                if (hexagonTile == tile) continue;
+                if (hexagonTile.getTileType() != TileType.LAND) continue;
+                nob =
+                        serverMan.spawnNetworkObject(
+                                ownerId, getNetworkManager().findTemplateByName(props[propId++]));
+                nob.get()
+                        .getGameObject()
+                        .getComponent(BuildingProps.class)
+                        .get()
+                        .getBuildingNetId()
+                        .set(objId);
+                nob.get()
+                        .getGameObject()
+                        .getTransform(TransformHex.class)
+                        .setPosition(hexagonTile.getQ(), hexagonTile.getR());
             }
         }
     }
