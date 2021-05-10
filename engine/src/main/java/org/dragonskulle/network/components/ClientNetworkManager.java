@@ -97,7 +97,7 @@ public class ClientNetworkManager {
         public void updateNetworkObject(DataInput stream) throws IOException {
             int idToUpdate = stream.readInt();
             ClientObjectEntry entry = getNetworkObjectEntry(idToUpdate);
-            if (entry == null) return;
+            if (entry == null || !Reference.isValid(entry.mNetworkObject)) return;
 
             entry.mNetworkObject.get().updateFromBytes(stream);
             if (!entry.mSynchronized) {
