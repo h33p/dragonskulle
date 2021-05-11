@@ -11,7 +11,7 @@ import org.joml.Vector3f;
  * @author Oscar L A simple version of a networked transform, it moves the x value of the component
  *     forward and backwards.
  */
-public class NetworkedTransform extends NetworkableComponent implements IFrameUpdate {
+public class NetworkedTransformTestComponent extends NetworkableComponent implements IFrameUpdate {
     private SyncVector3 mPosition = new SyncVector3(new Vector3f(0, 0, 0));
     private int mShouldFlipDirection = 1;
 
