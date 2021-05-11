@@ -83,9 +83,9 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
     /**
      * Create a pause menu.
      *
-     * @param jukebox the audio source which can be used all the time
      * @param networkManager The {@link NetworkManager} being used.
-     * @param camera The camera {@link GameObject} being used.
+     * @param componentsToPause Components to disable when paused.
+     * @param jukebox the audio source which can be used all the time
      */
     public UIPauseMenu(
             NetworkManager networkManager,
