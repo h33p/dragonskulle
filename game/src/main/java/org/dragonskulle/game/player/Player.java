@@ -344,9 +344,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             }
         }
 
-        // Cannot add a capital
-        setOwnsCapital(false);
-        log.severe("Disconnecting");
         getGameObject().destroy();
     }
 
