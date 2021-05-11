@@ -82,7 +82,7 @@ public class AimerAi extends ProbabilisticAiPlayer {
 
             // Will perform all necessary checks for A*
             aStar();
-         
+
             // Increase the chance that next time we aim for the capital.
             mAStarAttempts += 1;
             mAimAtCapital =
@@ -90,18 +90,14 @@ public class AimerAi extends ProbabilisticAiPlayer {
                             (Math.pow(
                                             2,
                                             ((float) mAStarAttempts
-                                                    / getConfig()
-                                                            .getAiAimer()
-                                                            .getMaxAttempts()))
+                                                    / getConfig().getAiAimer().getMaxAttempts()))
                                     - 1);
-        
-            log.info("Attempt number: " + mAStarAttempts + " Probability: " + mAimAtCapital);
 
             // Whilst it cannot find a path play probabilistically
             if (mPath.size() == 0) {
                 super.simulateInput();
             }
-                
+
             return;
         }
 
