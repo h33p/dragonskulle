@@ -188,22 +188,31 @@ public class GameConfig implements ISyncVar {
         private float mTokenTime;
         private float mInflationPerBuilding;
         private float mAttackHeightMul;
+        private float mCapitalInflationBonus;
+        private float mBuildingInflationBonus;
+        private float mBuildingLostInflationBonus;
 
         public PlayerConfig(
                 float attackCooldown,
                 float tokenRate,
                 float tokenTime,
                 float inflationPerBuilding,
-                float attackHeightMul) {
+                float attackHeightMul,
+                float capitalInflationBonus,
+                float buildingInflationBonus,
+                float buildingLostInflationBonus) {
             mAttackCooldown = attackCooldown;
             mTokenRate = tokenRate;
             mTokenTime = tokenTime;
             mInflationPerBuilding = inflationPerBuilding;
             mAttackHeightMul = attackHeightMul;
+            mCapitalInflationBonus = capitalInflationBonus;
+            mBuildingInflationBonus = buildingInflationBonus;
+            mBuildingLostInflationBonus = buildingLostInflationBonus;
         }
 
         public PlayerConfig() {
-            this(2, 5, 1, 1.04f, 1);
+            this(2, 5, 1, 1.04f, 1, -5, -0.1f, 0.1f);
         }
 
         @Override
@@ -213,6 +222,9 @@ public class GameConfig implements ISyncVar {
             stream.writeFloat(mTokenTime);
             stream.writeFloat(mInflationPerBuilding);
             stream.writeFloat(mAttackHeightMul);
+            stream.writeFloat(mCapitalInflationBonus);
+            stream.writeFloat(mBuildingInflationBonus);
+            stream.writeFloat(mBuildingLostInflationBonus);
         }
 
         @Override
@@ -222,6 +234,9 @@ public class GameConfig implements ISyncVar {
             mTokenTime = stream.readFloat();
             mInflationPerBuilding = stream.readFloat();
             mAttackHeightMul = stream.readFloat();
+            mCapitalInflationBonus = stream.readFloat();
+            mBuildingInflationBonus = stream.readFloat();
+            mBuildingLostInflationBonus = stream.readFloat();
         }
     }
 

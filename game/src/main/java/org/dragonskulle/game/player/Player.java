@@ -24,6 +24,7 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.futures.AwaitFuture;
+import org.dragonskulle.game.GameConfig;
 import org.dragonskulle.game.GameConfig.PlayerConfig;
 import org.dragonskulle.game.GameState;
 import org.dragonskulle.game.building.Building;
@@ -64,6 +65,9 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
     /** A list of {@link Building}s owned by the player. */
     private final Map<HexagonTile, Reference<Building>> mOwnedBuildings = new HashMap<>();
+
+    /** Extra deflation bonus for when capitals are captured. */
+    private SyncFloat mBuildingInflationBonus = new SyncFloat(0);
 
     /**
      * A set tiles around the player.
@@ -266,7 +270,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         GameState state = getGameState();
 
         if (state == null) {
-            return null;
+            return new GameConfig().getPlayer();
         }
 
         mConfig = state.getConfig().getPlayer();
@@ -962,6 +966,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         mServerAttackEvent.invoke((data) -> data.setData(attacker, defender));
 
+        PlayerConfig cfg = getConfig();
+
         new AwaitFuture((__) -> !attacker.isTimeActionLocked())
                 .then(
                         (__) -> {
@@ -986,9 +992,25 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                                         AudioFiles.DEFENCE_FAILED_SOUND,
                                         ServerEvent.EventRecipients.OWNER);
 
+                                mBuildingInflationBonus.set(
+                                        mBuildingInflationBonus.get()
+                                                + cfg.getBuildingInflationBonus());
+
+                                Player defenderPlayer = defender.getOwner();
+
+                                if (defenderPlayer != null) {
+                                    defenderPlayer.mBuildingInflationBonus.set(
+                                            defenderPlayer.mBuildingInflationBonus.get()
+                                                    + cfg.getBuildingLostInflationBonus());
+                                }
+
                                 // Special checks for Capital
                                 if (defender.isCapital()) {
                                     defender.setCapital(false);
+
+                                    mBuildingInflationBonus.set(
+                                            mBuildingInflationBonus.get()
+                                                    + cfg.getCapitalInflationBonus());
 
                                     GameState state = mGameState.get();
                                     state.getNumCapitalsStanding().add(-1);
@@ -1360,7 +1382,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             inflation *= state.getGlobalInflation();
             inflation *=
                     Math.pow(
-                            mOwnedBuildings.size(),
+                            mOwnedBuildings.size() + mBuildingInflationBonus.get(),
                             state.getConfig().getPlayer().getInflationPerBuilding());
         }
 
