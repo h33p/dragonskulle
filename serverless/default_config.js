@@ -21,7 +21,7 @@
     },
     "aiAimer" : {
       "playAStar" : 0.75,
-      "maxAttempts" : 10000,
+      "maxAttempts" : 1400,
       "tries" : 5
     }
   } ],
