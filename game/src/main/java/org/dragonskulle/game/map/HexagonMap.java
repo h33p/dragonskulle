@@ -92,7 +92,7 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
     private void floodFillLand(HexagonTile tile) {
         // Checks that we haven't already checked it
         int[] size = {0};
-        if (tile.getTileType() != TileType.LAND || tile.mLandMassNumber != -1) {
+        if (tile.mLandMassNumber != -1) {
             return;
         }
 
@@ -146,7 +146,7 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
 
         while (tiles.size() != 0) {
             HexagonTile tileToUse = tiles.removeFirst();
-            getTilesInRadius(tileToUse, 1, false, neighbours);
+            getTilesInRadius(tileToUse, 3, false, neighbours);
             visitor.onVisit(this, tileToUse, neighbours, tiles);
         }
     }
