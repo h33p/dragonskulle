@@ -941,6 +941,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return false;
         }
         attacker.invokeSound(AudioFiles.ATTACK_INVOKED_SOUND, ServerEvent.EventRecipients.OWNER);
+        defender.invokeSound(AudioFiles.ATTACK_INVOKED_SOUND, ServerEvent.EventRecipients.OWNER);
         log.fine("Attacking");
 
         mLastAttack.set(getNetworkManager().getServerTime());
