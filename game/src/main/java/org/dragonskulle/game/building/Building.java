@@ -651,7 +651,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
                             out.push(n);
                         }
                     }
-                });
+                },1);
     }
 
     /** Store the tiles that are suitable for attacking. */

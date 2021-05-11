@@ -326,25 +326,25 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             }
         }
 
-        // This will try and randomly place you 20 times
-        for (int i = 0; i <= attempts; i++) {
-            List<HexagonTile> buildable =
-                    getMap().getAllTiles().filter(this::isBuildable).collect(Collectors.toList());
-            if (!buildable.isEmpty()) {
-                Random random = new Random();
-                HexagonTile selectedTile = buildable.get(random.nextInt(buildable.size()));
-                Building capital = createBuilding(selectedTile.getQ(), selectedTile.getR(), true);
-                if (capital == null) {
-                    continue;
-                }
-                capital.setCapital(true);
+        List<HexagonTile> buildable =
+                getMap().getAllTiles().filter(this::isBuildable).collect(Collectors.toList());
+        if (buildable.isEmpty()) {
+            // Cannot add a capital
+            setOwnsCapital(false);
+            
 
-                mGameState.get().getNumCapitalsStanding().add(1);
+        } else {
+            Random random = new Random();
+            HexagonTile selectedTile = buildable.get(random.nextInt(buildable.size()));
+            Building capital = createBuilding(selectedTile.getQ(), selectedTile.getR(), true);
+            if (capital == null) {
+            	setOwnsCapital(false);
                 return;
             }
-        }
+            capital.setCapital(true);
 
-        getGameObject().destroy();
+            mGameState.get().getNumCapitalsStanding().add(1);
+        }
     }
 
     /**
@@ -657,7 +657,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                             mFillTiles.push(n);
                         }
                     }
-                });
+                }, 1);
     }
 
     /**
