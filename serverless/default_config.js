@@ -1,6 +1,6 @@
 {
   "global" : {
-    "inflation" : 1.002,
+    "inflation" : 1.001,
     "mapSize" : 51
   },
   "player" : {
@@ -24,7 +24,21 @@
       "maxAttempts" : 1400,
       "tries" : 5
     }
-  } ],
+    ,{
+        "lowerBoundTime" : 1.0,
+        "upperBoundTime" : 2.0,
+        "probabilisticAi" : {
+            "buildProbability" : 0.01,
+            "upgradeProbability" : 0.9,
+            "attackProbability" : 0.8,
+            "sellProbability" : 0.01
+        },
+        "aiAimer" : {
+            "playAStar" : 0.75,
+            "maxAttempts" : 50,
+            "tries" : 5
+        }
+    }],
   "attackStat" : {
     "value" : {
       "baseValue" : 0.0,
