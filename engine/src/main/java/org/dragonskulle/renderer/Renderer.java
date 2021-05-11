@@ -3,7 +3,6 @@ package org.dragonskulle.renderer;
 
 import static java.util.stream.Collectors.toSet;
 import static org.dragonskulle.utils.Env.envBool;
-import static org.dragonskulle.utils.Env.envInt;
 import static org.dragonskulle.utils.Env.envString;
 import static org.lwjgl.glfw.GLFW.glfwDestroyWindow;
 import static org.lwjgl.glfw.GLFW.glfwGetFramebufferSize;
@@ -211,8 +210,6 @@ public class Renderer implements NativeResource {
 
     /** Active physical device. */
     private PhysicalDevice mPhysicalDevice;
-    /** Number of Multi-Sampled Anti-Aliasing (MSAA) samples used. */
-    private int mMSAASamples = VK_SAMPLE_COUNT_1_BIT;
 
     /** Logical device. */
     private VkDevice mDevice;
@@ -321,6 +318,8 @@ public class Renderer implements NativeResource {
     /** Maps a render order to list of non-instanced draw calls. */
     private TreeMap<Integer, TreeMap<Float, List<NonInstancedDraw>>> mPreSorted = new TreeMap<>();
 
+    @Getter private RendererSettings mRendererSettings;
+
     /** List of validation layers to activate when debug mode is on. */
     private static final List<String> WANTED_VALIDATION_LAYERS_LIST =
             Arrays.asList("VK_LAYER_KHRONOS_validation");
@@ -341,12 +340,6 @@ public class Renderer implements NativeResource {
      * exists, the renderer will refuse to initialise.
      */
     private static final String TARGET_GPU = envString("TARGET_GPU", null);
-
-    /**
-     * Target number of MSAA samples. If the picked physical device does not support this number of
-     * samples, the highest number (that is not higher than the one provided) will be picked
-     */
-    private static final int MSAA_SAMPLES = envInt("MSAA_SAMPLES", 4);
 
     /** Highest value of UINT64, it's 0xffffffffffffffff. */
     private static final long UINT64_MAX = -1L;
@@ -467,8 +460,10 @@ public class Renderer implements NativeResource {
      * @param window handle to GLFW window.
      * @throws RuntimeException when initialization fails.
      */
-    public Renderer(String appName, long window) throws RuntimeException {
+    public Renderer(String appName, long window, RendererSettings settings)
+            throws RuntimeException {
         log.fine("Initialize renderer");
+        mRendererSettings = settings;
         mInstanceBufferSize = 4096;
         this.mWindow = window;
         mInstance = createInstance(appName);
@@ -477,7 +472,6 @@ public class Renderer implements NativeResource {
         }
         mSurface = createSurface();
         mPhysicalDevice = pickPhysicalDevice();
-        mMSAASamples = mPhysicalDevice.findSuitableMSAACount(MSAA_SAMPLES);
         mDevice = createLogicalDevice();
         mGraphicsQueue = createGraphicsQueue();
         mPresentQueue = createPresentQueue();
@@ -490,6 +484,37 @@ public class Renderer implements NativeResource {
         mCurrentMeshBuffer = new VulkanMeshBuffer(mDevice, mPhysicalDevice);
         createSwapchainObjects();
         mFrameContexts = createFrameContexts(FRAMES_IN_FLIGHT);
+    }
+
+    public int getSupportedMSAASamples() {
+        return mPhysicalDevice.getFeatureSupport().getMsaaSamples();
+    }
+
+    public String getPhysicalDeviceName() {
+        return mPhysicalDevice.getDeviceName();
+    }
+
+    public VBlankMode[] getVBlankModes() {
+        return mPhysicalDevice.getSwapchainSupport().mVBlankModes;
+    }
+
+    /**
+     * Set renderer graphics settings.
+     *
+     * <p>Depending on the settings changed, there may be a longer, or shorter time rendering
+     * freeze.
+     *
+     * @param newSettings new graphics settings to choose
+     */
+    public void setSettings(RendererSettings newSettings) {
+        RendererSettings oldSettings = mRendererSettings;
+
+        if (newSettings.equals(oldSettings)) {
+            return;
+        }
+
+        mRendererSettings = newSettings;
+        recreateSwapchain();
     }
 
     /**
@@ -758,6 +783,8 @@ public class Renderer implements NativeResource {
      * called multiple times in situations like window resizes.
      */
     private void createSwapchainObjects() {
+        mRendererSettings.setMSAACount(
+                mPhysicalDevice.findSuitableMSAACount(mRendererSettings.getMSAACount()));
         mSurfaceFormat = mPhysicalDevice.getSwapchainSupport().chooseSurfaceFormat();
         mExtent = mPhysicalDevice.getSwapchainSupport().chooseExtent(mWindow);
         mSwapchain = createSwapchain();
@@ -1164,7 +1191,11 @@ public class Renderer implements NativeResource {
         log.fine("Setup swapchain");
 
         try (MemoryStack stack = stackPush()) {
-            int presentMode = mPhysicalDevice.getSwapchainSupport().choosePresentMode();
+            int presentMode =
+                    mPhysicalDevice
+                            .getSwapchainSupport()
+                            .choosePresentMode(mRendererSettings.getVBlankMode())
+                            .getValue();
             int imageCount = mPhysicalDevice.getSwapchainSupport().chooseImageCount();
 
             VkSwapchainCreateInfoKHR createInfo = VkSwapchainCreateInfoKHR.callocStack(stack);
@@ -1295,7 +1326,7 @@ public class Renderer implements NativeResource {
                     VkAttachmentDescription.callocStack(3, stack);
             VkAttachmentDescription colorAttachment = attachments.get(0);
             colorAttachment.format(mSurfaceFormat.format());
-            colorAttachment.samples(mMSAASamples);
+            colorAttachment.samples(mRendererSettings.getMSAACount());
             colorAttachment.loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR);
             colorAttachment.storeOp(VK_ATTACHMENT_STORE_OP_STORE);
             // We don't use stencils yet
@@ -1313,7 +1344,7 @@ public class Renderer implements NativeResource {
 
             VkAttachmentDescription depthAttachment = attachments.get(1);
             depthAttachment.format(mPhysicalDevice.findDepthFormat());
-            depthAttachment.samples(mMSAASamples);
+            depthAttachment.samples(mRendererSettings.getMSAACount());
             depthAttachment.loadOp(VK_ATTACHMENT_LOAD_OP_CLEAR);
             depthAttachment.storeOp(VK_ATTACHMENT_STORE_OP_DONT_CARE);
             depthAttachment.stencilLoadOp(VK_ATTACHMENT_LOAD_OP_DONT_CARE);
@@ -1400,7 +1431,7 @@ public class Renderer implements NativeResource {
                         mExtent.height(),
                         VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT
                                 | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT,
-                        mMSAASamples,
+                        mRendererSettings.getMSAACount(),
                         mSurfaceFormat.format(),
                         VK_IMAGE_ASPECT_COLOR_BIT,
                         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
@@ -1424,7 +1455,7 @@ public class Renderer implements NativeResource {
                         mPhysicalDevice,
                         mExtent.width(),
                         mExtent.height(),
-                        mMSAASamples);
+                        mRendererSettings.getMSAACount());
         endSingleUseCommandBuffer(tmpCommandBuffer);
         return depthImage;
     }

@@ -1,13 +1,9 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.renderer;
 
-import static org.dragonskulle.utils.Env.envInt;
 import static org.lwjgl.glfw.GLFW.glfwGetFramebufferSize;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.KHRSurface.VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-import static org.lwjgl.vulkan.KHRSurface.VK_PRESENT_MODE_FIFO_KHR;
-import static org.lwjgl.vulkan.KHRSurface.VK_PRESENT_MODE_IMMEDIATE_KHR;
-import static org.lwjgl.vulkan.KHRSurface.VK_PRESENT_MODE_MAILBOX_KHR;
 import static org.lwjgl.vulkan.KHRSurface.vkGetPhysicalDeviceSurfaceCapabilitiesKHR;
 import static org.lwjgl.vulkan.KHRSurface.vkGetPhysicalDeviceSurfaceFormatsKHR;
 import static org.lwjgl.vulkan.KHRSurface.vkGetPhysicalDeviceSurfacePresentModesKHR;
@@ -15,7 +11,6 @@ import static org.lwjgl.vulkan.VK10.VK_FORMAT_B8G8R8A8_SRGB;
 
 import java.nio.IntBuffer;
 import lombok.extern.java.Log;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkExtent2D;
 import org.lwjgl.vulkan.VkPhysicalDevice;
@@ -31,9 +26,7 @@ import org.lwjgl.vulkan.VkSurfaceFormatKHR;
 class SwapchainSupportDetails {
     VkSurfaceCapabilitiesKHR mCapabilities;
     VkSurfaceFormatKHR.Buffer mFormats;
-    IntBuffer mPresentNodes;
-
-    private static final int VBLANK_MODE = envInt("VBLANK_MODE", VK_PRESENT_MODE_FIFO_KHR);
+    VBlankMode[] mVBlankModes;
 
     /**
      * Constructor for {@link SwapchainSupportDetails}.
@@ -56,8 +49,14 @@ class SwapchainSupportDetails {
 
             vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, length, null);
             if (length.get(0) != 0) {
-                mPresentNodes = BufferUtils.createIntBuffer(length.get(0));
-                vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, length, mPresentNodes);
+                IntBuffer presentNodes = stack.callocInt(length.get(0));
+                vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, length, presentNodes);
+
+                mVBlankModes = new VBlankMode[length.get(0)];
+
+                for (int i = 0; i < length.get(0); i++) {
+                    mVBlankModes[i] = VBlankMode.fromInt(presentNodes.get(i));
+                }
             }
         }
     }
@@ -69,7 +68,7 @@ class SwapchainSupportDetails {
      *     otherwise.
      */
     public boolean isAdequate() {
-        return mFormats != null && mPresentNodes != null;
+        return mFormats != null && mVBlankModes != null && mVBlankModes.length > 0;
     }
 
     /**
@@ -96,20 +95,22 @@ class SwapchainSupportDetails {
     /**
      * Choose a compatible presentation mode, prioritizing Triple Buffered VSync.
      *
+     * @param preferredMode preferred vblank mode.
      * @return compatible presentation mode
      */
-    public int choosePresentMode() {
+    public VBlankMode choosePresentMode(VBlankMode preferredMode) {
         // VSync - guaranteed to be available
-        int presentMode = VK_PRESENT_MODE_FIFO_KHR;
+        VBlankMode presentMode = VBlankMode.SINGLE_BUFFER;
 
         // Prioritized tripple buffered VSync, or use no vsync
         // We need configuration for this.
-        for (int i = 0; presentMode != VBLANK_MODE && i < mPresentNodes.capacity(); i++) {
-            int pm = mPresentNodes.get(i);
-            if (pm == VBLANK_MODE
-                    || pm == VK_PRESENT_MODE_MAILBOX_KHR
-                    || pm == VK_PRESENT_MODE_IMMEDIATE_KHR) {
-                presentMode = pm;
+        for (VBlankMode mode : mVBlankModes) {
+            if (mode == preferredMode) {
+                return preferredMode;
+            }
+
+            if (mode == VBlankMode.DOUBLE_BUFFER || mode == VBlankMode.OFF) {
+                presentMode = mode;
             }
         }
 

@@ -1,7 +1,8 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player.ui;
 
-import lombok.extern.java.Log;
+import java.util.ArrayList;
+import java.util.List;
 import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
@@ -11,6 +12,9 @@ import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.input.GameActions;
 import org.dragonskulle.input.Cursor;
+import org.dragonskulle.renderer.Renderer;
+import org.dragonskulle.renderer.RendererSettings;
+import org.dragonskulle.renderer.VBlankMode;
 import org.dragonskulle.settings.Settings;
 import org.dragonskulle.ui.BuildHandlerInfo;
 import org.dragonskulle.ui.TransformUI;
@@ -28,7 +32,6 @@ import org.dragonskulle.ui.UITextRect;
  *
  * @author Craig Wilbourne
  */
-@Log
 public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate {
 
     /** Contains the action to execute when the user requests to leave the settings menu. */
@@ -56,6 +59,56 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
     private GameObject mAudioContainer;
     /** GameObject that contains the graphics settings menu. */
     private GameObject mGraphicsContainer;
+
+    private List<Integer> mSupportedMSAAModes = new ArrayList<>();
+
+    private final UIDropDown mMSAADropDown =
+            new UIDropDown(
+                    0,
+                    (drop) -> {
+                        if (mSupportedMSAAModes == null || !drop.hasSelection()) {
+                            return;
+                        }
+                        int val = drop.getSelected();
+
+                        Renderer rend = Engine.getInstance().getGLFWState().getRenderer();
+
+                        RendererSettings newSettings =
+                                new RendererSettings(rend.getRendererSettings());
+
+                        newSettings.setMSAACount(mSupportedMSAAModes.get(val));
+
+                        rend.setSettings(newSettings);
+
+                        rend.getRendererSettings().writeSettings(Settings.getInstance());
+
+                        updateGraphicsSettings();
+                    });
+
+    private VBlankMode[] mSupportedVSyncModes;
+
+    private final UIDropDown mVSyncDropDown =
+            new UIDropDown(
+                    0,
+                    (drop) -> {
+                        if (mSupportedMSAAModes == null || !drop.hasSelection()) {
+                            return;
+                        }
+                        int val = drop.getSelected();
+
+                        Renderer rend = Engine.getInstance().getGLFWState().getRenderer();
+
+                        RendererSettings newSettings =
+                                new RendererSettings(rend.getRendererSettings());
+
+                        newSettings.setVBlankMode(mSupportedVSyncModes[val]);
+
+                        rend.setSettings(newSettings);
+
+                        rend.getRendererSettings().writeSettings(Settings.getInstance());
+
+                        updateGraphicsSettings();
+                    });
 
     /**
      * Create a new settings menu component.
@@ -114,6 +167,7 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
                         "Graphics",
                         (__, ___) -> {
                             switchToState(State.GRAPHICS);
+                            updateGraphicsSettings();
                         });
 
         UIButton exit =
@@ -187,13 +241,59 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
                 mAudioContainer, 0.3f, 0, 1f, titleInfo, muteInfo, volumeInfo, backInfo);
     }
 
+    private void updateGraphicsSettings() {
+        Renderer rend = Engine.getInstance().getGLFWState().getRenderer();
+
+        int msaaModes = rend.getSupportedMSAASamples();
+
+        ArrayList<String> mTmpList = new ArrayList<>();
+
+        int selectedSamples = rend.getRendererSettings().getMSAACount();
+
+        int selectedIdx = 0;
+        int supportedIdx = 0;
+
+        for (int i = 0; i < 16; i++) {
+            if (((msaaModes >> i) & 1) == 1) {
+                if ((1 << i) == selectedSamples) {
+                    selectedIdx = supportedIdx;
+                }
+                mTmpList.add(String.format("%dx", 1 << i));
+                mSupportedMSAAModes.add(1 << i);
+                supportedIdx++;
+            }
+        }
+
+        mMSAADropDown.setOptions(mTmpList.stream().toArray(String[]::new));
+        mMSAADropDown.setSelected(selectedIdx);
+
+        mSupportedVSyncModes = rend.getVBlankModes();
+
+        VBlankMode selectedMode = rend.getRendererSettings().getVBlankMode();
+
+        mTmpList.clear();
+
+        selectedIdx = 0;
+
+        for (int i = 0; i < mSupportedVSyncModes.length; i++) {
+            if (mSupportedVSyncModes[i] == selectedMode) {
+                selectedIdx = i;
+            }
+
+            mTmpList.add(mSupportedVSyncModes[i] == null ? "" : mSupportedVSyncModes[i].getName());
+        }
+
+        mVSyncDropDown.setOptions(mTmpList.stream().toArray(String[]::new));
+        mVSyncDropDown.setSelected(selectedIdx);
+    }
+
     /** Generate the contents of {@link #mGraphicsContainer}. */
     private void generateGraphics() {
         final UIManager uiManager = UIManager.getInstance();
 
         UITextRect title = new UITextRect("Graphics");
 
-        UIDropDown uiDropDown =
+        UIDropDown uiWindowedDropDown =
                 new UIDropDown(
                         0,
                         (drop) ->
@@ -204,7 +304,14 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
                         "Fullscreen");
 
         IUIBuildHandler windowed =
-                uiManager.buildWithChildrenRightOf(new UITextRect("Fullscreen mode:"), uiDropDown);
+                uiManager.buildWithChildrenRightOf(
+                        new UITextRect("Fullscreen mode:"), uiWindowedDropDown);
+
+        IUIBuildHandler vsync =
+                uiManager.buildWithChildrenRightOf(new UITextRect("VSync mode:"), mVSyncDropDown);
+
+        IUIBuildHandler msaa =
+                uiManager.buildWithChildrenRightOf(new UITextRect("Anti-aliasing:"), mMSAADropDown);
 
         Settings settingsInstance = Settings.getInstance();
 
@@ -221,21 +328,31 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
                         (__, ___) -> settingsInstance.save() // on button release
                         );
 
-        uiDropDown.setOnOpen((__) -> uiSlider.getGameObject().setEnabled(false));
-        uiDropDown.setOnHide((__) -> uiSlider.getGameObject().setEnabled(true));
-
         IUIBuildHandler cursorScale =
                 uiManager.buildWithChildrenRightOf(new UITextRect("Cursor Size:"), uiSlider);
 
         UIButton back = new UIButton("Back", (__, ___) -> switchToState(State.MENU));
 
+        final float midOff = -0.15f;
+
         BuildHandlerInfo titleInfo = new BuildHandlerInfo(title, 0);
-        BuildHandlerInfo windowedInfo = new BuildHandlerInfo(windowed, -0.15f);
-        BuildHandlerInfo cursorInfo = new BuildHandlerInfo(cursorScale, -0.15f);
+        BuildHandlerInfo windowedInfo = new BuildHandlerInfo(windowed, midOff);
+        BuildHandlerInfo msaaInfo = new BuildHandlerInfo(msaa, midOff);
+        BuildHandlerInfo vsyncInfo = new BuildHandlerInfo(vsync, midOff);
+        BuildHandlerInfo cursorInfo = new BuildHandlerInfo(cursorScale, midOff);
         BuildHandlerInfo backInfo = new BuildHandlerInfo(back, 0f);
 
         uiManager.buildVerticalUi(
-                mGraphicsContainer, 0.3f, 0, 1f, titleInfo, windowedInfo, cursorInfo, backInfo);
+                mGraphicsContainer,
+                0.3f,
+                0,
+                1f,
+                titleInfo,
+                windowedInfo,
+                msaaInfo,
+                vsyncInfo,
+                cursorInfo,
+                backInfo);
     }
 
     @Override

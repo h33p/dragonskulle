@@ -84,6 +84,7 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
     }
 
     /** Describes physical graphics feature support. */
+    @Getter
     static class FeatureSupportDetails {
         boolean mAnisotropyEnable;
         float mMaxAnisotropy;

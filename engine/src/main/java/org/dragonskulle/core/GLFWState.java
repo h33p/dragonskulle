@@ -28,6 +28,8 @@ import lombok.extern.java.Log;
 import org.dragonskulle.input.Bindings;
 import org.dragonskulle.input.Input;
 import org.dragonskulle.renderer.Renderer;
+import org.dragonskulle.renderer.RendererSettings;
+import org.dragonskulle.settings.Settings;
 import org.joml.Vector2i;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.system.MemoryStack;
@@ -45,6 +47,8 @@ public class GLFWState implements NativeResource {
     /** Window size in screen coordinates. */
     @Getter private final Vector2i mWindowSize = new Vector2i();
 
+    private final Settings mSettings;
+
     @Getter private Renderer mRenderer;
     private boolean mFramebufferResized = false;
 
@@ -53,6 +57,8 @@ public class GLFWState implements NativeResource {
     private int mOldY = 0;
     private int mOldWidth = 1600;
     private int mOldHeight = 900;
+
+    private static final String FULLSCREEN = "fullscreen";
 
     public static final boolean DEBUG_MODE = envBool("DEBUG_GLFW", false);
 
@@ -65,9 +71,10 @@ public class GLFWState implements NativeResource {
      * @param height initial window height
      * @param appName name of the app
      * @param bindings input bindings
+     * @param settings renderer settings to load from
      * @throws RuntimeException if initialization fails
      */
-    public GLFWState(int width, int height, String appName, Bindings bindings)
+    public GLFWState(int width, int height, String appName, Bindings bindings, Settings settings)
             throws RuntimeException {
         DEBUG.set(DEBUG_MODE);
 
@@ -75,8 +82,10 @@ public class GLFWState implements NativeResource {
             System.loadLibrary("renderdoc");
         }
 
+        mSettings = settings;
+
         initWindow(width, height, appName);
-        mRenderer = new Renderer(appName, mWindow);
+        mRenderer = new Renderer(appName, mWindow, new RendererSettings(settings));
 
         // Start detecting user input from the specified window, based on the bindings.
         Input.initialise(mWindow, bindings);
@@ -114,6 +123,8 @@ public class GLFWState implements NativeResource {
             glfwSetWindowMonitor(mWindow, 0, mOldX, mOldY, mOldWidth, mOldHeight, GLFW_DONT_CARE);
             mFullscreen = false;
         }
+
+        mSettings.saveValue(FULLSCREEN, mFullscreen, true);
     }
 
     /**
@@ -163,6 +174,8 @@ public class GLFWState implements NativeResource {
         }
 
         glfwSetFramebufferSizeCallback(mWindow, this::onFramebufferResize);
+
+        setFullscreen(mSettings.retrieveBoolean(FULLSCREEN, false));
     }
 
     private void onFramebufferResize(long window, int width, int height) {

@@ -248,7 +248,7 @@ class DrawCallState implements NativeResource {
                 renderer.getTextureSetFactory(),
                 renderer.getTextureFactory(),
                 imageCount,
-                renderer.getMSAASamples(),
+                renderer.getRendererSettings().getMSAACount(),
                 shaderSet);
     }
 
