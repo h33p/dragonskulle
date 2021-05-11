@@ -57,6 +57,7 @@ public class App implements NativeResource {
     public static final Resource<GLTF> TEMPLATES = GLTF.getResource("templates");
 
     public static final float MENU_BASEWIDTH = 0.2f;
+    private static float mSunRotAccu = 0;
 
     /**
      * Adds the debug overlay, this is enabled by pressing F3.
@@ -100,7 +101,11 @@ public class App implements NativeResource {
                             LambdaFrameUpdate time =
                                     new LambdaFrameUpdate(
                                             (dt) -> {
-                                                rigTran.rotateDeg(dt, 0, 0);
+                                                mSunRotAccu += dt;
+                                                if (mSunRotAccu > 360) mSunRotAccu -= 360;
+                                                if ((116 < mSunRotAccu) && (mSunRotAccu < 280)) {
+                                                    rigTran.rotateDeg(dt * 2, 0, 0);
+                                                } else rigTran.rotateDeg(dt, 0, 0);
                                             });
                             lightRig.addComponent(time);
 
