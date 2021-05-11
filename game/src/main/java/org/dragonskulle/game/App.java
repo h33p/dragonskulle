@@ -250,7 +250,7 @@ public class App implements NativeResource {
                                     });
                         });
 
-        GameObject camera = GameObject.instantiate(cameraRig);
+        GameObject camera = cameraRig;
         mainScene.addRootObject(camera);
 
         GameObject audioObject =

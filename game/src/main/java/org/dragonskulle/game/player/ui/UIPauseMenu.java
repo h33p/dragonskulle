@@ -137,7 +137,7 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
         mComponentsToPause.stream()
                 .filter(Reference::isValid)
                 .map(Reference::get)
-                .forEach(c -> c.setEnabled(pause));
+                .forEach(c -> c.setEnabled(!pause));
 
         mBackground.setEnabled(pause);
 
