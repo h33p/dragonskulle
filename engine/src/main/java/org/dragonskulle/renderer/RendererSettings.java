@@ -21,15 +21,30 @@ public class RendererSettings {
     /** Target vertical blank (sync) mode. */
     @Getter @Setter private VBlankMode mVBlankMode = VBlankMode.SINGLE_BUFFER;
 
+    /** Constructor for {@link RendererSettings}. */
     public RendererSettings() {}
 
+    /**
+     * Copy constructor fro {@link RendererSettings}.
+     *
+     * @param o other renderer settings instance.
+     */
     public RendererSettings(RendererSettings o) {
         mMSAACount = o.mMSAACount;
         mVBlankMode = o.mVBlankMode;
     }
 
+    /**
+     * Constructor for {@link RendererSettings}.
+     *
+     * @param sets settings instance to read the settings from.
+     */
     public RendererSettings(Settings sets) {
+        int oldMSAA = mMSAACount;
         mMSAACount = sets.retrieveInteger("MSAA", mMSAACount);
+        if (mMSAACount < 1) {
+            mMSAACount = oldMSAA;
+        }
         VBlankMode old = mVBlankMode;
         mVBlankMode = VBlankMode.fromInt(sets.retrieveInteger("VSync", mVBlankMode.getValue()));
         if (mVBlankMode == null) {
@@ -37,6 +52,11 @@ public class RendererSettings {
         }
     }
 
+    /**
+     * Write current renderer settings values to a settings instance.
+     *
+     * @param sets settings instance to write the values to.
+     */
     public void writeSettings(Settings sets) {
         sets.saveValue("MSAA", mMSAACount);
         sets.saveValue("VSync", mVBlankMode.getValue(), true);
