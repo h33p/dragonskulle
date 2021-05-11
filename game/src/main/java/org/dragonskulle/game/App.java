@@ -99,9 +99,13 @@ public class App implements NativeResource {
 
                             LambdaFrameUpdate time =
                                     new LambdaFrameUpdate(
-                                            (dt) -> {
-                                                rigTran.rotateDeg(dt, 0, 0);
-                                            });
+                                            (dt) ->
+                                                    rigTran.rotateDeg(
+                                                            rigTran.getUpVector().z() > 0
+                                                                    ? dt
+                                                                    : dt * 2,
+                                                            0,
+                                                            0));
                             lightRig.addComponent(time);
 
                             lightRig.buildChild(
