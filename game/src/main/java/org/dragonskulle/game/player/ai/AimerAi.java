@@ -82,25 +82,26 @@ public class AimerAi extends ProbabilisticAiPlayer {
 
             // Will perform all necessary checks for A*
             aStar();
+         
+            // Increase the chance that next time we aim for the capital.
+            mAStarAttempts += 1;
+            mAimAtCapital =
+                    (float)
+                            (Math.pow(
+                                            2,
+                                            ((float) mAStarAttempts
+                                                    / getConfig()
+                                                            .getAiAimer()
+                                                            .getMaxAttempts()))
+                                    - 1);
+        
+            log.info("Attempt number: " + mAStarAttempts + " Probability: " + mAimAtCapital);
 
             // Whilst it cannot find a path play probabilistically
             if (mPath.size() == 0) {
                 super.simulateInput();
-            } else {
-                // This will mean you need 139 attempts to always aim at the capital.  Need 81
-                // attempts for 0.5
-
-                mAStarAttempts += 1;
-                mAimAtCapital =
-                        (float)
-                                (Math.pow(
-                                                2,
-                                                (mAStarAttempts
-                                                        / getConfig()
-                                                                .getAiAimer()
-                                                                .getMaxAttempts()))
-                                        - 1);
             }
+                
             return;
         }
 
