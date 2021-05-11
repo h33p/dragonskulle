@@ -6,7 +6,6 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.Transform3D;
@@ -16,7 +15,6 @@ import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
 @Accessors(prefix = "m")
-@Log
 public class ArcPath extends Component implements IFrameUpdate {
 
     public static interface IArcHandler {

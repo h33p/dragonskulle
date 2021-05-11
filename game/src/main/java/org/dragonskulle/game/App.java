@@ -1,11 +1,14 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game;
 
+import java.util.ArrayList;
+import java.util.List;
 import lombok.extern.java.Log;
 import org.dragonskulle.assets.GLTF;
 import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.audio.components.AudioListener;
 import org.dragonskulle.audio.components.AudioSource;
+import org.dragonskulle.components.Component;
 import org.dragonskulle.components.Transform3D;
 import org.dragonskulle.components.lambda.LambdaFrameUpdate;
 import org.dragonskulle.core.Engine;
@@ -190,6 +193,10 @@ public class App implements NativeResource {
                                     });
                         }));
 
+        List<Reference<Component>> componentsToPause = new ArrayList<>();
+
+        AudioSource asrc = new AudioSource();
+
         GameObject cameraRig =
                 new GameObject(
                         "mainCamera",
@@ -202,6 +209,9 @@ public class App implements NativeResource {
                             HeightByMap heightByMap = new HeightByMap();
                             rig.addComponent(heightByMap);
 
+                            componentsToPause.add(keyboardMovement.getReference());
+                            componentsToPause.add(heightByMap.getReference());
+
                             rig.getTransform(Transform3D.class).setPosition(0, -4, 0.5f);
                             rig.getTransform(Transform3D.class)
                                     .rotateDeg(0, 0, (float) Math.random() * 360);
@@ -211,6 +221,8 @@ public class App implements NativeResource {
                                     (pitchRig) -> {
                                         ZoomTilt zoomTilt = new ZoomTilt();
                                         pitchRig.addComponent(zoomTilt);
+                                        componentsToPause.add(zoomTilt.getReference());
+
                                         pitchRig.buildChild(
                                                 "camera",
                                                 (camera) -> {
@@ -222,6 +234,7 @@ public class App implements NativeResource {
                                                     scroll.getStartPos().set(0f, -2.5f, 0f);
                                                     scroll.getEndPos().set(0f, -100f, 0f);
                                                     camera.addComponent(scroll);
+                                                    componentsToPause.add(scroll.getReference());
 
                                                     // Make sure it's an actual camera
                                                     Camera cam = new Camera();
@@ -229,6 +242,10 @@ public class App implements NativeResource {
                                                     camera.addComponent(cam);
 
                                                     camera.addComponent(new MapEffects());
+
+                                                    AudioListener listener = new AudioListener();
+                                                    camera.addComponent(listener);
+                                                    camera.addComponent(asrc);
                                                 });
                                     });
                         });
@@ -240,27 +257,13 @@ public class App implements NativeResource {
                 new GameObject(
                         "game_audio",
                         (audio) -> {
-                            AudioListener listener = new AudioListener();
-                            audio.addComponent(listener);
-
                             AudioSource bgm = new AudioSource();
-                            bgm.setVolume(0.5f);
+                            bgm.setVolume(0.4f);
                             bgm.setLooping(true);
                             bgm.playSound(BGM_SOUND);
                             audio.addComponent(bgm);
                         });
         mainScene.addRootObject(audioObject);
-
-        AudioSource asrc = new AudioSource();
-        GameObject jukebox =
-                new GameObject(
-                        "jukebox",
-                        (audio) -> {
-                            AudioListener listener = new AudioListener();
-                            audio.addComponent(listener);
-                            audio.addComponent(asrc);
-                        });
-        mainScene.addRootObject(jukebox);
 
         // Pause menu
         GameObject pauseMenu =
@@ -271,7 +274,7 @@ public class App implements NativeResource {
                             menu.addComponent(
                                     new UIPauseMenu(
                                             networkManager,
-                                            camera,
+                                            componentsToPause,
                                             asrc.getReference(AudioSource.class)));
                         });
 

@@ -1,6 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player.ui;
 
+import java.util.List;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
@@ -55,7 +56,7 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
     /** The {@link NetworkManager} being used. */
     private Reference<NetworkManager> mNetworkManager;
     /** The camera being used. */
-    private GameObject mCamera;
+    @Getter private List<Reference<Component>> mComponentsToPause;
 
     /** Stores whether the menu is currently paused or not. */
     @Getter private boolean mPaused;
@@ -82,15 +83,17 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
     /**
      * Create a pause menu.
      *
-     * @param jukebox the audio source which can be used all the time
      * @param networkManager The {@link NetworkManager} being used.
-     * @param camera The camera {@link GameObject} being used.
+     * @param componentsToPause Components to disable when paused.
+     * @param jukebox the audio source which can be used all the time
      */
     public UIPauseMenu(
-            NetworkManager networkManager, GameObject camera, Reference<AudioSource> jukebox) {
+            NetworkManager networkManager,
+            List<Reference<Component>> componentsToPause,
+            Reference<AudioSource> jukebox) {
         mEndGameJukeBox = jukebox;
         mNetworkManager = networkManager.getReference(NetworkManager.class);
-        mCamera = camera;
+        mComponentsToPause = componentsToPause;
     }
 
     /**
@@ -131,7 +134,11 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
         mPaused = pause;
 
         // If the menu pause menu is enabled, disable the camera.
-        mCamera.setEnabled(!pause);
+        mComponentsToPause.stream()
+                .filter(Reference::isValid)
+                .map(Reference::get)
+                .forEach(c -> c.setEnabled(pause));
+
         mBackground.setEnabled(pause);
 
         switchToState(mCurrentState);

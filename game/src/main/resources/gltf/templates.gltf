@@ -255,7 +255,29 @@
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.misc.SoundEffectSource",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mPlayOnce",
+                                    "value" : true
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.misc.SoundEffectDescriptor",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mSoundName",
+                                    "value" : "artlist/fire_whoosh.wav"
+                                }
+                            ]
+                        }
+                    ]
                 }
             },
             "mesh" : 8,
@@ -381,17 +403,12 @@
         },
         {
             "doubleSided" : true,
-            "emissiveFactor" : [
-                0.6859572529792786,
-                0.16542309522628784,
-                0
-            ],
-            "name" : "Emissive Fire",
+            "name" : "Cannonball",
             "pbrMetallicRoughness" : {
                 "baseColorFactor" : [
-                    0.8000000715255737,
-                    0.03882841020822525,
-                    0,
+                    0.023650724440813065,
+                    0.009224888868629932,
+                    0.005604699719697237,
                     1
                 ],
                 "metallicFactor" : 0,
@@ -791,35 +808,35 @@
         {
             "bufferView" : 30,
             "componentType" : 5126,
-            "count" : 3840,
+            "count" : 205,
             "max" : [
-                0.22135671973228455,
-                0.21775536239147186,
-                0.22533288598060608
+                0.137466162443161,
+                0.14525780081748962,
+                0.14413867890834808
             ],
             "min" : [
-                -0.23410259187221527,
-                -0.22508639097213745,
-                -0.23015393316745758
+                -0.1507803350687027,
+                -0.14101195335388184,
+                -0.1417672485113144
             ],
             "type" : "VEC3"
         },
         {
             "bufferView" : 31,
             "componentType" : 5126,
-            "count" : 3840,
+            "count" : 205,
             "type" : "VEC3"
         },
         {
             "bufferView" : 32,
             "componentType" : 5126,
-            "count" : 3840,
+            "count" : 205,
             "type" : "VEC2"
         },
         {
             "bufferView" : 33,
             "componentType" : 5123,
-            "count" : 3840,
+            "count" : 960,
             "type" : "SCALAR"
         }
     ],
@@ -976,28 +993,28 @@
         },
         {
             "buffer" : 0,
-            "byteLength" : 46080,
+            "byteLength" : 2460,
             "byteOffset" : 58672
         },
         {
             "buffer" : 0,
-            "byteLength" : 46080,
-            "byteOffset" : 104752
+            "byteLength" : 2460,
+            "byteOffset" : 61132
         },
         {
             "buffer" : 0,
-            "byteLength" : 30720,
-            "byteOffset" : 150832
+            "byteLength" : 1640,
+            "byteOffset" : 63592
         },
         {
             "buffer" : 0,
-            "byteLength" : 7680,
-            "byteOffset" : 181552
+            "byteLength" : 1920,
+            "byteOffset" : 65232
         }
     ],
     "buffers" : [
         {
-            "byteLength" : 189232,
+            "byteLength" : 67152,
             "uri" : "templates.bin"
         }
     ]

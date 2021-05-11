@@ -452,7 +452,43 @@
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.misc.SoundEffectSource",
+                            "enabled" : true
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.misc.SoundEffectDescriptor",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mSoundName",
+                                    "value" : "artlist/medieval-scraper-axe.wav"
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.misc.SoundEffectDescriptor",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mSoundName",
+                                    "value" : "artlist/medieval-sharpening-metal.wav"
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.misc.SoundEffectDescriptor",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mSoundName",
+                                    "value" : "artlist/blacksmith-hitting-anvil.wav"
+                                }
+                            ]
+                        }
+                    ]
                 }
             },
             "mesh" : 6,
@@ -488,7 +524,43 @@
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.misc.SoundEffectSource",
+                            "enabled" : true
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.misc.SoundEffectDescriptor",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mSoundName",
+                                    "value" : "artlist/medieval-scraper-axe.wav"
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.misc.SoundEffectDescriptor",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mSoundName",
+                                    "value" : "artlist/medieval-sharpening-metal.wav"
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.misc.SoundEffectDescriptor",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mSoundName",
+                                    "value" : "artlist/blacksmith-hitting-anvil.wav"
+                                }
+                            ]
+                        }
+                    ]
                 }
             },
             "mesh" : 6,
@@ -524,7 +596,43 @@
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.misc.SoundEffectSource",
+                            "enabled" : true
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.misc.SoundEffectDescriptor",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mSoundName",
+                                    "value" : "artlist/medieval-scraper-axe.wav"
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.misc.SoundEffectDescriptor",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mSoundName",
+                                    "value" : "artlist/medieval-sharpening-metal.wav"
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.misc.SoundEffectDescriptor",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mSoundName",
+                                    "value" : "artlist/blacksmith-hitting-anvil.wav"
+                                }
+                            ]
+                        }
+                    ]
                 }
             },
             "mesh" : 6,
@@ -632,7 +740,43 @@
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.misc.SoundEffectSource",
+                            "enabled" : true
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.misc.SoundEffectDescriptor",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mSoundName",
+                                    "value" : "artlist/medieval-scraper-axe.wav"
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.misc.SoundEffectDescriptor",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mSoundName",
+                                    "value" : "artlist/medieval-sharpening-metal.wav"
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.misc.SoundEffectDescriptor",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mSoundName",
+                                    "value" : "artlist/blacksmith-hitting-anvil.wav"
+                                }
+                            ]
+                        }
+                    ]
                 }
             },
             "mesh" : 6,
@@ -668,7 +812,43 @@
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.misc.SoundEffectSource",
+                            "enabled" : true
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.misc.SoundEffectDescriptor",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mSoundName",
+                                    "value" : "artlist/medieval-scraper-axe.wav"
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.misc.SoundEffectDescriptor",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mSoundName",
+                                    "value" : "artlist/medieval-sharpening-metal.wav"
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.misc.SoundEffectDescriptor",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mSoundName",
+                                    "value" : "artlist/blacksmith-hitting-anvil.wav"
+                                }
+                            ]
+                        }
+                    ]
                 }
             },
             "mesh" : 6,
@@ -704,7 +884,43 @@
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.misc.SoundEffectSource",
+                            "enabled" : true
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.misc.SoundEffectDescriptor",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mSoundName",
+                                    "value" : "artlist/medieval-scraper-axe.wav"
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.misc.SoundEffectDescriptor",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mSoundName",
+                                    "value" : "artlist/medieval-sharpening-metal.wav"
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.misc.SoundEffectDescriptor",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mSoundName",
+                                    "value" : "artlist/blacksmith-hitting-anvil.wav"
+                                }
+                            ]
+                        }
+                    ]
                 }
             },
             "mesh" : 6,
@@ -740,7 +956,43 @@
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.misc.SoundEffectSource",
+                            "enabled" : true
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.misc.SoundEffectDescriptor",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mSoundName",
+                                    "value" : "artlist/medieval-scraper-axe.wav"
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.misc.SoundEffectDescriptor",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mSoundName",
+                                    "value" : "artlist/medieval-sharpening-metal.wav"
+                                }
+                            ]
+                        },
+                        {
+                            "class_name" : "org.dragonskulle.game.misc.SoundEffectDescriptor",
+                            "enabled" : true,
+                            "properties" : [
+                                {
+                                    "name" : "mSoundName",
+                                    "value" : "artlist/blacksmith-hitting-anvil.wav"
+                                }
+                            ]
+                        }
+                    ]
                 }
             },
             "mesh" : 6,

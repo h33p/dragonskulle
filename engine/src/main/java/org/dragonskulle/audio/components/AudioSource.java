@@ -34,11 +34,12 @@ public class AudioSource extends Component implements IFixedUpdate, ILateFrameUp
 
     /** Update the position of the source to that of the GameObject. */
     private void updatePosition() {
+        mGameObject.getTransform().getPosition(mPosition);
+
         if (mSource == null) {
             return;
         }
 
-        mGameObject.getTransform().getPosition(mPosition);
         AL11.alSource3f(
                 mSource.getSource(), AL11.AL_POSITION, mPosition.x, mPosition.y, mPosition.z);
     }

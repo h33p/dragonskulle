@@ -91,6 +91,9 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     /** Whether the visuals need to be updated. */
     private boolean mVisualsNeedUpdate = true;
 
+    /** Whether the game is paused and hover highlights should be disabled. */
+    private boolean mIsPaused = false;
+
     private class ArcUpdater implements IPathUpdater, IArcHandler {
 
         private final Vector3f posStart = new Vector3f();
@@ -332,6 +335,15 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     @Override
     public void frameUpdate(float deltaTime) {
+
+        UIPauseMenu pauseMenu = Scene.getActiveScene().getSingleton(UIPauseMenu.class);
+
+        mIsPaused = pauseMenu != null && pauseMenu.isEnabled() && pauseMenu.isPaused();
+
+        if (mIsPaused) {
+            return;
+        }
+
         detectTileSelection();
         detectBackAction();
         detectKeyboardInput();
@@ -604,7 +616,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     }
 
     private void highlightHoveredTile(MapEffects effects, StandardHighlightType highlight) {
-        if (!Reference.isValid(mPlayer)) {
+        if (!Reference.isValid(mPlayer) || mIsPaused) {
             return;
         }
 
