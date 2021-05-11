@@ -331,14 +331,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         if (buildable.isEmpty()) {
             // Cannot add a capital
             setOwnsCapital(false);
-            
 
         } else {
             Random random = new Random();
             HexagonTile selectedTile = buildable.get(random.nextInt(buildable.size()));
             Building capital = createBuilding(selectedTile.getQ(), selectedTile.getR(), true);
             if (capital == null) {
-            	setOwnsCapital(false);
+                setOwnsCapital(false);
                 return;
             }
             capital.setCapital(true);
@@ -657,7 +656,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                             mFillTiles.push(n);
                         }
                     }
-                }, 1);
+                },
+                1);
     }
 
     /**

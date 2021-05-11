@@ -100,35 +100,33 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
 
         Deque<HexagonTile> tiles = new ArrayDeque<HexagonTile>();
         tiles.add(tile);
-        
+
         GameConfig cfg = GameState.getSceneConfig();
         int radius;
         if (cfg == null) {
-        	radius = 1;
-        }
-        else {
-        	StatConfig statCfg = cfg.getViewDistanceStat();
-        	radius = Math.round(statCfg.getValue().getBaseValue());
+            radius = 1;
+        } else {
+            StatConfig statCfg = cfg.getViewDistanceStat();
+            radius = Math.round(statCfg.getValue().getBaseValue());
         }
 
         floodFill(
                 tiles,
                 (__, tileToUse, neighbours, tilesOut) -> {
-                	
-                    if (tileToUse.getTileType() == TileType.LAND && tileToUse.mLandMassNumber == -1) {
-                    	size[0]++;
+                    if (tileToUse.getTileType() == TileType.LAND
+                            && tileToUse.mLandMassNumber == -1) {
+                        size[0]++;
                         tileToUse.mLandMassNumber = mLandMass;
 
                         for (HexagonTile neighbour : neighbours) {
                             if (neighbour.mLandMassNumber == -1
-                                    && neighbour.getTileType() == TileType.LAND
-                                            ) {
+                                    && neighbour.getTileType() == TileType.LAND) {
                                 tilesOut.add(neighbour);
                             }
                         }
-                        
                     }
-                }, radius);
+                },
+                radius);
 
         if (size[0] > mLargestLandMass[1]) {
             mLargestLandMass[0] = mLandMass;
@@ -150,7 +148,7 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
         ArrayList<HexagonTile> neighbours = new ArrayList<>();
 
         while (tiles.size() != 0) {
-            HexagonTile tileToUse = tiles.removeFirst();            
+            HexagonTile tileToUse = tiles.removeFirst();
             getTilesInRadius(tileToUse, radius, false, neighbours);
             visitor.onVisit(this, tileToUse, neighbours, tiles);
         }
