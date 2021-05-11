@@ -4,8 +4,7 @@ package org.dragonskulle.game;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-
+import lombok.extern.java.Log;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.Scene.SceneOverride;
 import org.dragonskulle.game.building.Building;
@@ -16,18 +15,17 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import lombok.extern.java.Log;
-
 /**
- * Will test the cost for buildings
+ * Will test the cost for buildings.
  *
  * @author DragonSkulle
  */
 @Log
 public class CostTest {
 
-	SceneOverride mOverride;
-	Building mBuilding;
+    SceneOverride mOverride;
+    Building mBuilding;
+
     @Before
     public void setup() {
         Scene scene = new Scene("");
@@ -37,11 +35,10 @@ public class CostTest {
         mOverride = new SceneOverride(scene);
         mBuilding = new Building();
         mBuilding.onConnectedSyncvars();
-        
     }
-	
+
     /**
-     * This will check that there is different stats and costs for a made up predefined Buildings
+     * This will check that there is different stats and costs for a made up predefined Buildings.
      */
     @Test
     public void buildingCost() {
@@ -55,10 +52,9 @@ public class CostTest {
         assertEquals(25, building.getSellPrice());
     }
 
-    /** This will test attacking cost */
+    /** This will test attacking cost. */
     @Test
-    public void attackCost() {        
-        
+    public void attackCost() {
 
         // Lvl 1 Attack Lvl 1 Defence Lvl 1 TGen
         int lvl1All = mBuilding.getAttackCost();
@@ -89,22 +85,21 @@ public class CostTest {
         assertTrue(setCapital > upgradeDefence);
     }
 
-    /** This will test that the cost increases when stats are upgraded */
+    /** This will test that the cost increases when stats are upgraded. */
     @Test
     public void upgradeStats() {
 
-
         // Lvl 1 Attack Lvl 1 Defence Lvl 1 TGen
-    	
-    	int lvl1All = mBuilding.getStat(StatType.ATTACK).getCost();
-        
+
+        int lvl1All = mBuilding.getStat(StatType.ATTACK).getCost();
+
         mBuilding.getStat(StatType.ATTACK).increaseLevel();
         mBuilding.afterStatChange();
 
         // Lvl 2 Attack Lvl 1 Defence Lvl 1 TGen
         int lvl2Attack = mBuilding.getStat(StatType.ATTACK).getCost();
         assertTrue(lvl2Attack > lvl1All);
-        
+
         mBuilding.getStat(StatType.DEFENCE).increaseLevel();
         mBuilding.getStat(StatType.DEFENCE).increaseLevel();
         mBuilding.afterStatChange();
@@ -113,7 +108,7 @@ public class CostTest {
         int lvl3Defence = mBuilding.getStat(StatType.ATTACK).getCost();
         assertTrue(lvl3Defence > lvl2Attack);
     }
-    
+
     @After
     public void cleanup() {
         mOverride.close();

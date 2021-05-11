@@ -12,6 +12,7 @@ import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.requests.ServerEvent;
 import org.dragonskulle.network.components.requests.ServerEvent.EventRecipients;
@@ -122,7 +123,9 @@ public class GameState extends NetworkableComponent implements IOnAwake {
      *     represent deflation.
      */
     public float getGlobalInflation() {
-        float deltaTime = getNetworkManager().getServerTime() - mStartTime.get();
+        NetworkManager networkManager = getNetworkManager();
+        if (networkManager == null) return 1;
+        float deltaTime = networkManager.getServerTime() - mStartTime.get();
         return (float) Math.pow(mConfig.getGlobal().getInflation(), deltaTime);
     }
 
