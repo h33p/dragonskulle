@@ -134,6 +134,7 @@ public class UIDropDown extends UIBuildableComponent implements IOnAwake, IFrame
                             "option_" + i,
                             new TransformUI(true),
                             (handle) -> {
+                                handle.setDepthOffset(5);
                                 UIButton button =
                                         new UIButton(mOptions[ii], (__, ___) -> select(ii));
                                 handle.addComponent(button);

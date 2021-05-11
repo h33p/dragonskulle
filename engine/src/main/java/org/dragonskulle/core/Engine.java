@@ -23,6 +23,7 @@ import org.dragonskulle.network.UPnP;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.renderer.components.Light;
 import org.dragonskulle.renderer.components.Renderable;
+import org.dragonskulle.settings.Settings;
 import org.dragonskulle.ui.UIManager;
 
 /**
@@ -92,14 +93,14 @@ public class Engine {
      * Loads a new scene and start the engine.
      *
      * @param gameName Name of the game
-     * @param bindings User input bindings
+     * @param bindings User input bindings @Param settings Settings instance to use
      */
-    public void start(String gameName, Bindings bindings) {
+    public void start(String gameName, Bindings bindings, Settings settings) {
         // TODO: Any initialization of engine components like renderer, audio, input, etc done here
 
         UPnP.initialise();
 
-        mGLFWState = new GLFWState(WINDOW_WIDTH, WINDOW_HEIGHT, gameName, bindings);
+        mGLFWState = new GLFWState(WINDOW_WIDTH, WINDOW_HEIGHT, gameName, bindings, settings);
 
         mIsRunning = true;
         mainLoop(mGLFWState::processEvents, true);

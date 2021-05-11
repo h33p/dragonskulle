@@ -331,11 +331,11 @@ public class Settings {
                 return Integer.parseInt(val.toString());
             } else {
                 log.warning("Failed to read setting as not loaded.");
-                return -1;
+                return null;
             }
         } catch (Exception e) {
             log.warning("Failed to parse as an int, maybe it isn't one?");
-            return -1;
+            return null;
         }
     }
 
@@ -350,10 +350,10 @@ public class Settings {
      */
     public Integer retrieveInteger(String name, Integer defaultValue) {
         Integer value = retrieveInteger(name);
-        if (value == -1) {
+        if (value == null) {
             recreateSettingsFile(name, defaultValue);
         }
-        return (value == -1 ? value : defaultValue);
+        return (value != null ? value : defaultValue);
     }
 
     /** Save the current state of {@link #mSettings} to the file. */

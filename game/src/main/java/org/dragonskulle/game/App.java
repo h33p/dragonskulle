@@ -472,7 +472,7 @@ public class App implements NativeResource {
         Engine.getInstance().loadPresentationScene(mainMenu);
 
         // Run the game
-        Engine.getInstance().start("Hex Wars", new GameBindings());
+        Engine.getInstance().start("Hex Wars", new GameBindings(), mSettings);
     }
 
     @Override

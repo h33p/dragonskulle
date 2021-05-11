@@ -34,6 +34,8 @@ public class GameObject {
     @Getter private Scene mScene;
     /** How deep the object is within the game object structure. */
     @Getter private int mDepth = 0;
+    /** How much depth is added by the object */
+    @Getter private int mDepthOffset = 1;
 
     static {
         Engine.getCloner()
@@ -54,6 +56,7 @@ public class GameObject {
                             }
                             cloned.mEnabled = toClone.mEnabled;
                             cloned.mDepth = toClone.mDepth;
+                            cloned.mDepthOffset = toClone.mDepthOffset;
                             return cloned;
                         });
     }
@@ -352,7 +355,7 @@ public class GameObject {
         }
         child.setEnabled(mEnabled && child.isEnabled());
         child.mParent = this;
-        child.setDepth(mDepth + 1);
+        child.setDepth(mDepth + child.getDepthOffset());
         mChildren.add(child);
         child.setScene(mScene);
         dirtyComponentLists();
@@ -372,7 +375,7 @@ public class GameObject {
             child.mRoot = root;
             child.mParent = this;
             child.setEnabled(mEnabled && child.isEnabled());
-            child.setDepth(this.mDepth + 1);
+            child.setDepth(this.mDepth + child.getDepthOffset());
             child.setScene(mScene);
         }
         mChildren.addAll(children);
@@ -561,9 +564,24 @@ public class GameObject {
     }
 
     /**
+     * Setter for mDepthOffset
+     *
+     * <p>This method will update the depth of the object and its children
+     *
+     * @param newOffset new depth offset to use.
+     */
+    public void setDepthOffset(int newOffset) {
+        int delta = newOffset - mDepthOffset;
+
+        mDepthOffset = newOffset;
+
+        setDepth(mDepth + delta);
+    }
+
+    /**
      * Setter for mDepth.
      *
-     * <p>This method will recursively update mDepth for all mChildre
+     * <p>This method will recursively update mDepth for all mChildren
      *
      * @param newDepth The new depth value.
      */
@@ -571,7 +589,7 @@ public class GameObject {
         mDepth = newDepth;
 
         for (GameObject child : mChildren) {
-            child.setDepth(mDepth + 1);
+            child.setDepth(mDepth + child.getDepthOffset());
         }
     }
 
