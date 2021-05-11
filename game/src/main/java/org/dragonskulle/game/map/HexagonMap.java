@@ -14,6 +14,8 @@ import lombok.extern.java.Log;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.TransformHex;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.game.GameConfig;
+import org.dragonskulle.game.GameConfig.StatConfig;
 import org.dragonskulle.game.GameState;
 import org.dragonskulle.game.map.HexagonTile.TileType;
 import org.dragonskulle.input.Actions;
@@ -99,6 +101,15 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
         Deque<HexagonTile> tiles = new ArrayDeque<HexagonTile>();
         tiles.add(tile);
 
+        GameConfig cfg = GameState.getSceneConfig();
+        int radius;
+        if (cfg == null) {
+            radius = 1;
+        } else {
+            StatConfig statCfg = cfg.getViewDistanceStat();
+            radius = Math.round(statCfg.getValue().getBaseValue());
+        }
+
         floodFill(
                 tiles,
                 (__, tileToUse, neighbours, tilesOut) -> {
@@ -114,7 +125,8 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
                             }
                         }
                     }
-                });
+                },
+                radius);
 
         if (size[0] > mLargestLandMass[1]) {
             mLargestLandMass[0] = mLandMass;
@@ -130,13 +142,14 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
      * @param tiles The {@link Deque} to hold the tiles to which need to be visited.
      * @param visitor The {@link IFloodFillVisitor} which states what needs to be done when visiting
      *     a node.
+     * @param radius The radius of the circle around the centre tile.
      */
-    public void floodFill(Deque<HexagonTile> tiles, IFloodFillVisitor visitor) {
+    public void floodFill(Deque<HexagonTile> tiles, IFloodFillVisitor visitor, int radius) {
         ArrayList<HexagonTile> neighbours = new ArrayList<>();
 
         while (tiles.size() != 0) {
             HexagonTile tileToUse = tiles.removeFirst();
-            getTilesInRadius(tileToUse, 1, false, neighbours);
+            getTilesInRadius(tileToUse, radius, false, neighbours);
             visitor.onVisit(this, tileToUse, neighbours, tiles);
         }
     }
