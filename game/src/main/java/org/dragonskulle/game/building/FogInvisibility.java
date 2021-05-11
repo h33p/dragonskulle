@@ -33,6 +33,11 @@ public class FogInvisibility extends Component implements IOnStart, ILateFrameUp
         getGameObject().getComponents(Renderable.class, mRenderables);
         getGameObject().getComponentsInChildren(Renderable.class, mRenderables);
         mStickToTile = getGameObject().getComponent(StickToTile.class);
+
+        mRenderables.stream()
+                .filter(Reference::isValid)
+                .map(Reference::get)
+                .forEach(r -> r.setEnabled(false));
     }
 
     @Override

@@ -19,7 +19,7 @@
                         1,
                         1
                     ],
-                    "intensity" : 1,
+                    "intensity" : 10,
                     "type" : "directional",
                     "name" : "Sun"
                 }
@@ -64,7 +64,13 @@
         {
             "extensions" : {
                 "DSKULLE_game_object" : {
-                    "transform" : "org.dragonskulle.components.Transform3D"
+                    "transform" : "org.dragonskulle.components.Transform3D",
+                    "components" : [
+                        {
+                            "class_name" : "org.dragonskulle.game.materials.HighlightControls",
+                            "enabled" : true
+                        }
+                    ]
                 }
             },
             "mesh" : 0,
@@ -262,9 +268,9 @@
             "name" : "MenuHex",
             "pbrMetallicRoughness" : {
                 "baseColorFactor" : [
-                    1,
-                    0.537187397480011,
-                    0.06823772937059402,
+                    0.1574343740940094,
+                    0.1217571347951889,
+                    0.08632887899875641,
                     1
                 ],
                 "roughnessFactor" : 0.19117647409439087
@@ -276,8 +282,8 @@
             "pbrMetallicRoughness" : {
                 "baseColorFactor" : [
                     0,
-                    1,
-                    0.1957247406244278,
+                    0.31853899359703064,
+                    0.06726457178592682,
                     1
                 ],
                 "metallicFactor" : 0,
@@ -316,9 +322,9 @@
             "name" : "Mountain",
             "pbrMetallicRoughness" : {
                 "baseColorFactor" : [
-                    0.21391046047210693,
-                    1,
-                    0.4564031958580017,
+                    0.07319163531064987,
+                    0.31853899359703064,
+                    0.1499527096748352,
                     1
                 ],
                 "metallicFactor" : 0,
@@ -332,8 +338,8 @@
             "pbrMetallicRoughness" : {
                 "baseColorFactor" : [
                     0,
-                    0.09111402928829193,
-                    1,
+                    0.04538241773843765,
+                    0.45753154158592224,
                     0.9338235259056091
                 ],
                 "metallicFactor" : 0,

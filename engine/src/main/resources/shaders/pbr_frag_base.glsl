@@ -95,7 +95,7 @@ vec4 pbr_base() {
 		);
 	}
 
-	vec3 ambient = vec3(0.05) * albedo;
+	vec3 ambient = vec3(0.649, 0.8, 1.0) * vec3(0.2) * albedo;
 
 	vec3 color = ambient + accum + fragEmissionCol;
 

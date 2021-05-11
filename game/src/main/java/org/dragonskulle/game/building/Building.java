@@ -569,6 +569,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
                 if (propId >= PROPS.length) break;
                 if (hexagonTile == tile) continue;
                 if (hexagonTile.getTileType() != TileType.LAND) continue;
+                if (hexagonTile.getClaimedBy() != this) continue;
                 nob =
                         serverMan.spawnNetworkObject(
                                 ownerId, getNetworkManager().findTemplateByName(PROPS[propId++]));

@@ -968,7 +968,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                             attacker.setServerActionLocked(false);
                             defender.setServerActionLocked(false);
 
-                            if (attacker.getOwner() == null || defender.getOwner() == null) return;
+                            // Could happen when the game ends in the middle of attack
+                            if (defender.getOwner() == null || defender.getOwner() == null) {
+                                return;
+                            }
 
                             boolean won;
                             if (defender.getOwner().hasLost()) won = true;

@@ -5,18 +5,21 @@
 
 layout(location = LAST_IN_LOCATION + 1) in vec4 inOverlay;
 layout(location = LAST_IN_LOCATION + 2) in float inMinDist;
-layout(location = LAST_IN_LOCATION + 3) in float inDistPow;
-layout(location = LAST_IN_LOCATION + 4) in float inAlphaMul;
+layout(location = LAST_IN_LOCATION + 3) in float inMaxDist;
+layout(location = LAST_IN_LOCATION + 4) in float inMinLerp;
+layout(location = LAST_IN_LOCATION + 5) in float inDistPow;
+layout(location = LAST_IN_LOCATION + 6) in float inAlphaMul;
 
 void main() {
 	vec4 color = pbr_base();
 
-	float dist = length(fragUV - vec2(0.5));
-	float lerp = min(dist / inMinDist, 1.0);
-	float add = pow(lerp, inDistPow);
-	vec4 col = inOverlay + ((vec4(inOverlay.rgb, 1.0) * vec4(vec3(fragColor.a), min(1.0, inOverlay.a * inAlphaMul)) * add));
+	float dist = max(length(fragUV - vec2(0.5)) - inMinDist, 0.0);
+	float lerp = dist / (inMaxDist - inMinDist);
+	float add = pow(lerp, inDistPow) + inMinLerp;
+	vec4 col = inOverlay * add;
 
-	color.rgb = mix(color.rgb, inOverlay.rgb, col.a);
+	col.a = col.a / (col.a + 1);
+	color.rgb = color.rgb * max(1 - col.a, 0.0) + inOverlay.rgb * max(1.0, length(color.rgb)) * col.a;
 
 	// Tonemap
 	// TODO: Do this in post-processing effect
