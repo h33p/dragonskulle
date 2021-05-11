@@ -100,13 +100,13 @@ public class App implements NativeResource {
 
                             LambdaFrameUpdate time =
                                     new LambdaFrameUpdate(
-                                            (dt) -> {
-                                                mSunRotAccu += dt;
-                                                if (mSunRotAccu > 360) mSunRotAccu -= 360;
-                                                if ((116 < mSunRotAccu) && (mSunRotAccu < 280)) {
-                                                    rigTran.rotateDeg(dt * 2, 0, 0);
-                                                } else rigTran.rotateDeg(dt, 0, 0);
-                                            });
+                                            (dt) ->
+                                                    rigTran.rotateDeg(
+                                                            rigTran.getUpVector().z() > 0
+                                                                    ? dt
+                                                                    : dt * 2,
+                                                            0,
+                                                            0));
                             lightRig.addComponent(time);
 
                             lightRig.buildChild(
