@@ -29,7 +29,6 @@ import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Resource;
-import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.SingletonStore;
 import org.dragonskulle.game.App;
 import org.dragonskulle.game.GameConfig.PlayerConfig;
@@ -311,27 +310,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
     @Override
     public void onStart() {
 
-        // Store the map.
-        HexagonMap checkingMapExists = Scene.getActiveScene().getSingleton(HexagonMap.class);
-        if (checkingMapExists == null) {
-            log.severe("Scene Map is null");
-        } else {
-            Reference<HexagonMap> mapCheck = checkingMapExists.getReference(HexagonMap.class);
-            if (Reference.isValid(mapCheck)) {
-                mMap = mapCheck;
-            } else {
-                log.severe("mapCheck is null.");
-            }
-        }
-
-        if (getNetworkManager().isServer()) {
-            // Add the building to the relevant HexagonTile.
-            getTile().setBuilding(this);
-        }
-
-        // Generate the list of tiles that have been claimed by the Building. This is always a set
-        // radius so only needs to be generated once.
-        generateClaimTiles();
+        mapCheck();
 
         checkInitialise();
 
@@ -370,6 +349,29 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
                         this::triggerAudioEvent,
                         ServerEvent.EventRecipients.ALL_CLIENTS,
                         ServerEvent.EventTimeframe.INSTANT);
+    }
+
+    /** Method to be called after the building is created by {@link Player} on the server. */
+    public void afterServerSpawn() {
+        mapCheck();
+
+        // Add the building to the relevant HexagonTile.
+        getTile().setBuilding(this);
+
+        // Generate the list of tiles that have been claimed by the Building. This is always a set
+        // radius so only needs to be generated once.
+        generateClaimTiles();
+    }
+
+    private void mapCheck() {
+        // Store the map.
+        Reference<HexagonMap> mapCheck =
+                getGameObject().getScene().getSingletonRef(HexagonMap.class);
+        if (Reference.isValid(mapCheck)) {
+            mMap = mapCheck;
+        } else {
+            log.severe("mapCheck is null.");
+        }
     }
 
     /**

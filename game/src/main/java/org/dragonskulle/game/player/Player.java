@@ -533,6 +533,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             return null;
         }
 
+        building.get().afterServerSpawn();
+
         return building.get();
     }
 
