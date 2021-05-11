@@ -266,16 +266,19 @@ public class App implements NativeResource {
         mainScene.addRootObject(audioObject);
 
         // Pause menu
+
         GameObject pauseMenu =
                 new GameObject(
                         "pause menu",
                         new TransformUI(),
                         (menu) -> {
+                            AudioSource endGameSource = new AudioSource();
+                            menu.buildChild("audio", s -> s.addComponent(endGameSource));
                             menu.addComponent(
                                     new UIPauseMenu(
                                             networkManager,
                                             componentsToPause,
-                                            asrc.getReference(AudioSource.class)));
+                                            endGameSource.getReference(AudioSource.class)));
                         });
 
         mainScene.addRootObject(pauseMenu);
