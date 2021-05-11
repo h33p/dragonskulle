@@ -29,4 +29,9 @@ public class NetworkConfig {
 
     /** How many client requests can we process in a given tick (per client). */
     public static final int MAX_CLIENT_REQUESTS = 32;
+
+    /** Specific challenge bytes server will send. */
+    public static final byte SERVER_HANDSHAKE_BYTE = 42;
+    /** Specific challenge bytes client will send. */
+    public static final byte CLIENT_HANDSHAKE_BYTE = 0x42;
 }

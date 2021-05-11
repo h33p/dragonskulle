@@ -10,6 +10,7 @@ import lombok.experimental.Accessors;
 import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
+import org.dragonskulle.components.lambda.LambdaFrameUpdate;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
@@ -43,6 +44,8 @@ public class Lobby extends Component implements IFrameUpdate {
 
     private static final int PORT = 17569;
 
+    private static final int MAX_PLAYERS = 6;
+
     private final Map<String, String> mHosts = new HashMap<>();
     private final AtomicBoolean mHostsUpdated = new AtomicBoolean(false);
     private final AtomicBoolean mLobbyIDUpdated = new AtomicBoolean(false);
@@ -58,7 +61,7 @@ public class Lobby extends Component implements IFrameUpdate {
     private final Reference<NetworkManager> mClientNetworkManager;
     private final Reference<NetworkManager> mServerNetworkManager;
     private String mLobbyId = "";
-    private final UIInputBox mLobbyIDText;
+    private final UITextRect mLobbyIDText;
 
     /**
      * Default constructor, creates all static UI elements and also GameObjects that will have the
@@ -156,13 +159,9 @@ public class Lobby extends Component implements IFrameUpdate {
                         (root) -> {
                             root.addComponent(new UIRenderable(new Vector4f(1f, 1f, 1f, 0.1f)));
                             root.getTransform(TransformUI.class).setParentAnchor(0f);
-                            root.addComponent(
-                                    new UITextRect(
-                                            "Waiting for host to start game!",
-                                            new Vector4f(1f, 1f, 1f, 1f)));
                         });
 
-        mLobbyIDText = new UIInputBox("ID: ");
+        mLobbyIDText = new UITextRect("Private Game");
 
         UIManager.getInstance()
                 .buildVerticalUi(
@@ -196,7 +195,31 @@ public class Lobby extends Component implements IFrameUpdate {
                         0.3f,
                         0,
                         1,
-                        new UITextRect("Server:"),
+                        (go) -> {
+                            UITextRect playerCount = new UITextRect("Players: -/-");
+                            go.addComponent(playerCount);
+                            go.addComponent(
+                                    new LambdaFrameUpdate(
+                                            (__) -> {
+                                                if (Reference.isValid(playerCount.getLabelText())
+                                                        && Reference.isValid(
+                                                                mServerNetworkManager)) {
+                                                    int clientCount =
+                                                            mServerNetworkManager
+                                                                    .get()
+                                                                    .getClientCount();
+                                                    playerCount
+                                                            .getLabelText()
+                                                            .get()
+                                                            .setText(
+                                                                    String.format(
+                                                                            "Players: %d/%d",
+                                                                            clientCount,
+                                                                            MAX_PLAYERS));
+                                                }
+                                            }));
+                        },
+                        mLobbyIDText,
                         new UIButton(
                                 "Start Game",
                                 (__, ___) -> {
@@ -206,7 +229,6 @@ public class Lobby extends Component implements IFrameUpdate {
                                     mLobbyIDUpdated.set(true);
                                     LobbyDiscovery.closeLocalLobby();
                                 }),
-                        mLobbyIDText,
                         new UIButton(
                                 "Close lobby",
                                 (__, ___) -> {
@@ -243,7 +265,31 @@ public class Lobby extends Component implements IFrameUpdate {
                         0.3f,
                         0,
                         1,
-                        new UITextRect("Client:"),
+                        (go) -> {
+                            UITextRect playerCount = new UITextRect("Players: -/-");
+                            go.addComponent(playerCount);
+                            go.addComponent(
+                                    new LambdaFrameUpdate(
+                                            (__) -> {
+                                                if (Reference.isValid(playerCount.getLabelText())
+                                                        && Reference.isValid(
+                                                                mClientNetworkManager)) {
+                                                    int clientCount =
+                                                            mClientNetworkManager
+                                                                    .get()
+                                                                    .getClientCount();
+                                                    playerCount
+                                                            .getLabelText()
+                                                            .get()
+                                                            .setText(
+                                                                    String.format(
+                                                                            "Players: %d/%d",
+                                                                            clientCount,
+                                                                            MAX_PLAYERS));
+                                                }
+                                            }));
+                        },
+                        new UITextRect("Waiting for host"),
                         new UIButton(
                                 "Leave lobby",
                                 (__, ___) -> {
@@ -347,6 +393,8 @@ public class Lobby extends Component implements IFrameUpdate {
             LobbyDiscovery.openLocalLobby();
         } else {
             String ip = UPnP.getExternalIPAddress();
+            mLobbyId = "loading";
+            mLobbyIDUpdated.set(true);
             GameAPI.addNewHostAsync(ip, PORT, this::onAddNewHost);
         }
 
@@ -384,7 +432,12 @@ public class Lobby extends Component implements IFrameUpdate {
 
     public static boolean createServer(NetworkManager manager, IGameEndEvent endEvent) {
         return manager.createServer(
-                PORT, null, Lobby::onClientLoaded, Lobby::onGameStarted, endEvent);
+                PORT,
+                Lobby::onClientConnectionAttempt,
+                null,
+                Lobby::onClientLoaded,
+                Lobby::onGameStarted,
+                endEvent);
     }
 
     /** Builds the "Join" section of the UI. */
@@ -732,6 +785,20 @@ public class Lobby extends Component implements IFrameUpdate {
     }
 
     /**
+     * Called on server side when a client attempts to connect to it.
+     *
+     * @param manager network manager which the event is called from.
+     * @param client server client instance.
+     * @return {@code null} if the client should be connected. {@code -1} otherwise.
+     */
+    public static Integer onClientConnectionAttempt(NetworkManager manager, ServerClient client) {
+        if (manager.getServerManager().getClients().size() >= MAX_PLAYERS) {
+            return -1;
+        }
+        return null;
+    }
+
+    /**
      * Called on client side when the server the client is connected to sends the start game
      * message.
      *
@@ -780,10 +847,7 @@ public class Lobby extends Component implements IFrameUpdate {
 
         GameState gameState = Scene.getActiveScene().getSingleton(GameState.class);
 
-        // 6 players for now
-        int maxPlayers = 6;
-
-        gameState.getNumPlayers().set(maxPlayers);
+        gameState.getNumPlayers().set(MAX_PLAYERS);
 
         gameState.registerGameEndListener(
                 new Reference<>(
@@ -797,7 +861,7 @@ public class Lobby extends Component implements IFrameUpdate {
 
         // Get the number of clients and thus the number of AI needed
         int clientNumber = manager.getServerManager().getClients().size();
-        int numOfAi = maxPlayers - clientNumber;
+        int numOfAi = MAX_PLAYERS - clientNumber;
 
         // Add the AI
         for (int i = -1; i >= -1 * numOfAi; i--) {
@@ -817,7 +881,13 @@ public class Lobby extends Component implements IFrameUpdate {
             buildServerList();
         }
         if (mLobbyIDUpdated.compareAndSet(true, false)) {
-            mLobbyIDText.setText("ID: " + mLobbyId);
+            if (Reference.isValid(mLobbyIDText.getLabelText())) {
+                if (!mLobbyId.equals("")) {
+                    mLobbyIDText.getLabelText().get().setText("ID: " + mLobbyId);
+                } else {
+                    mLobbyIDText.getLabelText().get().setText("Private Game" + mLobbyId);
+                }
+            }
         }
     }
 

@@ -170,6 +170,8 @@ public class ServerClient {
     private void run() {
         mRunning = true;
 
+        boolean started = false;
+
         try {
             log.fine("Spawned client thread");
 
@@ -177,13 +179,37 @@ public class ServerClient {
             DataInput input = new DataInputStream(bIn);
             mDataOut = new DataOutputStream(new BufferedOutputStream(mSocket.getOutputStream()));
 
+            int startSeconds = (int) Time.getTimeInSeconds();
+
+            // Attempt handshake
+            mDataOut.writeByte(NetworkConfig.SERVER_HANDSHAKE_BYTE);
+            mDataOut.writeInt(startSeconds);
+            mDataOut.flush();
+
+            byte clientByte = input.readByte();
+
+            if (clientByte != NetworkConfig.CLIENT_HANDSHAKE_BYTE) {
+                closeSocket();
+                return;
+            }
+
+            int clientChallenge = input.readInt();
+
+            if (clientChallenge != startSeconds + clientByte) {
+                closeSocket();
+                return;
+            }
+
             mServerListener.clientConnected(this);
 
             if (mNetworkID == -1) {
                 closeSocket();
+                return;
             }
 
             mDataOut.writeByte((byte) mNetworkID);
+
+            started = true;
 
             while (mRunning && mSocket.isConnected() && !mSocket.isClosed()) {
                 short len = input.readShort();
@@ -196,7 +222,9 @@ public class ServerClient {
             }
         } catch (EOFException | SocketException ignored) {
         } catch (Exception exception) {
-            exception.printStackTrace();
+            if (started) {
+                exception.printStackTrace();
+            }
         } finally {
             closeSocket();
         }

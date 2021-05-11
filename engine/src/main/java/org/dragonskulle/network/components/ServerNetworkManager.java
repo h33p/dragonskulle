@@ -62,6 +62,15 @@ public class ServerNetworkManager {
                 return -1;
             }
 
+            if (mClientConnectionAttemptEvent != null) {
+                Integer result = mClientConnectionAttemptEvent.handle(mManager, client);
+
+                // Reconnection is unsupported!
+                if (result != null) {
+                    return -1;
+                }
+            }
+
             return mServer.addConnectedClient(client);
         }
 
@@ -190,6 +199,8 @@ public class ServerNetworkManager {
     private Server mServer;
     /** Back reference to {@link NetworkManager}. */
     @Getter private final NetworkManager mManager;
+    /** Callback for clients that attempt to connect. */
+    private final NetworkManager.IConnectionAttemptEvent mClientConnectionAttemptEvent;
     /** Callback for connected clients. */
     private final NetworkManager.IConnectedClientEvent mClientConnectedEvent;
     /** Callback for connected clients. */
@@ -224,6 +235,7 @@ public class ServerNetworkManager {
     public ServerNetworkManager(
             NetworkManager manager,
             int port,
+            NetworkManager.IConnectionAttemptEvent clientConnectionAttemptEvent,
             NetworkManager.IConnectedClientEvent clientConnectedEvent,
             NetworkManager.IClientLoadedEvent clientLoadedEvent,
             NetworkManager.IGameStartEvent gameStartEventHandler,
@@ -231,6 +243,7 @@ public class ServerNetworkManager {
             throws IOException {
         mManager = manager;
         mServer = new Server(port, mListener);
+        mClientConnectionAttemptEvent = clientConnectionAttemptEvent;
         mClientConnectedEvent = clientConnectedEvent;
         mClientLoadedEvent = clientLoadedEvent;
         mGameStartEventHandler = gameStartEventHandler;
@@ -511,6 +524,7 @@ public class ServerNetworkManager {
         try {
             stream.writeByte(NetworkConfig.Codes.MESSAGE_UPDATE_STATE);
             stream.writeFloat(Engine.getInstance().getCurTime());
+            stream.writeInt(mServer.getClients().size());
 
             stream.flush();
             stream.close();
