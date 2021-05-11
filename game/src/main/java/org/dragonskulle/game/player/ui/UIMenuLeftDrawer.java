@@ -223,7 +223,6 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         ArrayList<UITextButtonFrame> items = new ArrayList<>();
 
         // The attack menu.
-        // items.add(buildConfirmAttackButtonFrame());
         items.add(buildCancelAttackButtonFrame());
         mAttackScreenMenu = buildMenu(items, 0.25f);
 
@@ -231,25 +230,9 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         GameObject menu = mAttackScreenMenu.get();
 
         if (menu.getChildren().size() == 0) return;
-
         // Move the cancel button down slightly.
         GameObject cancelButton = menu.getChildren().get(0);
         cancelButton.getTransform(TransformUI.class).translate(0, 0.2f);
-
-        // Add an attack confirm label.
-        UITextRect attackConfirm = new UITextRect("Attack Selected");
-        mAttackConfirm = attackConfirm.getReference(UITextRect.class);
-
-        GameObject attackConfirmObject =
-                new GameObject(
-                        "attack_confirm",
-                        new TransformUI(),
-                        (object) -> {
-                            object.addComponent(attackConfirm);
-                        });
-        TransformUI attackConfirmTransform = attackConfirmObject.getTransform(TransformUI.class);
-        attackConfirmTransform.setParentAnchor(0.02f, 0.24f, 1f - 0.02f, 0.24f + 0.08f);
-        menu.addChild(attackConfirmObject);
 
         // Add an attack cost label.
         UITextRect cost = new UITextRect("Cost: ?");
@@ -280,6 +263,21 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         TransformUI infoTransform = attackInfoObject.getTransform(TransformUI.class);
         infoTransform.setParentAnchor(0.02f, 0.155f, 1f - 0.02f, 0.155f + 0.08f);
         menu.addChild(attackInfoObject);
+
+        // Add an attack confirm label.
+        UITextRect attackConfirm = new UITextRect("Attack Selected");
+        mAttackConfirm = attackConfirm.getReference(UITextRect.class);
+
+        GameObject attackConfirmObject =
+                new GameObject(
+                        "attack_confirm",
+                        new TransformUI(),
+                        (object) -> {
+                            object.addComponent(attackConfirm);
+                        });
+        TransformUI attackConfirmTransform = attackConfirmObject.getTransform(TransformUI.class);
+        attackConfirmTransform.setParentAnchor(0.02f, 0.24f, 1f - 0.02f, 0.24f + 0.08f);
+        menu.addChild(attackConfirmObject);
     }
 
     private void generateSellMenu() {
