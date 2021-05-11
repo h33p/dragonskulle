@@ -24,7 +24,7 @@ public class KeyboardMovement extends Component implements IFrameUpdate, IOnAwak
 
     @Getter @Setter public float mRotateSpeed = 180f;
 
-    @Getter @Setter private float mZoomLevel = 0.f;
+    @Getter @Setter private float mZoomLevel = 0f;
 
     private transient Transform3D mTransform;
 
@@ -36,7 +36,6 @@ public class KeyboardMovement extends Component implements IFrameUpdate, IOnAwak
     @Override
     public void frameUpdate(float deltaTime) {
         if (mTransform != null) {
-
             float moveSpeed = MathUtils.lerp(mMinMoveSpeed, mMaxMoveSpeed, mZoomLevel);
 
             float xAxis = GameActions.RIGHT.isActivated() ? 1 : 0;
@@ -51,8 +50,8 @@ public class KeyboardMovement extends Component implements IFrameUpdate, IOnAwak
             rotAxis -= GameActions.ROTATE_LEFT.isActivated() ? 1 : 0;
             rotAxis *= mRotateSpeed * deltaTime;
 
-            mTransform.translateLocal(xAxis, yAxis, 0f);
-            mTransform.rotateDeg(0f, 0f, -rotAxis);
+            mTransform.translateLocal(xAxis, yAxis, 0);
+            mTransform.rotateDeg(0, 0, -rotAxis);
         }
     }
 

@@ -17,6 +17,7 @@ import org.dragonskulle.core.TemplateManager;
 import org.dragonskulle.game.camera.DragMovement;
 import org.dragonskulle.game.camera.HeightByMap;
 import org.dragonskulle.game.camera.KeyboardMovement;
+import org.dragonskulle.game.camera.MapClamper;
 import org.dragonskulle.game.camera.ScrollTranslate;
 import org.dragonskulle.game.camera.TargetMovement;
 import org.dragonskulle.game.camera.ZoomTilt;
@@ -104,6 +105,7 @@ public class App implements NativeResource {
                         "mainCamera",
                         (rig) -> {
                             KeyboardMovement keyboardMovement = new KeyboardMovement();
+                            rig.addComponent(new MapClamper());
                             rig.addComponent(keyboardMovement);
                             rig.addComponent(new TargetMovement());
                             rig.addComponent(new DragMovement());
