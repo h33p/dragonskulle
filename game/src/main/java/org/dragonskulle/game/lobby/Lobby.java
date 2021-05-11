@@ -781,7 +781,7 @@ public class Lobby extends Component implements IFrameUpdate {
         GameState gameState = Scene.getActiveScene().getSingleton(GameState.class);
 
         // 6 players for now
-        int maxPlayers = 6;
+        int maxPlayers = 1;
 
         gameState.getNumPlayers().set(maxPlayers);
 
