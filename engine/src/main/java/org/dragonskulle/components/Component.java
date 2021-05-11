@@ -24,7 +24,7 @@ public abstract class Component {
     @Getter @Setter protected GameObject mGameObject;
 
     @Getter @Setter private boolean mAwake = false;
-    @Getter @Setter private boolean mEnabled = true;
+    @Getter private boolean mEnabled = true;
     @Getter @Setter private boolean mStarted = false;
 
     /**
@@ -46,9 +46,23 @@ public abstract class Component {
 
     /** Handle component's removal. Called by game object. */
     public final void onRemove() {
-        onDestroy();
+        if (mAwake) {
+            onDestroy();
+        }
         mGameObject = null;
         mReference.clear();
+    }
+
+    /**
+     * Set the component's enabled state.
+     *
+     * @param enabled whether to enable or disable the component.
+     */
+    public void setEnabled(boolean enabled) {
+        if (enabled != mEnabled && mGameObject != null) {
+            mGameObject.dirtyComponentLists();
+        }
+        mEnabled = enabled;
     }
 
     /** User-defined destroy method, this is what needs to be overridden instead of destroy. */

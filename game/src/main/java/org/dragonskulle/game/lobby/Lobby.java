@@ -167,9 +167,10 @@ public class Lobby extends Component implements IFrameUpdate {
         UIManager.getInstance()
                 .buildVerticalUi(
                         mLobbyUi,
-                        0.05f,
+                        0.3f,
                         0,
-                        0.2f,
+                        1,
+                        new UITextRect("Play Game:"),
                         new UIButton(
                                 "Join Game",
                                 (__, ___) -> {
@@ -192,9 +193,10 @@ public class Lobby extends Component implements IFrameUpdate {
         UIManager.getInstance()
                 .buildVerticalUi(
                         mHostingUi,
-                        0.05f,
+                        0.3f,
                         0,
-                        0.2f,
+                        1,
+                        new UITextRect("Server:"),
                         new UIButton(
                                 "Start Game",
                                 (__, ___) -> {
@@ -238,9 +240,10 @@ public class Lobby extends Component implements IFrameUpdate {
         UIManager.getInstance()
                 .buildVerticalUi(
                         mJoiningUi,
-                        0.05f,
+                        0.3f,
                         0,
-                        0.2f,
+                        1,
+                        new UITextRect("Client:"),
                         new UIButton(
                                 "Leave lobby",
                                 (__, ___) -> {
@@ -256,14 +259,15 @@ public class Lobby extends Component implements IFrameUpdate {
                                     }
                                 }));
 
-        UIInputBox ipInput = new UIInputBox("Enter IP");
+        UIInputBox ipInput = new UIInputBox("");
 
         UIManager.getInstance()
                 .buildVerticalUi(
                         mJoinIPUi,
-                        0.05f,
+                        0.3f,
                         0,
-                        0.2f,
+                        1,
+                        new UITextRect("Enter IP:"),
                         ipInput,
                         new UIButton(
                                 "Connect",
@@ -391,9 +395,10 @@ public class Lobby extends Component implements IFrameUpdate {
         UIManager.getInstance()
                 .buildVerticalUi(
                         mJoinUi,
-                        0.05f,
+                        0.3f,
                         0,
-                        0.2f,
+                        1,
+                        new UITextRect("Join Game:"),
                         new UIButton(
                                 "Join public lobby",
                                 (__, ___) -> {
@@ -475,7 +480,17 @@ public class Lobby extends Component implements IFrameUpdate {
 
         final GameObject serverList = mServerList.get();
 
-        UIManager.IUIBuildHandler[] uiElements = new UIManager.IUIBuildHandler[mHosts.size() + 3];
+        UIManager.IUIBuildHandler[] uiElements = new UIManager.IUIBuildHandler[mHosts.size() + 2];
+
+        uiElements[0] = new UITextRect("Server List:");
+
+        uiElements[1] =
+                new UIButton(
+                        "Refresh",
+                        (button, ___) -> {
+                            button.getLabelText().get().setText("Refreshing...");
+                            GameAPI.getAllHostsAsync(this::onGetAllHosts);
+                        });
 
         int i = 2;
         for (Map.Entry<String, String> entry : mHosts.entrySet()) {
@@ -514,30 +529,15 @@ public class Lobby extends Component implements IFrameUpdate {
 
         UIInputBox inputBox = new UIInputBox("Enter Lobby ID");
 
-        uiElements[0] = inputBox;
-
-        uiElements[1] =
-                new UIButton(
-                        "Refresh",
-                        (button, ___) -> {
-                            button.getLabelText().get().setText("Refreshing...");
-                            GameAPI.getAllHostsAsync(this::onGetAllHosts);
-                        });
-
-        uiElements[uiElements.length - 1] =
-                new UIButton(
-                        "Back",
-                        (__, ___) -> {
-                            mJoinUi.setEnabled(true);
-                            mServerListUi.setEnabled(false);
-                        });
-
         UIManager.getInstance()
                 .buildVerticalUi(
                         serverList,
-                        0.05f,
-                        0.15f,
-                        0.35f,
+                        0.3f,
+                        0.4f,
+                        0.6f,
+                        0.5f,
+                        new UITextRect("Join Public Lobby:"),
+                        inputBox,
                         new UIButton(
                                 "Join with ID",
                                 (button, ___) -> {
@@ -594,9 +594,15 @@ public class Lobby extends Component implements IFrameUpdate {
                                                 }
                                             });
                                     button.getLabelText().get().setText("Join with ID");
+                                }),
+                        new UIButton(
+                                "Back",
+                                (__, ___) -> {
+                                    mJoinUi.setEnabled(true);
+                                    mServerListUi.setEnabled(false);
                                 }));
 
-        UIManager.getInstance().buildVerticalUi(serverList, 0.05f, 0, 0.2f, uiElements);
+        UIManager.getInstance().buildVerticalUi(serverList, 0.3f, 0, 0.4f, 1f, uiElements);
 
         mServerListUi.addChild(mServerList.get());
     }
@@ -606,15 +612,17 @@ public class Lobby extends Component implements IFrameUpdate {
         UIManager.getInstance()
                 .buildVerticalUi(
                         mHostUi,
-                        0.05f,
+                        0.3f,
                         0,
-                        0.2f,
+                        1,
+                        new UITextRect("Host Game:"),
                         new UIButton(
                                 "Host public lobby",
                                 (__, ___) -> {
                                     if (!UPnP.isPortAvailable(PORT, "TCP")
                                             || !UPnP.addPortMapping(PORT, "TCP")) {
                                         mFailedToForwardUi.setEnabled(true);
+                                        mHostUi.setEnabled(false);
                                     } else {
                                         createServer(false, true);
                                     }

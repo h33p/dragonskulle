@@ -17,6 +17,7 @@ import org.dragonskulle.core.TemplateManager;
 import org.dragonskulle.game.camera.DragMovement;
 import org.dragonskulle.game.camera.HeightByMap;
 import org.dragonskulle.game.camera.KeyboardMovement;
+import org.dragonskulle.game.camera.MapClamper;
 import org.dragonskulle.game.camera.ScrollTranslate;
 import org.dragonskulle.game.camera.TargetMovement;
 import org.dragonskulle.game.camera.ZoomTilt;
@@ -104,6 +105,7 @@ public class App implements NativeResource {
                         "mainCamera",
                         (rig) -> {
                             KeyboardMovement keyboardMovement = new KeyboardMovement();
+                            rig.addComponent(new MapClamper());
                             rig.addComponent(keyboardMovement);
                             rig.addComponent(new TargetMovement());
                             rig.addComponent(new DragMovement());
@@ -111,6 +113,8 @@ public class App implements NativeResource {
                             rig.addComponent(heightByMap);
 
                             rig.getTransform(Transform3D.class).setPosition(0, -4, 0.5f);
+                            rig.getTransform(Transform3D.class)
+                                    .rotateDeg(0, 0, (float) Math.random() * 360);
 
                             rig.buildChild(
                                     "rotationRig",
@@ -272,7 +276,7 @@ public class App implements NativeResource {
                             t.setMargin(0f, 0f, 0f, 0.15f);
                             t.setPivotOffset(0.5f, 0.3f);
 
-                            UIText txt = new UIText("Hex Wars");
+                            UIText txt = new UIText(new Vector4f(0.3f, 0.3f, 0.2f, 1f), "Hex Wars");
                             txt.setDepthShift(-1f);
 
                             title.addComponent(txt);
@@ -318,9 +322,10 @@ public class App implements NativeResource {
 
         uiManager.buildVerticalUi(
                 mainUi,
-                0.05f,
+                0.3f,
                 0,
-                MENU_BASEWIDTH,
+                1,
+                null,
                 new UIButton(
                         "Play Game",
                         (__, ___) -> {

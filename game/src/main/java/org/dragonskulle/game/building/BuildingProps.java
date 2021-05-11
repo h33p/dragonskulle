@@ -7,7 +7,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.IFixedUpdate;
-import org.dragonskulle.components.IOnAwake;
+import org.dragonskulle.components.ILateFrameUpdate;
+import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.building.stat.SyncStat;
@@ -24,7 +25,8 @@ import org.dragonskulle.network.components.sync.SyncInt;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class BuildingProps extends NetworkableComponent implements IOnAwake, IFixedUpdate {
+public class BuildingProps extends NetworkableComponent
+        implements IOnStart, IFixedUpdate, ILateFrameUpdate {
     private Reference<Building> mBuilding;
     private List<Reference<TileProp>> mProps = new ArrayList<>();
     @Getter private SyncInt mBuildingNetId = new SyncInt(-1);
@@ -32,6 +34,12 @@ public class BuildingProps extends NetworkableComponent implements IOnAwake, IFi
     private StatType mStatType;
 
     public void fixedUpdate(float deltaTime) {
+        if (getNetworkObject().isServer()) {
+            updateStats();
+        }
+    }
+
+    private void updateStats() {
         if (!Reference.isValid(mBuilding)) {
             if (getNetworkObject().isServer()) {
                 getGameObject().destroy();
@@ -44,27 +52,32 @@ public class BuildingProps extends NetworkableComponent implements IOnAwake, IFi
             }
         }
 
+        int level = 0;
+
         if (mStatType != null && Reference.isValid(mBuilding)) {
-            int level = mBuilding.get().getStat(mStatType).getLevel();
-
             // Disable walls on capital, because capital has bigger walls
-            if (mStatType == StatType.DEFENCE && mBuilding.get().isCapital()) {
-                level = 0;
-            }
-
-            for (Reference<TileProp> prop : mProps) {
-                if (Reference.isValid(prop)) {
-                    prop.get().updateProp(level);
-                }
+            if (mStatType != StatType.DEFENCE || !mBuilding.get().isCapital()) {
+                level = mBuilding.get().getStat(mStatType).getLevel();
             }
         }
+
+        for (Reference<TileProp> prop : mProps) {
+            if (Reference.isValid(prop)) {
+                prop.get().updateProp(level);
+            }
+        }
+    }
+
+    @Override
+    public void lateFrameUpdate(float deltaTime) {
+        updateStats();
     }
 
     @Override
     protected void onDestroy() {}
 
     @Override
-    public void onAwake() {
+    public void onStart() {
         mStatType = StatType.valueOf(mStat);
         getGameObject().getComponents(TileProp.class, mProps);
 
@@ -73,5 +86,7 @@ public class BuildingProps extends NetworkableComponent implements IOnAwake, IFi
         if (nob != null) {
             mBuilding = nob.getGameObject().getComponent(Building.class);
         }
+
+        updateStats();
     }
 }

@@ -35,8 +35,7 @@ public class TargetMovement extends Component implements IFrameUpdate, IOnAwake 
 
     private transient Transform3D mTransform;
 
-    private final Vector3f mTmpVec1 = new Vector3f();
-    private final Vector3f mTmpVec2 = new Vector3f();
+    private final Vector3f mTmpVec = new Vector3f();
     private float mCurHoldTime = 0f;
 
     @Getter private Reference<Transform> mTarget = null;
@@ -60,11 +59,11 @@ public class TargetMovement extends Component implements IFrameUpdate, IOnAwake 
     public void frameUpdate(float deltaTime) {
         if (mTransform != null && Reference.isValid(mTarget)) {
 
-            mTransform.getPosition(mTmpVec1);
-            mTarget.get().getPosition(mTmpVec2);
-            mTmpVec2.sub(mTmpVec1).mul(mDirectionMul);
+            mTarget.get().getPosition(mTmpVec);
+            mTransform.getInvWorldMatrix().transformPosition(mTmpVec);
+            mTmpVec.mul(mDirectionMul);
 
-            if (mTmpVec2.lengthSquared() <= mEndDelta * mEndDelta) {
+            if (mTmpVec.lengthSquared() <= mEndDelta * mEndDelta) {
                 if (mCurHoldTime >= mHoldTime) {
                     mTarget = null;
                     return;
@@ -75,7 +74,7 @@ public class TargetMovement extends Component implements IFrameUpdate, IOnAwake 
 
             mCurHoldTime += deltaTime;
 
-            float dist = mTmpVec2.length();
+            float dist = mTmpVec.length();
 
             if (dist <= 1e-20f) {
                 return;
@@ -87,11 +86,9 @@ public class TargetMovement extends Component implements IFrameUpdate, IOnAwake 
                             mMaxMoveSpeed,
                             Math.min(mMaxSpeedDistance, dist) / mMaxSpeedDistance);
 
-            mTmpVec2.normalize().mul(Math.min(moveSpeed * deltaTime, dist));
+            mTmpVec.normalize().mul(Math.min(moveSpeed * deltaTime, dist));
 
-            mTmpVec2.mulDirection(mTransform.getInvWorldMatrix());
-
-            mTransform.translate(mTmpVec2);
+            mTransform.translateLocal(mTmpVec.x, mTmpVec.y, mTmpVec.z);
         }
     }
 

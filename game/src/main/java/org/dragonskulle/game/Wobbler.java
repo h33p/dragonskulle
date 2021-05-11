@@ -8,6 +8,7 @@ import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.TransformHex;
+import org.dragonskulle.core.Reference;
 
 /**
  * Simple wobbly objects!.
@@ -16,8 +17,12 @@ import org.dragonskulle.components.TransformHex;
  */
 @Accessors(prefix = "m")
 public class Wobbler extends Component implements IOnAwake, IFrameUpdate {
-    public float mWobbleSpeed = 1.f;
-    public float mWobbleRange = 1.f;
+    @Getter @Setter private float mWobbleSpeed = 1.f;
+    @Getter @Setter private float mWobbleRange = 1.f;
+
+    @Getter @Setter private boolean mCreateFadeControls = true;
+
+    private Reference<MenuFader> mFadeControls;
 
     private TransformHex mTransform;
     @Getter @Setter private float mPhaseShift = 0f;
@@ -34,6 +39,13 @@ public class Wobbler extends Component implements IOnAwake, IFrameUpdate {
     public void onAwake() {
         mTransform = (TransformHex) getGameObject().getTransform();
         mTotalTime = mPhaseShift * mWobbleSpeed;
+
+        mFadeControls = getGameObject().getComponent(MenuFader.class);
+
+        if (mFadeControls == null && mCreateFadeControls) {
+            mFadeControls = new MenuFader().getReference(MenuFader.class);
+            getGameObject().addComponent(mFadeControls.get());
+        }
     }
 
     @Override
@@ -43,6 +55,11 @@ public class Wobbler extends Component implements IOnAwake, IFrameUpdate {
         sineDelta += (float) Math.sin(mTotalTime);
 
         mTransform.translate(sineDelta * mWobbleRange);
+
+        if (Reference.isValid(mFadeControls)) {
+            mFadeControls.get().setPhaseShift(mPhaseShift);
+            mFadeControls.get().setAlphaMul(1f / (mPhaseShift * 3f + 1f));
+        }
     }
 
     @Override

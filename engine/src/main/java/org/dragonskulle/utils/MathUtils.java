@@ -2,12 +2,15 @@
 package org.dragonskulle.utils;
 
 import java.nio.ByteBuffer;
+import lombok.extern.java.Log;
+import org.joml.Vector3f;
 
 /**
  * Basic additional math utilities.
  *
  * @author Aurimas Blažulionis
  */
+@Log
 public class MathUtils {
 
     public static final float DEG_TO_RAD = (float) Math.PI / 180.f;
@@ -124,5 +127,18 @@ public class MathUtils {
             }
         }
         dest.flip();
+    }
+
+    /**
+     * Clamps each value in the vector within +-value.
+     *
+     * @param vect the vector to clamp
+     * @param minimax the absolute offset allowed in each direction
+     */
+    public static void clampVector(Vector3f vect, float minimax) {
+        vect.set(
+                clamp(vect.x(), -minimax, minimax),
+                clamp(vect.y(), -minimax, minimax),
+                clamp(vect.z(), -minimax, minimax));
     }
 }

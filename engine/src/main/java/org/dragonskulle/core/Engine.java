@@ -3,10 +3,11 @@ package org.dragonskulle.core;
 
 import com.rits.cloning.Cloner;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import lombok.extern.java.Log;
 import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
@@ -33,7 +34,6 @@ import org.dragonskulle.ui.UIManager;
  *     components access to engine components such as the AudioManager and InputManager.
  */
 @Accessors(prefix = "m")
-@Log
 public class Engine {
     private static final Engine ENGINE_INSTANCE = new Engine();
 
@@ -49,8 +49,12 @@ public class Engine {
 
     private boolean mIsRunning = false;
 
+    /** Contains list of objects that are to be destroyed at the end of loop iteration. */
     protected final HashSet<GameObject> mDestroyedObjects = new HashSet<>();
+    /** Contains list of components that are to be destroyed at the end of loop iteration. */
     protected final HashSet<Component> mDestroyedComponents = new HashSet<>();
+    /** Contains a map of objects that are to be enabled/disabled at the end of loop iteration. */
+    protected final HashMap<GameObject, Boolean> mDisabledObjects = new HashMap<>();
 
     private final HashSet<Scene> mScenesToActivate = new HashSet<>();
     private final HashSet<Scene> mScenesToDeactivate = new HashSet<>();
@@ -280,9 +284,6 @@ public class Engine {
             // Update scenes
             switchScenes();
 
-            // Update all component lists in active scenes
-            updateScenesComponentsList();
-
             // Wake up all components that aren't awake (Called on all active scenes)
             wakeComponents();
 
@@ -334,6 +335,9 @@ public class Engine {
             mEndOfLoopEvents = mEventsToConsume;
             consumeEvents(toConsume);
 
+            // Disable all objects that have been deferred to do so
+            disableObjects();
+
             // Destroy all objects and components that were destroyed this frame
             destroyObjectsAndComponents();
         }
@@ -343,12 +347,21 @@ public class Engine {
     private void wakeComponents() {
         for (Scene s : mActiveScenes) {
             Scene.setActiveScene(s);
-            for (Component component : s.getNotAwakeComponents()) {
+
+            List<Component> list = s.getNotAwakeComponents();
+
+            for (Component component : list) {
                 if (component instanceof IOnAwake) {
                     ((IOnAwake) component).onAwake();
                 }
                 component.setAwake(true);
             }
+
+            if (list.size() > 0) {
+                s.dirtyToStartComponents();
+            }
+
+            list.clear();
         }
         Scene.setActiveScene(null);
     }
@@ -360,12 +373,21 @@ public class Engine {
     private void startEnabledComponents() {
         for (Scene s : mActiveScenes) {
             Scene.setActiveScene(s);
-            for (Component component : s.getEnabledButNotStartedComponents()) {
+
+            List<Component> list = s.getEnabledButNotStartedComponents();
+
+            for (Component component : list) {
                 if (component instanceof IOnStart) {
                     ((IOnStart) component).onStart();
                 }
                 component.setStarted(true);
             }
+
+            if (list.size() > 0) {
+                s.dirtyEnabledComponents();
+            }
+
+            list.clear();
         }
         Scene.setActiveScene(null);
     }
@@ -443,7 +465,13 @@ public class Engine {
         }
     }
 
-    /** Destroy all GameObjects and Components that need to be destroyed.s */
+    /** Commit object enabled state changes. */
+    private void disableObjects() {
+        mDisabledObjects.forEach((k, v) -> k.setEnabledImmediate(v));
+        mDisabledObjects.clear();
+    }
+
+    /** Destroy all GameObjects and Components that need to be destroyed. */
     private void destroyObjectsAndComponents() {
         // Destroy all game objects that need to be destroyed
         for (GameObject object : mDestroyedObjects) {
@@ -552,15 +580,6 @@ public class Engine {
         for (Component c : mDestroyedComponents) {
             c.engineDestroy();
         }
-    }
-
-    /** Update the component lists in every active scene. */
-    private void updateScenesComponentsList() {
-        for (Scene s : mActiveScenes) {
-            Scene.setActiveScene(s);
-            s.updateComponentsList();
-        }
-        Scene.setActiveScene(null);
     }
 
     /** Cleans up all resources used by the engine on shutdown. */

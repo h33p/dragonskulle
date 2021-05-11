@@ -338,6 +338,34 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
     }
 
     /**
+     * Calculate a rectangle bounding box around all visible (non-fog) tiles.
+     *
+     * <p>If there are no tiles, this method will set min to POSITIVE_INFINITY, and max to
+     * NEGATIVE_INFINITY.
+     *
+     * @param min target minimum coordinates
+     * @param max target maximum coordinates
+     */
+    public void calculateVisibleTileBounds(Vector3f min, Vector3f max) {
+        min.set(Float.POSITIVE_INFINITY);
+        max.set(Float.NEGATIVE_INFINITY);
+
+        Vector3f mTmpPos = new Vector3f();
+
+        getAllTiles()
+                .filter(t -> t.getTileType() != TileType.FOG)
+                .map(t -> t.getGameObject().getTransform().getPosition(mTmpPos))
+                .forEach(
+                        p -> {
+                            min.min(p);
+                            max.max(p);
+                        });
+
+        min.sub(2, 2, 0);
+        max.add(2, 2, 0);
+    }
+
+    /**
      * This checks if the given {@link HexagonTile} is an island (An island is defined as a land
      * mass which is disconnected completely from the largest land mass)
      *

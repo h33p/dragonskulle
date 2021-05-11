@@ -44,6 +44,6 @@ public class TileProp extends Component implements IOnStart {
             return;
         }
 
-        mObj.get().setEnabled(level >= mLevel && (mMaxLevel < 0 || level <= mMaxLevel));
+        mObj.get().setEnabledImmediate(level >= mLevel && (mMaxLevel < 0 || level <= mMaxLevel));
     }
 }
