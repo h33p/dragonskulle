@@ -47,13 +47,23 @@ public class SoundEffectSource extends Component implements IOnStart, IFrameUpda
         AudioSource source = mSource.get();
 
         if (source.getTimeLeft() <= 0 && (!mPlayOnce || mPlayed) && !sGlobalDisable) {
-            Reference<SoundEffectDescriptor> desc =
-                    mEffects.get((int) (Math.random() * mEffects.size()) % mEffects.size());
+            playEffect();
+        }
+    }
 
-            if (Reference.isValid(desc)) {
-                source.playSound(desc.get().getSoundName());
-                mPlayed = true;
-            }
+    public void playEffect() {
+        if (!Reference.isValid(mSource)) {
+            return;
+        }
+
+        AudioSource source = mSource.get();
+
+        Reference<SoundEffectDescriptor> desc =
+                mEffects.get((int) (Math.random() * mEffects.size()) % mEffects.size());
+
+        if (Reference.isValid(desc)) {
+            source.playSound(desc.get().getSoundName());
+            mPlayed = true;
         }
     }
 

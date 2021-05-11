@@ -30,13 +30,13 @@ public class GameUIAppearance {
         BUTTON_UP_SOUND("button-up.wav"),
         BUILDING_SOUND("building_upgrade.wav"),
         BUILDING_SELL_SOUND("building_sell.wav"),
-        ATTACK_SUCCESS_SOUND("attack_success.wav"),
+        ATTACK_SUCCESS_SOUND("artlist/attack-success.wav"),
         ATTACK_FAILURE_SOUND("attack_failed.wav"),
         ATTACK_INVOKED_SOUND("attack_invoke.wav"),
         ON_GAME_START("game_start.wav"),
         ON_WIN_SOUND("victory.wav"),
         ON_LOSE_SOUND("on_lose.wav"),
-        DEFENCE_FAILED_SOUND("attack_success.wav"),
+        DEFENCE_FAILED_SOUND("artlist/defence-fail.wav"),
         DEFENCE_SUCCESS_SOUND("attack_failed.wav");
 
         private static final AudioFiles[] sValues = values();

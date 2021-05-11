@@ -105,6 +105,8 @@ public class App implements NativeResource {
 
         List<Reference<Component>> componentsToPause = new ArrayList<>();
 
+        AudioSource asrc = new AudioSource();
+
         GameObject cameraRig =
                 new GameObject(
                         "mainCamera",
@@ -153,6 +155,7 @@ public class App implements NativeResource {
 
                                                     AudioListener listener = new AudioListener();
                                                     camera.addComponent(listener);
+                                                    camera.addComponent(asrc);
                                                 });
                                     });
                         });
@@ -165,21 +168,12 @@ public class App implements NativeResource {
                         "game_audio",
                         (audio) -> {
                             AudioSource bgm = new AudioSource();
-                            bgm.setVolume(0.05f);
+                            bgm.setVolume(0.4f);
                             bgm.setLooping(true);
                             bgm.playSound(BGM_SOUND);
                             audio.addComponent(bgm);
                         });
         mainScene.addRootObject(audioObject);
-
-        AudioSource asrc = new AudioSource();
-        GameObject jukebox =
-                new GameObject(
-                        "jukebox",
-                        (audio) -> {
-                            audio.addComponent(asrc);
-                        });
-        mainScene.addRootObject(jukebox);
 
         // Pause menu
         GameObject pauseMenu =
@@ -267,7 +261,7 @@ public class App implements NativeResource {
                         "menu audio",
                         (audio) -> {
                             AudioSource bgm = new AudioSource();
-                            bgm.setVolume(0.06f);
+                            bgm.setVolume(0.6f);
                             bgm.setLooping(true);
                             bgm.playSound(BGM_SOUND);
 
