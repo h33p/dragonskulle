@@ -114,6 +114,7 @@ public class ClientNetworkManager {
         @Override
         public void updateServerState(DataInput stream) throws IOException {
             mServerTime = stream.readFloat();
+            mPlayerCount = stream.readInt();
         }
 
         @Override
@@ -184,6 +185,8 @@ public class ClientNetworkManager {
     @Getter private int mNetId = -1;
 
     @Getter private float mServerTime = 0f;
+
+    @Getter private int mPlayerCount = 0;
 
     /** An map of references to objects. */
     private final HashMap<Integer, ClientObjectEntry> mNetworkObjectReferences = new HashMap<>();

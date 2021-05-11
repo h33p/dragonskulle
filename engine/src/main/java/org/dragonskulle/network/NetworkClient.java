@@ -183,27 +183,43 @@ public class NetworkClient {
         @Override
         public void run() {
             try {
-                mSocket = new Socket();
-                mSocket.connect(new InetSocketAddress(mIP, mPort), 1000);
-                mDataOut = new DataOutputStream(mSocket.getOutputStream());
-                mBIn = new BufferedInputStream(mSocket.getInputStream());
-                DataInputStream input = new DataInputStream(mBIn);
-                byte netID = input.readByte();
-                mClientListener.connectedToServer(netID);
+                do {
+                    mSocket = new Socket();
+                    mSocket.connect(new InetSocketAddress(mIP, mPort), 1000);
+                    mDataOut = new DataOutputStream(mSocket.getOutputStream());
+                    mBIn = new BufferedInputStream(mSocket.getInputStream());
+                    DataInputStream input = new DataInputStream(mBIn);
 
-                while (mOpen && mSocket.isConnected()) {
-                    try {
-                        short len = input.readShort();
-                        byte[] bytes = IOUtils.readNBytes(input, len);
-                        if (mSimLatency <= 0f) {
-                            queueRequest(bytes);
-                        } else {
-                            mDelayedRequests.add(new TimestampedRequest(bytes));
-                        }
-                    } catch (IOException e) {
+                    byte serverByte = input.readByte();
+
+                    if (serverByte != NetworkConfig.SERVER_HANDSHAKE_BYTE) {
+                        mOpen = false;
                         break;
                     }
-                }
+
+                    int serverTime = input.readInt();
+
+                    mDataOut.writeByte(NetworkConfig.CLIENT_HANDSHAKE_BYTE);
+                    mDataOut.writeInt(serverTime + NetworkConfig.CLIENT_HANDSHAKE_BYTE);
+                    mDataOut.flush();
+
+                    byte netID = input.readByte();
+                    mClientListener.connectedToServer(netID);
+
+                    while (mOpen && mSocket.isConnected()) {
+                        try {
+                            short len = input.readShort();
+                            byte[] bytes = IOUtils.readNBytes(input, len);
+                            if (mSimLatency <= 0f) {
+                                queueRequest(bytes);
+                            } else {
+                                mDelayedRequests.add(new TimestampedRequest(bytes));
+                            }
+                        } catch (IOException e) {
+                            break;
+                        }
+                    }
+                } while (false);
             } catch (UnknownHostException exception) {
                 mOpen = false;
                 mClientListener.unknownHost();

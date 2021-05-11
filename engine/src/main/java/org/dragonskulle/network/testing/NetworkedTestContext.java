@@ -313,6 +313,7 @@ public class NetworkedTestContext {
                                         ctx.getManager()
                                                 .createServer(
                                                         PORT,
+                                                        null,
                                                         onConnectedOnServer,
                                                         onLoadedOnServer,
                                                         onGameStart,

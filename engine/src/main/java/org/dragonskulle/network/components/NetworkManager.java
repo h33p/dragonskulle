@@ -49,6 +49,24 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
         void handle(Scene gameScene, NetworkManager manager, int netID);
     }
 
+    /** Event that gets invoked when a client attempts to connect to the server. */
+    public interface IConnectionAttemptEvent {
+        /**
+         * Handle the connection event.
+         *
+         * <p>Note that this event is invoked on another thread!
+         *
+         * <p>Note that reconnecting (positive IDs) are not yet supported!
+         *
+         * @param manager network manager which the event is called from.
+         * @param client server client instance.
+         * @return {@code null} if the client should be given a new ID. {@code -1} if the client
+         *     should be disconnected. A non-negative integer for a specific network ID (in case of
+         *     reconnects).
+         */
+        Integer handle(NetworkManager manager, ServerClient client);
+    }
+
     public interface IHostClosedGameEvent {
         /** Handle the host ended game event */
         void handle();
@@ -201,6 +219,7 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
      */
     public boolean createServer(
             int port,
+            IConnectionAttemptEvent connectionAttemptHandler,
             IConnectedClientEvent connectionHandler,
             IClientLoadedEvent loadHandler,
             IGameStartEvent startEventHandler,
@@ -211,6 +230,7 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
                         new ServerNetworkManager(
                                 this,
                                 port,
+                                connectionAttemptHandler,
                                 connectionHandler,
                                 loadHandler,
                                 startEventHandler,
@@ -249,6 +269,23 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
      */
     public boolean isClient() {
         return mClientManager != null;
+    }
+
+    /**
+     * Get the number of clients in the current network instance.
+     *
+     * <p>Return number of clients in the game.
+     */
+    public int getClientCount() {
+        if (mServerManager != null) {
+            return mServerManager.getClients().size();
+        }
+
+        if (mClientManager != null) {
+            return mClientManager.getPlayerCount();
+        }
+
+        return 0;
     }
 
     /**
