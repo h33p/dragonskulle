@@ -46,7 +46,6 @@ public class GameObject {
                             cloned.mRoot = cloner.deepClone(toClone.mRoot, clones);
                             cloned.mParent = cloner.deepClone(toClone.mParent, clones);
                             cloned.mTransform = cloner.deepClone(toClone.mTransform, clones);
-                            // cloned.mScene = toClone.getScene();
                             for (Component comp : toClone.mComponents) {
                                 cloned.mComponents.add(cloner.deepClone(comp, clones));
                             }
@@ -605,6 +604,7 @@ public class GameObject {
         }
     }
 
+    /** Dirty the component list of the object's scene. */
     public void dirtyComponentLists() {
         if (mScene != null) {
             mScene.dirtyComponentLists();

@@ -53,6 +53,11 @@ public abstract class Component {
         mReference.clear();
     }
 
+    /**
+     * Set the component's enabled state.
+     *
+     * @param enabled whether to enable or disable the component.
+     */
     public void setEnabled(boolean enabled) {
         if (enabled != mEnabled && mGameObject != null) {
             mGameObject.dirtyComponentLists();

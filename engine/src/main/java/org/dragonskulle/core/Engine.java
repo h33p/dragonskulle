@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.List;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-import lombok.extern.java.Log;
 import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
@@ -34,7 +33,6 @@ import org.dragonskulle.ui.UIManager;
  *     components access to engine components such as the AudioManager and InputManager.
  */
 @Accessors(prefix = "m")
-@Log
 public class Engine {
     private static final Engine ENGINE_INSTANCE = new Engine();
 
@@ -50,9 +48,11 @@ public class Engine {
 
     private boolean mIsRunning = false;
 
+    /** Contains list of objects that are to be destroyed at the end of loop iteration. */
     protected final HashSet<GameObject> mDestroyedObjects = new HashSet<>();
+    /** Contains list of components that are to be destroyed at the end of loop iteration. */
     protected final HashSet<Component> mDestroyedComponents = new HashSet<>();
-
+    /** Contains a map of objects that are to be enabled/disabled at the end of loop iteration. */
     protected final HashMap<GameObject, Boolean> mDisabledObjects = new HashMap<>();
 
     private final HashSet<Scene> mScenesToActivate = new HashSet<>();
@@ -464,12 +464,13 @@ public class Engine {
         }
     }
 
+    /** Commit object enabled state changes. */
     private void disableObjects() {
         mDisabledObjects.forEach((k, v) -> k.setEnabledImmediate(v));
         mDisabledObjects.clear();
     }
 
-    /** Destroy all GameObjects and Components that need to be destroyed.s */
+    /** Destroy all GameObjects and Components that need to be destroyed. */
     private void destroyObjectsAndComponents() {
         // Destroy all game objects that need to be destroyed
         for (GameObject object : mDestroyedObjects) {

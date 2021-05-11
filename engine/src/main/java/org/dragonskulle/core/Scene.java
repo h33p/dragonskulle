@@ -21,21 +21,31 @@ import org.dragonskulle.components.Component;
 public class Scene {
     @Getter private final ArrayList<GameObject> mGameObjects = new ArrayList<>();
 
+    /** Contains a cached list of all components on the scene. */
     private final ArrayList<Component> mComponents = new ArrayList<>();
 
+    /** Contains a cached list of all components that need starting on the scene. */
     private final ArrayList<Component> mToStartComponents = new ArrayList<>();
+    /** Whether mToStartComponents is dirty. */
     private boolean mToStartComponentsDirty = false;
 
+    /** Contains a cached list of all components that are not yet awake on the scene. */
     private final ArrayList<Component> mNotAwakeComponents = new ArrayList<>();
+    /** Whether or not mNotAwakeComponents is dirty. */
     private boolean mNotAwakeComponentsDirty = false;
 
+    /** Contains a cached list of all enabled and started components on the scene. */
     private final ArrayList<Component> mEnabledComponents = new ArrayList<>();
+    /** Whether or not mEnabledComponents is dirty. */
     private boolean mEnabledComponentsDirty = false;
 
+    /** List of enabled components by specific class types. */
     private final Map<Class<?>, CompList> mInterfaceComponents = new HashMap<>();
 
+    /** Name used to identify the scene. */
     @Getter private final String mName;
 
+    /** Registered singletons on the scene. */
     @Getter private final SingletonStore mSingletons = new SingletonStore();
 
     private boolean mComponentListDirty = true;
@@ -76,6 +86,7 @@ public class Scene {
     @Setter(AccessLevel.PACKAGE)
     private static Scene sActiveScene = null;
 
+    /** Allows to temporarily override active scene. */
     public static class SceneOverride implements AutoCloseable {
         private final Scene mPrevScene;
 
@@ -90,6 +101,7 @@ public class Scene {
         }
     }
 
+    /** Mark the component list on this scene as dirty. */
     public void dirtyComponentLists() {
         mComponentListDirty = true;
     }
@@ -152,11 +164,7 @@ public class Scene {
         dirtyComponentLists();
     }
 
-    /**
-     * Moves a root object from one scene to the next.
-     *
-     * <p>Although
-     */
+    /** Moves a root object from one scene to the next. */
     public void moveRootObjectToScene(GameObject object, Scene target) {
         if (mGameObjects.remove(object)) {
             target.addRootObject(object);
@@ -240,7 +248,8 @@ public class Scene {
         }
     }
 
-    void dirtyEnabledComponents() {
+    /** Dirty the enabled component list. */
+    public void dirtyEnabledComponents() {
         mEnabledComponentsDirty = true;
         mInterfaceComponents.values().stream().forEach(CompList::clear);
     }

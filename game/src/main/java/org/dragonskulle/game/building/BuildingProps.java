@@ -34,7 +34,9 @@ public class BuildingProps extends NetworkableComponent
     private StatType mStatType;
 
     public void fixedUpdate(float deltaTime) {
-        updateStats();
+        if (getNetworkObject().isServer()) {
+            updateStats();
+        }
     }
 
     private void updateStats() {

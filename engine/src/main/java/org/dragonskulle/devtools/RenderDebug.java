@@ -67,7 +67,6 @@ public class RenderDebug extends Component implements IOnAwake, IFrameUpdate {
 
         if (Reference.isValid(mText)) {
             if (debugPressed && !mLastPressed) {
-                System.out.println("SET TOGGLE!");
                 mText.get().setEnabled(!mText.get().isEnabled());
             }
 
