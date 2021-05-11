@@ -4,7 +4,6 @@ package org.dragonskulle.game;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import lombok.extern.java.Log;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.Scene.SceneOverride;
 import org.dragonskulle.game.building.Building;
@@ -20,12 +19,14 @@ import org.junit.Test;
  *
  * @author DragonSkulle
  */
-@Log
 public class CostTest {
 
+    /** The {@link SceneOverride} to use */
     private SceneOverride mOverride;
+    /** The {@link Building} to use */
     private Building mBuilding;
 
+    /** This will set up tests */
     @Before
     public void setup() {
         Scene scene = new Scene("");
@@ -109,6 +110,7 @@ public class CostTest {
         assertTrue(lvl3Defence > lvl2Attack);
     }
 
+    /** This will cleanup tests */
     @After
     public void cleanup() {
         mOverride.close();

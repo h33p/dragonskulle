@@ -19,9 +19,12 @@ import org.junit.Test;
  */
 public class UpgradeTest {
 
+    /** This will be the {@link SceneOverride} to use */
     private SceneOverride mOverride;
+    /** This will be the {@link Building} to use */
     private Building mBuilding;
 
+    /** This will set up all the needed variables */
     @Before
     public void setup() {
         Scene scene = new Scene("");
@@ -91,6 +94,7 @@ public class UpgradeTest {
         assertTrue(test5 > test4);
     }
 
+    /** This will cleanup everything */
     @After
     public void cleanup() {
         mOverride.close();
