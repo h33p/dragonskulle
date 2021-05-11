@@ -339,6 +339,8 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             HexagonTile selectedTile = buildable.get(random.nextInt(buildable.size()));
             Building capital = createBuilding(selectedTile.getQ(), selectedTile.getR(), true);
             if (capital == null) {
+                setOwnsCapital(false);
+                getGameObject().destroy();
                 return;
             }
             capital.setCapital(true);
