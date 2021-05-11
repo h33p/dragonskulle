@@ -143,7 +143,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     public static final Vector4fc PLAIN_MATERIAL = highlightSelectionFromColour(0.7f, 0.94f, 0.98f);
     public static final Vector4fc ATTACK_MATERIAL =
             highlightSelectionFromColour(0.9f, 0.3f, 0.3f, 0.5f);
-    public static final Vector4fc FOG_MATERIAL = highlightSelectionFromColour(0.1f, 0.1f, 0.13f);
+    public static final Vector4fc FOG_MATERIAL = new Vector4f(0.035f, 0.035f, 0.043f, 1.5f);
     public static final Vector4fc SELECT_MATERIAL = highlightSelectionFromColour(0.1f, 0.9f, 0.7f);
     public static final Vector4fc SELECT_INVALID_MATERIAL =
             highlightSelectionFromColour(0.9f, 0.1f, 0.7f);
