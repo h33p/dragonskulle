@@ -771,8 +771,10 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      * @return The remaining time to wait.
      */
     public float getRemainingCooldown() {
-        return getConfig().getAttackCooldown()
-                - (getNetworkManager().getServerTime() - mLastAttack.get());
+        return Math.max(
+                getConfig().getAttackCooldown()
+                        - (getNetworkManager().getServerTime() - mLastAttack.get()),
+                0f);
     }
 
     /**
