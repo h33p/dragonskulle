@@ -326,25 +326,27 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             }
         }
 
-        List<HexagonTile> buildable =
-                getMap().getAllTiles().filter(this::isBuildable).collect(Collectors.toList());
-        if (buildable.isEmpty()) {
-            // Cannot add a capital
-            setOwnsCapital(false);
-            log.severe("Disconnecting");
-            getGameObject().destroy();
+        // This will try and randomly place you 20 times
+        for (int i = 0; i <= attempts; i++) {
+            List<HexagonTile> buildable =
+                    getMap().getAllTiles().filter(this::isBuildable).collect(Collectors.toList());
+            if (!buildable.isEmpty()) {
+                Random random = new Random();
+                HexagonTile selectedTile = buildable.get(random.nextInt(buildable.size()));
+                Building capital = createBuilding(selectedTile.getQ(), selectedTile.getR(), true);
+                if (capital == null) {
+                    continue;
+                }
+                capital.setCapital(true);
 
-        } else {
-            Random random = new Random();
-            HexagonTile selectedTile = buildable.get(random.nextInt(buildable.size()));
-            Building capital = createBuilding(selectedTile.getQ(), selectedTile.getR(), true);
-            if (capital == null) {
-                return;
+                mGameState.get().getNumCapitalsStanding().add(1);
             }
-            capital.setCapital(true);
-
-            mGameState.get().getNumCapitalsStanding().add(1);
         }
+
+        // Cannot add a capital
+        setOwnsCapital(false);
+        log.severe("Disconnecting");
+        getGameObject().destroy();
     }
 
     /**
