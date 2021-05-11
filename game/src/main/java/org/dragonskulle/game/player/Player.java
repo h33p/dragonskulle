@@ -1016,9 +1016,6 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
                                     GameState state = mGameState.get();
                                     state.getNumCapitalsStanding().add(-1);
-                                    if (state.getNumCapitalsStanding().get() <= 1) {
-                                        state.endGame(attacker.getOwnerId());
-                                    }
 
                                     // Update stats
                                     ArrayList<SyncStat> stats = defender.getStats();

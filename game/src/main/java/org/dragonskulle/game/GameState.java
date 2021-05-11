@@ -8,10 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import org.dragonskulle.components.IFixedUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.Engine;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Scene;
+import org.dragonskulle.game.player.Player;
 import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.requests.ServerEvent;
@@ -27,7 +29,7 @@ import org.dragonskulle.network.components.sync.SyncInt;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class GameState extends NetworkableComponent implements IOnAwake {
+public class GameState extends NetworkableComponent implements IOnAwake, IFixedUpdate {
     private static class GameEndEventData implements INetSerializable {
         private int mWinnerId;
 
@@ -109,11 +111,30 @@ public class GameState extends NetworkableComponent implements IOnAwake {
     }
 
     @Override
-    public void onDestroy() {}
+    public void fixedUpdate(float deltaTime) {
+        if (mNumCapitalsStanding.get() > 1) {
+            return;
+        }
 
-    public void endGame(int winnerId) {
+        Player winner =
+                getNetworkManager()
+                        .getNetworkObjects()
+                        .map(c -> c.getGameObject().getComponent(Player.class))
+                        .filter(Reference::isValid)
+                        .map(Reference::get)
+                        .filter(c -> !c.hasLost())
+                        .findFirst()
+                        .orElse(null);
+
+        int winnerId = winner != null ? winner.getNetworkObject().getOwnerId() : -1000;
+
         mGameEndEvent.invoke((data) -> data.mWinnerId = winnerId);
+
+        setEnabled(false);
     }
+
+    @Override
+    public void onDestroy() {}
 
     public void registerGameEndListener(Reference<IGameEndEvent> e) {
         if (Reference.isValid(e)) {
