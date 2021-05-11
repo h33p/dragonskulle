@@ -9,17 +9,21 @@ import java.util.ArrayList;
 import org.dragonskulle.core.Scene;
 import org.dragonskulle.core.Scene.SceneOverride;
 import org.dragonskulle.game.building.Building;
+import org.dragonskulle.game.building.stat.StatType;
 import org.dragonskulle.game.building.stat.SyncStat;
 import org.dragonskulle.game.player.BuildingDescriptor;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import lombok.extern.java.Log;
+
 /**
  * Will test the cost for buildings
  *
  * @author DragonSkulle
  */
+@Log
 public class CostTest {
 
 	SceneOverride mOverride;
@@ -33,7 +37,6 @@ public class CostTest {
         mOverride = new SceneOverride(scene);
         mBuilding = new Building();
         mBuilding.onConnectedSyncvars();
-        mBuilding.onStart();
         
     }
 	
@@ -60,9 +63,7 @@ public class CostTest {
         // Lvl 1 Attack Lvl 1 Defence Lvl 1 TGen
         int lvl1All = mBuilding.getAttackCost();
 
-        ArrayList<SyncStat> stats = mBuilding.getUpgradeableStats();
-
-        SyncStat attack = stats.get(0);
+        SyncStat attack = mBuilding.getStat(StatType.ATTACK);
         attack.increaseLevel();
 
         mBuilding.afterStatChange();
@@ -70,7 +71,7 @@ public class CostTest {
         int lvl2Attack = mBuilding.getAttackCost();
         assertTrue(lvl2Attack > lvl1All);
 
-        SyncStat defence = stats.get(1);
+        SyncStat defence = mBuilding.getStat(StatType.DEFENCE);
 
         defence.increaseLevel();
         defence.increaseLevel();
@@ -92,22 +93,24 @@ public class CostTest {
     @Test
     public void upgradeStats() {
 
-        ArrayList<SyncStat> stats = mBuilding.getUpgradeableStats();
 
         // Lvl 1 Attack Lvl 1 Defence Lvl 1 TGen
-        int lvl1All = stats.get(0).getCost();
-        stats.get(0).increaseLevel();
+    	
+    	int lvl1All = mBuilding.getStat(StatType.ATTACK).getCost();
+        
+        mBuilding.getStat(StatType.ATTACK).increaseLevel();
         mBuilding.afterStatChange();
 
         // Lvl 2 Attack Lvl 1 Defence Lvl 1 TGen
-        int lvl2Attack = stats.get(0).getCost();
+        int lvl2Attack = mBuilding.getStat(StatType.ATTACK).getCost();
         assertTrue(lvl2Attack > lvl1All);
-        stats.get(1).increaseLevel();
-        stats.get(1).increaseLevel();
+        
+        mBuilding.getStat(StatType.DEFENCE).increaseLevel();
+        mBuilding.getStat(StatType.DEFENCE).increaseLevel();
         mBuilding.afterStatChange();
 
         // Lvl 2 Attack Lvl 3 Defence Lvl 1 TGen
-        int lvl3Defence = stats.get(0).getCost();
+        int lvl3Defence = mBuilding.getStat(StatType.ATTACK).getCost();
         assertTrue(lvl3Defence > lvl2Attack);
     }
     
