@@ -33,15 +33,6 @@ public class BuildingProps extends NetworkableComponent
     @Getter @Setter private String mStat = "";
     private StatType mStatType;
 
-    /*@Override
-    protected void onNetworkInitialise() {
-        Reference<FogInvisibility> invis = getGameObject().getComponent(FogInvisibility.class);
-
-        if (Reference.isValid(invis)) {
-            //invis.get().initialise();
-        }
-    }*/
-
     public void fixedUpdate(float deltaTime) {
         updateStats();
     }

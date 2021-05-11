@@ -5,7 +5,6 @@ import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.components.Transform3D;
-import org.dragonskulle.core.Reference;
 
 /**
  * Simple spinning objects!.
@@ -21,8 +20,6 @@ public class Spinner extends Component implements IOnAwake, IFrameUpdate {
 
     private Transform3D mTransform;
     private float mTotalTime = 0.f;
-
-    private Reference<MenuFader> mFadeControls;
 
     /** Instantiates a new Spinner. */
     public Spinner() {}
@@ -43,7 +40,6 @@ public class Spinner extends Component implements IOnAwake, IFrameUpdate {
     @Override
     public void onAwake() {
         mTransform = (Transform3D) getGameObject().getTransform();
-        mFadeControls = getGameObject().getComponent(MenuFader.class);
     }
 
     @Override
@@ -55,10 +51,6 @@ public class Spinner extends Component implements IOnAwake, IFrameUpdate {
         sineDelta += (float) Math.sin(mTotalTime);
 
         mTransform.translate(0, 0, sineDelta * mSineAmplitude);
-
-        /*if (Reference.isValid(mFadeControls)) {
-            mFadeControls.get().setFadeSpeed(-mSineSpeed);
-        }*/
     }
 
     @Override
