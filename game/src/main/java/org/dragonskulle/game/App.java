@@ -24,6 +24,7 @@ import org.dragonskulle.game.camera.ZoomTilt;
 import org.dragonskulle.game.input.GameBindings;
 import org.dragonskulle.game.lobby.Lobby;
 import org.dragonskulle.game.map.MapEffects;
+import org.dragonskulle.game.misc.Temperature;
 import org.dragonskulle.game.player.ui.UIPauseMenu;
 import org.dragonskulle.game.player.ui.UISettingsMenu;
 import org.dragonskulle.network.components.NetworkManager;
@@ -35,6 +36,8 @@ import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIManager;
 import org.dragonskulle.ui.UIRenderable;
 import org.dragonskulle.ui.UIText;
+import org.dragonskulle.utils.MathUtils;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.system.NativeResource;
 
@@ -87,17 +90,104 @@ public class App implements NativeResource {
 
         mainScene.addRootObject(
                 new GameObject(
-                        "light",
-                        (light) -> {
-                            light.addComponent(new Light());
-                            final Transform3D tran = light.getTransform(Transform3D.class);
-                            tran.setRotationDeg(-60f, 0f, -30f);
+                        "lightRig",
+                        (lightRig) -> {
+                            final Transform3D rigTran = lightRig.getTransform(Transform3D.class);
+
                             LambdaFrameUpdate time =
                                     new LambdaFrameUpdate(
                                             (dt) -> {
-                                                tran.rotateDeg(0.001f, 0.001f, 0.001f);
+                                                rigTran.rotateDeg(dt, 0, 0);
                                             });
-                            light.addComponent(time);
+                            lightRig.addComponent(time);
+
+                            lightRig.buildChild(
+                                    "light",
+                                    (light) -> {
+                                        Light lightComp = new Light();
+                                        light.addComponent(lightComp);
+                                        final Transform3D tran =
+                                                light.getTransform(Transform3D.class);
+                                        tran.setRotationDeg(0f, 45f, 0f);
+
+                                        Vector3f down = new Vector3f(0, 0, -1);
+                                        Vector3f dir = new Vector3f();
+
+                                        float intensityOverlap = 0.05f;
+
+                                        LambdaFrameUpdate timeCol =
+                                                new LambdaFrameUpdate(
+                                                        (dt) -> {
+                                                            tran.getUpVector(dir).negate();
+                                                            float dot = dir.dot(down);
+                                                            lightComp.setIntensity(
+                                                                    10f
+                                                                            * (float)
+                                                                                    Math.pow(
+                                                                                            Math
+                                                                                                    .max(
+                                                                                                            dot
+                                                                                                                    + intensityOverlap,
+                                                                                                            0),
+                                                                                            0.7f));
+                                                            dot = MathUtils.clamp(dot, 0, 1);
+                                                            float temp = dot * 6500f;
+                                                            Temperature.colourTemperature(
+                                                                    temp,
+                                                                    0.01f,
+                                                                    lightComp.getColour());
+                                                        });
+
+                                        light.addComponent(timeCol);
+
+                                        light.buildChild(
+                                                "moon",
+                                                (moon) -> {
+                                                    Light moonLight = new Light();
+                                                    moon.addComponent(moonLight);
+                                                    final Transform3D moonTran =
+                                                            moon.getTransform(Transform3D.class);
+                                                    moonTran.setRotationDeg(180f, 0f, 0f);
+
+                                                    LambdaFrameUpdate moonTimeCol =
+                                                            new LambdaFrameUpdate(
+                                                                    (dt) -> {
+                                                                        moonTran.getUpVector(dir)
+                                                                                .negate();
+                                                                        float dot = dir.dot(down);
+                                                                        moonLight.setIntensity(
+                                                                                10f
+                                                                                        * (float)
+                                                                                                Math
+                                                                                                        .pow(
+                                                                                                                Math
+                                                                                                                        .max(
+                                                                                                                                dot
+                                                                                                                                        + intensityOverlap,
+                                                                                                                                0),
+                                                                                                                0.7f));
+                                                                        dot =
+                                                                                MathUtils.clamp(
+                                                                                        dot, 0, 1);
+                                                                        dot =
+                                                                                (float)
+                                                                                        Math.sqrt(
+                                                                                                dot);
+                                                                        float temp =
+                                                                                dot * 4500f + 8500f;
+                                                                        Temperature
+                                                                                .colourTemperature(
+                                                                                        temp,
+                                                                                        0.01f,
+                                                                                        moonLight
+                                                                                                .getColour());
+                                                                        moonLight.setIntensity(
+                                                                                1f * dot);
+                                                                    });
+
+                                                    moon.addComponent(moonTimeCol);
+                                                });
+                                    });
                         }));
 
         GameObject cameraRig =
