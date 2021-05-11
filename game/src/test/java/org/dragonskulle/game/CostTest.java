@@ -23,8 +23,8 @@ import org.junit.Test;
 @Log
 public class CostTest {
 
-    SceneOverride mOverride;
-    Building mBuilding;
+    private SceneOverride mOverride;
+    private Building mBuilding;
 
     @Before
     public void setup() {
