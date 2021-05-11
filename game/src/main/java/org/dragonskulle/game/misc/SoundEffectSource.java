@@ -18,7 +18,16 @@ public class SoundEffectSource extends Component implements IOnStart, IFrameUpda
     private List<Reference<SoundEffectDescriptor>> mEffects = new ArrayList<>();
     private Reference<AudioSource> mSource;
 
-    @Getter @Setter private float mSourceRange = 5f;
+    @Getter @Setter private float mSourceRange = 4f;
+
+    @Getter @Setter private boolean mPlayOnce = false;
+
+    private boolean mPlayed = false;
+
+    @Accessors(prefix = "s")
+    @Getter
+    @Setter
+    private static boolean sGlobalDisable = false;
 
     @Override
     public void onStart() {
@@ -37,12 +46,13 @@ public class SoundEffectSource extends Component implements IOnStart, IFrameUpda
 
         AudioSource source = mSource.get();
 
-        if (source.getTimeLeft() <= 0) {
+        if (source.getTimeLeft() <= 0 && (!mPlayOnce || mPlayed) && !sGlobalDisable) {
             Reference<SoundEffectDescriptor> desc =
                     mEffects.get((int) (Math.random() * mEffects.size()) % mEffects.size());
 
             if (Reference.isValid(desc)) {
                 source.playSound(desc.get().getSoundName());
+                mPlayed = true;
             }
         }
     }

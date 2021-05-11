@@ -41,7 +41,7 @@ public class AudioManager {
     private static final AudioManager AUDIO_MANAGER = new AudioManager();
 
     // TODO: Decide how many simultaneous audio sources we want to support
-    private static final int MAX_SOURCES = 128;
+    private static final int MAX_SOURCES = 32;
 
     private final ArrayList<Sound> mSounds = new ArrayList<>();
     private final ArrayList<Source> mSources = new ArrayList<>();
