@@ -57,7 +57,6 @@ public class App implements NativeResource {
     public static final Resource<GLTF> TEMPLATES = GLTF.getResource("templates");
 
     public static final float MENU_BASEWIDTH = 0.2f;
-    private static float mSunRotAccu = 0;
 
     /**
      * Adds the debug overlay, this is enabled by pressing F3.
