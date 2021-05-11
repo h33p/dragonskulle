@@ -340,6 +340,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                 capital.setCapital(true);
 
                 mGameState.get().getNumCapitalsStanding().add(1);
+                return;
             }
         }
 

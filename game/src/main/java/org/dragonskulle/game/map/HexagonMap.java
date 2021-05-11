@@ -98,18 +98,28 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
 
         Deque<HexagonTile> tiles = new ArrayDeque<HexagonTile>();
         tiles.add(tile);
+        boolean[] correctTile = {false};
 
         floodFill(
                 tiles,
                 (__, tileToUse, neighbours, tilesOut) -> {
-                    if (tileToUse.getTileType() == TileType.LAND
-                            && tileToUse.mLandMassNumber == -1) {
+                    if (tileToUse.getTileType() == TileType.LAND) {
+                        correctTile[0] = true;
+                    } else {
+                        for (HexagonTile neighbour : neighbours) {
+                            if (neighbour.getTileType() == TileType.LAND) {
+                                correctTile[0] = true;
+                            }
+                        }
+                    }
+                    if (correctTile[0] && tileToUse.mLandMassNumber == -1) {
                         size[0]++;
                         tileToUse.mLandMassNumber = mLandMass;
 
                         for (HexagonTile neighbour : neighbours) {
                             if (neighbour.mLandMassNumber == -1
-                                    && neighbour.getTileType() == TileType.LAND) {
+                                    && (neighbour.getTileType() == TileType.LAND
+                                            || tileToUse.getTileType() == TileType.LAND)) {
                                 tilesOut.add(neighbour);
                             }
                         }
