@@ -1,7 +1,6 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -29,7 +28,7 @@ public class NetworkMessage {
      * @return how many bytes this mask would take
      */
     public static int maskSizeInBytes(int boolCount) {
-        return boolCount;
+        return (boolCount + 7) / 8;
     }
 
     /**
@@ -39,10 +38,12 @@ public class NetworkMessage {
      * @return the mask from bytes
      */
     public static boolean[] getMaskFromBytes(byte[] maskBytes) {
-        boolean[] out = new boolean[maskBytes.length];
+        boolean[] out = new boolean[maskBytes.length * 8];
         int idx = 0;
         for (byte maskByte : maskBytes) {
-            out[idx++] = maskByte != 0;
+            for (int i = 0; i < 8; i++) {
+                out[idx++] = (maskByte & (1 << i)) != 0;
+            }
         }
         return out;
     }
@@ -54,11 +55,18 @@ public class NetworkMessage {
      * @return the bytes from booleans
      */
     public static byte[] convertBoolArrayToBytes(boolean[] bools) {
-        ArrayList<Byte> out = new ArrayList<>();
-        for (boolean b : bools) {
-            out.add(b ? (byte) 1 : (byte) 0);
+        byte[] out = new byte[maskSizeInBytes(bools.length)];
+
+        int idx = 0;
+
+        for (boolean flag : bools) {
+            if (flag) {
+                out[idx / 8] |= 1 << (idx % 8);
+            }
+            idx++;
         }
-        return toByteArray(out);
+
+        return out;
     }
 
     /**
@@ -68,10 +76,17 @@ public class NetworkMessage {
      * @return the bytes from booleans
      */
     public static byte[] convertCollectionMaskToBytes(Collection<Boolean> bools) {
-        ArrayList<Byte> out = new ArrayList<>();
-        for (boolean b : bools) {
-            out.add(b ? (byte) 1 : (byte) 0);
+        byte[] out = new byte[maskSizeInBytes(bools.size())];
+
+        int idx = 0;
+
+        for (boolean flag : bools) {
+            if (flag) {
+                out[idx / 8] |= 1 << (idx % 8);
+            }
+            idx++;
         }
-        return toByteArray(out);
+
+        return out;
     }
 }
