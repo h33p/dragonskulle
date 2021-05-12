@@ -31,7 +31,7 @@ public abstract class Transform extends Component {
 
     /**
      * Get the world matrix for this transform. If mShouldUpdate is true, it will then recursively
-     * synchrinize the transformation.
+     * synchronise the transformation.
      *
      * @return immutable World Matrix reference (can be changed by Transform between calls)
      */
@@ -48,6 +48,13 @@ public abstract class Transform extends Component {
         return getWorldMatrix();
     }
 
+    /**
+     * Get the inverse of the world matrix. If mShouldUpdate is true, or mHasInverted is false, will
+     * first get the world matrix and then set mInvMatrix to the inverse of the new world matrix
+     * before returning.
+     *
+     * @return Constant inverse world matrix.
+     */
     public Matrix4fc getInvWorldMatrix() {
         if (mShouldUpdate || !mHasInverted) {
             mInvMatrix.set(getWorldMatrix()).invert();

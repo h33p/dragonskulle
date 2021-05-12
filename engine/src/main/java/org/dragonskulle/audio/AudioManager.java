@@ -331,9 +331,9 @@ public class AudioManager {
     }
 
     /**
-     * Set the master mute value
+     * Set the master mute value.
      *
-     * @param muted New value of master mute
+     * @param muted New value of master mute.
      */
     public void setMasterMute(boolean muted) {
         if (muted) {

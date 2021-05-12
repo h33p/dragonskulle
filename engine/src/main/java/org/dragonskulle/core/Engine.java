@@ -82,21 +82,32 @@ public class Engine {
     private final ArrayList<Renderable> mTmpRenderables = new ArrayList<>();
     private final ArrayList<Light> mTmpLights = new ArrayList<>();
 
+    /** Interface used for supplying an exit condition to the main game loop. */
     public interface IEngineExitCondition {
+        /**
+         * Called in every single iteration of the game loop. Used for checking whether the game
+         * loop should exit or not
+         *
+         * @return false if the game loop should exist, true if it should keep running.
+         */
         boolean shouldExit();
     }
 
+    /** Interface used for scheduling events for a later time. */
     public interface IScheduledEvent {
+        /** Calls the scheduled event. */
         void invoke();
     }
 
+    /** Default constructor. */
     private Engine() {}
 
     /**
      * Loads a new scene and start the engine.
      *
      * @param gameName Name of the game
-     * @param bindings User input bindings @Param settings Settings instance to use
+     * @param bindings User input bindings
+     * @param settings Settings instance to use
      */
     public void start(String gameName, Bindings bindings, Settings settings) {
         // TODO: Any initialization of engine components like renderer, audio, input, etc done here
@@ -247,17 +258,29 @@ public class Engine {
         }
     }
 
-    /** Schedule an event for the next frame update. */
+    /**
+     * Schedule an event for the next frame update.
+     *
+     * @param event Event to schedule.
+     */
     public void scheduleFrameEvent(IScheduledEvent event) {
         mFrameEvents.add(event);
     }
 
-    /** Schedule an event for the next fixed update. */
+    /**
+     * Schedule an event for the next fixed update.
+     *
+     * @param event Event to schedule.
+     */
     public void scheduleFixedUpdateEvent(IScheduledEvent event) {
         mFixedUpdateEvents.add(event);
     }
 
-    /** Schedule an event for the end of main loop iteration. */
+    /**
+     * Schedule an event for the end of main loop iteration.
+     *
+     * @param event Event to schedule.
+     */
     public void scheduleEndOfLoopEvent(IScheduledEvent event) {
         mEndOfLoopEvents.add(event);
     }
@@ -267,7 +290,12 @@ public class Engine {
         mIsRunning = false;
     }
 
-    /** Main loop of the engine. */
+    /**
+     * Main loop of the engine.
+     *
+     * @param exitCondition Exit condition that should be checked every iteration.
+     * @param present Whether any rendering should be done or not.
+     */
     private void mainLoop(IEngineExitCondition exitCondition, boolean present) {
 
         double prevTime = Time.getPreciseTimeInSeconds();
@@ -401,6 +429,11 @@ public class Engine {
         Scene.setActiveScene(null);
     }
 
+    /**
+     * Invoke all events passed to the method.
+     *
+     * @param toConsume List containing all events that should be invoked.
+     */
     private void consumeEvents(ArrayList<IScheduledEvent> toConsume) {
         mEventsToConsume = toConsume;
         for (IScheduledEvent event : mEventsToConsume) {
@@ -504,6 +537,7 @@ public class Engine {
         mDestroyedComponents.clear();
     }
 
+    /** Render a single frame. */
     private void renderFrame() {
         mTmpRenderables.clear();
         mTmpLights.clear();
@@ -522,7 +556,7 @@ public class Engine {
             try {
                 mGLFWState.getRenderer().render(mainCamera, mTmpRenderables, mTmpLights);
             } catch (RendererException e) {
-                log.severe("Renderer exception! " + e.toString());
+                log.severe("Renderer exception! " + e);
                 mIsRunning = false;
             }
         }
