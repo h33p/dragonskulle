@@ -163,7 +163,7 @@ public class ClientNetworkManager {
     }
 
     /** Underlying network client instance. */
-    private final NetworkClient mClient;
+    @Getter private final NetworkClient mClient;
     /** Client event callback listener. */
     private final IClientListener mListener = new Listener();
     /** Current connection state. */

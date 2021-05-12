@@ -1,6 +1,7 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.game.player;
 
+import static org.dragonskulle.game.lobby.Lobby.MAX_PLAYERS;
 import static org.dragonskulle.network.testing.NetworkedTestContext.TIMEOUT;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -31,17 +32,21 @@ public class PlayerTest {
     }
 
     private void waitPlayerSpawn(NetworkedTestContext ctx, Player[] myPlayer) {
-        ctx.getClient()
-                .awaitTimeout(
-                        TIMEOUT,
-                        (__) -> {
-                            ClientNetworkManager clientMan = ctx.getClientManager();
-                            myPlayer[0] =
-                                    clientMan
-                                            .getIdSingletons(clientMan.getNetId())
-                                            .get(Player.class);
-                            return myPlayer[0] != null;
-                        });
+        for (int i = 0; i < myPlayer.length; i++) {
+            final int ii = i;
+
+            ctx.getClient()
+                    .awaitTimeout(
+                            TIMEOUT,
+                            (__) -> {
+                                ClientNetworkManager clientMan = ctx.getClientManager();
+                                myPlayer[ii] =
+                                        clientMan
+                                                .getIdSingletons(clientMan.getNetId())
+                                                .get(Player.class);
+                                return myPlayer[ii] != null;
+                            });
+        }
     }
 
     /**
@@ -56,7 +61,32 @@ public class PlayerTest {
         Player[] myPlayer = {null};
 
         waitPlayerSpawn(ctx, myPlayer);
-        ctx.getClient().awaitTimeout(TIMEOUT, (__) -> myPlayer[0].getCapital() != null);
+        ctx.getClient()
+                .awaitTimeout(TIMEOUT, (__) -> myPlayer[0].getCapital() != null)
+                .then((__) -> assertFalse(myPlayer[0].gameEnd()));
+
+        ctx.execute();
+    }
+
+    /**
+     * This test performs a check that the game does not end if game is filled up with max players,
+     * and one player joins with significantly lower latency.
+     */
+    @Test
+    public void testDelayedPlayersNotEndGame() {
+        App app = new App();
+        NetworkedTestContext ctx =
+                AppTest.buildTestContext(MAX_PLAYERS, app, (id) -> id == 0 ? 0 : 0.8f);
+
+        Player[] myPlayer = new Player[MAX_PLAYERS];
+
+        waitPlayerSpawn(ctx, myPlayer);
+        for (int i = 0; i < MAX_PLAYERS; i++) {
+            int ii = i;
+            ctx.getClient()
+                    .awaitTimeout(TIMEOUT, (__) -> myPlayer[ii].getCapital() != null)
+                    .then((__) -> assertFalse(myPlayer[ii].gameEnd()));
+        }
 
         ctx.execute();
     }

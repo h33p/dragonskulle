@@ -20,6 +20,7 @@ import org.dragonskulle.network.components.requests.ServerEvent;
 import org.dragonskulle.network.components.requests.ServerEvent.EventRecipients;
 import org.dragonskulle.network.components.requests.ServerEvent.EventTimeframe;
 import org.dragonskulle.network.components.sync.INetSerializable;
+import org.dragonskulle.network.components.sync.SyncBool;
 import org.dragonskulle.network.components.sync.SyncFloat;
 import org.dragonskulle.network.components.sync.SyncInt;
 
@@ -78,7 +79,7 @@ public class GameState extends NetworkableComponent implements IOnAwake, IFixedU
     @Getter private final SyncInt mNumCapitalsStanding = new SyncInt(0);
     @Getter private final SyncFloat mStartTime = new SyncFloat();
 
-    @Getter private boolean mInGame = true;
+    @Getter private SyncBool mInGame = new SyncBool(true);
 
     private transient ServerEvent<GameEndEventData> mGameEndEvent;
 
@@ -93,7 +94,6 @@ public class GameState extends NetworkableComponent implements IOnAwake, IFixedU
                 new ServerEvent<>(
                         new GameEndEventData(),
                         (data) -> {
-                            mInGame = false;
                             mGameEndListeners.stream()
                                     .filter(Reference::isValid)
                                     .map(Reference::get)
@@ -112,7 +112,7 @@ public class GameState extends NetworkableComponent implements IOnAwake, IFixedU
 
     @Override
     public void fixedUpdate(float deltaTime) {
-        if (mNumCapitalsStanding.get() > 1) {
+        if (mNumCapitalsStanding.get() > 1 || !getNetworkObject().isServer()) {
             return;
         }
 
@@ -128,6 +128,7 @@ public class GameState extends NetworkableComponent implements IOnAwake, IFixedU
 
         int winnerId = winner != null ? winner.getNetworkObject().getOwnerId() : -1000;
 
+        mInGame.set(false);
         mGameEndEvent.invoke((data) -> data.mWinnerId = winnerId);
 
         setEnabled(false);

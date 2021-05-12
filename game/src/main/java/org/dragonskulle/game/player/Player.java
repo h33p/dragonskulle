@@ -1355,7 +1355,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
             }
         }
 
-        return Reference.isValid(mGameState) && !mGameState.get().isInGame();
+        return Reference.isValid(mGameState) && !mGameState.get().getInGame().get();
     }
 
     /**

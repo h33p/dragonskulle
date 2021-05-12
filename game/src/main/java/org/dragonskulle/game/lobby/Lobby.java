@@ -44,7 +44,7 @@ public class Lobby extends Component implements IFrameUpdate {
 
     private static final int PORT = 17569;
 
-    private static final int MAX_PLAYERS = 6;
+    public static final int MAX_PLAYERS = 6;
 
     private final Map<String, String> mHosts = new HashMap<>();
     private final AtomicBoolean mHostsUpdated = new AtomicBoolean(false);
@@ -827,8 +827,6 @@ public class Lobby extends Component implements IFrameUpdate {
     public static void onClientLoaded(
             Scene gameScene, NetworkManager manager, ServerClient networkClient) {
         log.fine("Client ID: " + networkClient.getNetworkID() + " loaded.");
-        int id = networkClient.getNetworkID();
-        manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("player"));
     }
 
     /**
@@ -840,10 +838,11 @@ public class Lobby extends Component implements IFrameUpdate {
         log.fine("Game Start");
         log.fine("Spawning 'Server' Owned objects");
 
-        manager.getServerManager()
-                .spawnNetworkObject(-10000, manager.findTemplateByName("game_state"));
+        ServerNetworkManager serverManager = manager.getServerManager();
 
-        manager.getServerManager().spawnNetworkObject(-10000, manager.findTemplateByName("map"));
+        serverManager.spawnNetworkObject(-10000, manager.findTemplateByName("game_state"));
+
+        serverManager.spawnNetworkObject(-10000, manager.findTemplateByName("map"));
 
         GameState gameState = Scene.getActiveScene().getSingleton(GameState.class);
 
@@ -860,18 +859,23 @@ public class Lobby extends Component implements IFrameUpdate {
                         }));
 
         // Get the number of clients and thus the number of AI needed
-        int clientNumber = manager.getServerManager().getClients().size();
+        int clientNumber = serverManager.getClients().size();
         int numOfAi = MAX_PLAYERS - clientNumber;
 
         // Add the AI
         for (int i = -1; i >= -1 * numOfAi; i--) {
             Reference<NetworkObject> player =
-                    manager.getServerManager()
-                            .spawnNetworkObject(i, manager.findTemplateByName("player"));
+                    serverManager.spawnNetworkObject(i, manager.findTemplateByName("player"));
             GameObject playerObj = player.get().getGameObject();
 
             // Choose which AI to add
             playerObj.addComponent(new AimerAi());
+        }
+
+        // Add regular players
+        for (ServerClient c : serverManager.getClients()) {
+            int id = c.getNetworkID();
+            manager.getServerManager().spawnNetworkObject(id, manager.findTemplateByName("player"));
         }
     }
 

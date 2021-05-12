@@ -56,7 +56,7 @@ public class ServerClient {
     private final ConcurrentLinkedQueue<TimestampedRequest> mDelayedRequests =
             new ConcurrentLinkedQueue<>();
 
-    private float mSimLatency = 0f;
+    @Getter @Setter private float mSimLatency = 0f;
 
     /**
      * Constructor for {@link ServerClient}.
