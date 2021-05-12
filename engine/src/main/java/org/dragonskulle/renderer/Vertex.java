@@ -58,6 +58,14 @@ public class Vertex extends Vertexc {
         mUv.set(uv);
     }
 
+    /**
+     * Create a vertex from position and UV coordinates.
+     *
+     * <p>This vertex will have normals pointing up.
+     *
+     * @param pos position of the vertex.
+     * @param uv UV texture coordinate of the vertex.
+     */
     public Vertex(Vector3fc pos, Vector2fc uv) {
         this(pos, new Vector3f(0f, 0f, 1f), new Vector4f(1f), uv);
     }

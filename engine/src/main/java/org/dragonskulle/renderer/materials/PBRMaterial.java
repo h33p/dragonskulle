@@ -38,14 +38,39 @@ import org.joml.Vector4f;
 @Accessors(prefix = "m")
 public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial {
 
+    /** Cached shadersets for particular standard material configuration. */
     private static final Map<Integer, ShaderSet> sShaderSets = new TreeMap<Integer, ShaderSet>();
 
+    /**
+     * Standard shader set used by PBR materials.
+     *
+     * <p>This shader set is extensible, and allows to override the shader used, as well as add
+     * custom properties on top.
+     */
     public static class StandardShaderSet extends ShaderSet {
 
+        /**
+         * Construct a {@link StandardShaderSet} for {@link PBRMaterial}.
+         *
+         * <p>This will construct the standard shader set with no additional options and flags set.
+         *
+         * @param mat material to create shaderset for.
+         */
         public StandardShaderSet(PBRMaterial mat) {
             this(mat, "standard", new ArrayList<>(), new ArrayList<>(), 0);
         }
 
+        /**
+         * Construct a {@link StandardShaderSet}.
+         *
+         * @param mat material to construct the shaderset for.
+         * @param shaderName shader file to use.
+         * @param fragMacroDefs list of custom macro definitions in the fragment shader.
+         * @param vertMacroDefs list of custom macro definitions in the vertex shader.
+         * @param extraInstanceDataSize additional per-instance data that is passed on top of the
+         *     standard data.
+         * @param extraDescriptions {@link AttributeDescription}s for the additional data.
+         */
         public StandardShaderSet(
                 PBRMaterial mat,
                 String shaderName,
@@ -135,6 +160,13 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial {
         }
     }
 
+    /**
+     * Hash the material's shaderset.
+     *
+     * <p>This hash is used to identify whether 2 material instances can use the same shader set.
+     *
+     * @return integer representing the hash of the target shaderset.
+     */
     protected int hashShaderSet() {
         int ret = 0;
         ret |= mAlbedoMap != null ? 1 : 0;
@@ -147,18 +179,29 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial {
         return ret;
     }
 
+    /** Colour offset within the instance buffer. */
     private static final int COL_OFFSET = 0;
+    /** Emissive colour offset within the instance buffer. */
     private static final int EMISSION_COL_OFFSET = COL_OFFSET + 4 * 4;
+    /** Camera position offset within the instance buffer. */
     private static final int CAM_OFFSET = EMISSION_COL_OFFSET + 3 * 4;
+    /** Alpha cutoff float offset within the instance buffer. */
     private static final int ALPHA_CUTOFF_OFFSET = CAM_OFFSET + 3 * 4;
+    /** Metalness float offset within the instance buffer. */
     private static final int METALLIC_OFFSET = ALPHA_CUTOFF_OFFSET + 4;
+    /** Roughness float offset within the instance buffer. */
     private static final int ROUGHNESS_OFFSET = METALLIC_OFFSET + 4;
+    /** Normal float offset within the instance buffer. */
     private static final int NORMAL_OFFSET = ROUGHNESS_OFFSET + 4;
 
+    /** Albedo texture applied to the material. */
     @Getter protected SampledTexture mAlbedoMap;
+    /** Normalmap texture applied to the material. */
     @Getter protected SampledTexture mNormalMap;
+    /** Combined metalness and roughness texture applied to the material. */
     @Getter protected SampledTexture mMetalnessRoughnessMap;
 
+    /** Internal cached list of textures to pass to the rendering system. */
     protected SampledTexture[] mFragmentTextures;
 
     /** Base colour of the surface. It will multiply the texture's colour. */
@@ -176,6 +219,7 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial {
     /** Have transparency. */
     @Getter @Setter private boolean mAlphaBlend = false;
 
+    /** Internal reference count of the material. */
     private int mRefCount = 0;
 
     /** Constructor for StandardMaterial. */
@@ -210,6 +254,14 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial {
         mColour.set(colour);
     }
 
+    /**
+     * Set the albedo map texture on the material.
+     *
+     * <p>This material will clone the input texture, and free the old one. Thus, it is necessary to
+     * close the input texture, if it is no longer used.
+     *
+     * @param tex new texture to set.
+     */
     public void setAlbedoMap(SampledTexture tex) {
         if (equalTexs(tex, mAlbedoMap)) {
             return;
@@ -222,6 +274,14 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial {
         mFragmentTextures = null;
     }
 
+    /**
+     * Set the normal map texture on the material.
+     *
+     * <p>This material will clone the input texture, and free the old one. Thus, it is necessary to
+     * close the input texture, if it is no longer used.
+     *
+     * @param tex new texture to set.
+     */
     public void setNormalMap(SampledTexture tex) {
         if (equalTexs(tex, mNormalMap)) {
             return;
@@ -241,6 +301,14 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial {
         }
     }
 
+    /**
+     * Set the combined metalness roughness map texture on the material.
+     *
+     * <p>This material will clone the input texture, and free the old one. Thus, it is necessary to
+     * close the input texture, if it is no longer used.
+     *
+     * @param tex new texture to set.
+     */
     public void setMetalnessRoughnessMap(SampledTexture tex) {
         if (equalTexs(tex, mMetalnessRoughnessMap)) {
             return;
@@ -260,6 +328,11 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial {
         }
     }
 
+    /**
+     * Get the {@link ShaderSet} used by this material.
+     *
+     * @return the shaderset appropriate for the properties set on the material.
+     */
     public ShaderSet getShaderSet() {
         Integer hash = hashShaderSet();
 
@@ -273,6 +346,15 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial {
         return ret;
     }
 
+    /**
+     * Write per-instance data to the vertex buffer.
+     *
+     * @param offset input offset within instance buffer.
+     * @param buffer actual vertex buffer.
+     * @param matrix transformation matrix of the object.
+     * @param lights list of lights that can be used.
+     * @return offset within the buffer, after the written data.
+     */
     public int writeVertexInstanceData(
             int offset, ByteBuffer buffer, Matrix4fc matrix, List<Light> lights) {
         offset = ShaderSet.writeMatrix(offset, buffer, matrix);
@@ -293,6 +375,13 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial {
         return buf.position();
     }
 
+    /**
+     * Get the list of fragment textures used by the material.
+     *
+     * @return array of fragment textures. It will stay valid until a texture is updated. In
+     *     addition, it is not a copy, so modifications to the array will propagate to all users.
+     */
+    @Override
     public SampledTexture[] getFragmentTextures() {
         if (mFragmentTextures == null) {
             mFragmentTextures =
@@ -304,11 +393,19 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial {
         return mFragmentTextures;
     }
 
+    /**
+     * Increase the reference count of the material (clone it).
+     *
+     * @return this, cast to reference coutned material.
+     */
+    @Override
     public IRefCountedMaterial incRefCount() {
         mRefCount++;
         return this;
     }
 
+    /** Decrease the reference count, and free the material if it drops to 0. */
+    @Override
     public void free() {
         if (--mRefCount < 0) {
             if (mAlbedoMap != null) {
@@ -323,6 +420,13 @@ public class PBRMaterial implements IColouredMaterial, IRefCountedMaterial {
         }
     }
 
+    /**
+     * Compare 2 sampled textures.
+     *
+     * @param a the first texture.
+     * @param b the second texture.
+     * @return {@code true}, if the textures are equal. {@code false} otherwise.
+     */
     private boolean equalTexs(SampledTexture a, SampledTexture b) {
         if ((a == null) != (b == null)) {
             return false;
