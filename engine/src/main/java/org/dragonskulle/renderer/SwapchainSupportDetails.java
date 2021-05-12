@@ -156,6 +156,11 @@ class SwapchainSupportDetails {
         }
     }
 
+    /**
+     * Choose the target number of swapchain images used.
+     *
+     * @return optimal target number of swapchain images.
+     */
     public int chooseImageCount() {
         int imageCount = mCapabilities.minImageCount() + 1;
         if (mCapabilities.maxImageCount() > 0 && imageCount > mCapabilities.maxImageCount()) {

@@ -20,7 +20,7 @@ import org.joml.Vector4f;
  */
 @Accessors(prefix = "m")
 public class Camera extends Component implements IFrameUpdate {
-    /* Define which way is up */
+    /** Define which way is up. */
     private static final Vector3f UP_DIR = new Vector3f(0f, 0f, 1f);
 
     /** Option whether camera is in perspective (3D), or orthographic (2D) mode. */
@@ -29,30 +29,30 @@ public class Camera extends Component implements IFrameUpdate {
         PERSPECTIVE
     }
 
-    /* Controls camera projection mode */
+    /** Controls camera projection mode. */
     @Getter @Setter private Projection mProjection = Projection.PERSPECTIVE;
-    /* Controls field of view in perspective mode */
+    /** Controls field of view in perspective mode. */
     @Getter @Setter private float mFov = 70.f;
-    /* Controls how wide the screen is in orthographic mode */
+    /** Controls how wide the screen is in orthographic mode. */
     @Getter @Setter private float mOrthographicSize = 10.f;
     /**
      * Controls how close the nearest objects can be to the camera to render.
      *
-     * <p>Note the too small value for nearPlane may lead to visual artifacting
+     * <p>Note the too small value for nearPlane may lead to visual artifacting.
      */
     @Getter @Setter private float mNearPlane = 0.1f;
     /**
      * Controls how far the furthest objects can be from the camera to render.
      *
-     * <p>Note that too large value for farPlane may lead to visual artifacting
+     * <p>Note that too large value for farPlane may lead to visual artifacting.
      */
     @Getter @Setter private float mFarPlane = 100.f;
 
-    /* Current projection matrix */
+    /** Current projection matrix. */
     private Matrix4f mProj = new Matrix4f();
 
     @Getter
-    /* Current screen aspect ratio */
+    /** Current screen aspect ratio. */
     private float mAspectRatio = 1.f;
 
     /**
@@ -72,7 +72,7 @@ public class Camera extends Component implements IFrameUpdate {
      *
      * <p>This method will update the camera's projection matrix and return it back
      *
-     * @return the projection. The same as {@link #mProj}
+     * @return the projection matrix for the camera. The same as {@link #mProj}
      */
     public Matrix4fc getProj() {
         switch (mProjection) {
@@ -101,15 +101,15 @@ public class Camera extends Component implements IFrameUpdate {
     Vector4f mFar = new Vector4f(0, 0, 1, 1);
 
     /**
-     * Project normalized screen coordinates to world direction vector.
+     * Project normalised screen coordinates to world direction vector.
      *
      * <p>See <a
      * href="https://stackoverflow.com/questions/7692988/opengl-math-projecting-screen-space-to-world-space-coords">here</a>
      *
-     * @param x x screen coordinate, in [-1; 1] range
-     * @param y y screen coordinate, in [-1; 1] range
-     * @param dest destination vector to project to
-     * @return dest
+     * @param x x screen coordinate, in [-1; 1] range.
+     * @param y y screen coordinate, in [-1; 1] range.
+     * @param dest destination vector to project to.
+     * @return dest.
      */
     public Vector3f screenToWorldDir(float x, float y, Vector3f dest) {
         mInvProj = getProj().mul(getView(), mInvProj).invert();
@@ -131,19 +131,19 @@ public class Camera extends Component implements IFrameUpdate {
     }
 
     /**
-     * Project normalized screen coordinates to a plane defined by a transform
+     * Project normalized screen coordinates to a plane defined by a transform.
      *
      * <p>This method will take screen coordinates, and create a local vector within transform,
      * where the camera ray intersects the Z plane defined by it.
      *
      * <p>It accounts for any scaling, transformation, and rotation that the transform may have.
      *
-     * @param transform target transform to project to
-     * @param height height above target transform to project to
-     * @param x x screen coordinate in [-1; 1] range
-     * @param y y screen coordinate in [-1; 1] range
-     * @param dest destination vector to project to
-     * @return dest
+     * @param transform target transform to project to.
+     * @param height height above target transform to project to.
+     * @param x x screen coordinate in [-1; 1] range.
+     * @param y y screen coordinate in [-1; 1] range.
+     * @param dest destination vector to project to.
+     * @return dest.
      */
     public Vector3f screenToPlane(
             Transform transform, float height, float x, float y, Vector3f dest) {
@@ -167,8 +167,8 @@ public class Camera extends Component implements IFrameUpdate {
     /**
      * Update the screen's aspect ratio.
      *
-     * @param width current screen width
-     * @param height current screen height
+     * @param width current screen width.
+     * @param height current screen height.
      */
     public void updateAspectRatio(int width, int height) {
         mAspectRatio = (float) width / (float) height;
@@ -177,7 +177,7 @@ public class Camera extends Component implements IFrameUpdate {
     /**
      * Get world to view transformation matrix.
      *
-     * @return world to view space transformation matrix
+     * @return world to view space transformation matrix.
      */
     public Matrix4fc getView() {
         Matrix4fc worldMatrix = getGameObject().getTransform().getWorldMatrix();

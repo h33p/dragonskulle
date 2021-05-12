@@ -17,19 +17,19 @@ import org.lwjgl.system.NativeResource;
  */
 @Accessors(prefix = "m")
 public class SampledTexture implements NativeResource {
-    /** The underlying texture image */
+    /** The underlying texture image. */
     @Getter private Resource<Texture> mTexture;
-    /** The settings for texture sampling */
+    /** The settings for texture sampling. */
     @Getter private TextureMapping mMapping;
-    /** Controls whether the image is sRGB or linear */
+    /** Controls whether the image is sRGB or linear. */
     @Getter @Setter private boolean mLinear;
 
     /**
      * Constructor for SampledTexture.
      *
-     * @param texture input texture resource
-     * @param mapping input texture mapping
-     * @param linear option to interpret colour data linearly, or as sRGB
+     * @param texture input texture resource.
+     * @param mapping input texture mapping.
+     * @param linear option to interpret colour data linearly, or as sRGB.
      */
     public SampledTexture(Resource<Texture> texture, TextureMapping mapping, boolean linear) {
         mTexture = texture;
@@ -40,8 +40,8 @@ public class SampledTexture implements NativeResource {
     /**
      * Constructor for SampledTexture.
      *
-     * @param texture input texture resource
-     * @param mapping input texture mapping
+     * @param texture input texture resource.
+     * @param mapping input texture mapping.
      */
     public SampledTexture(Resource<Texture> texture, TextureMapping mapping) {
         this(texture, mapping, false);
@@ -50,7 +50,7 @@ public class SampledTexture implements NativeResource {
     /**
      * Constructor for SampledTexture.
      *
-     * @param texture input texture resource
+     * @param texture input texture resource.
      */
     public SampledTexture(Resource<Texture> texture) {
         this(texture, new TextureMapping());
@@ -59,9 +59,9 @@ public class SampledTexture implements NativeResource {
     /**
      * Constructor for SampledTexture.
      *
-     * @param textureName input texture resource name
-     * @param mapping input texture mapping
-     * @param linear option to interpret colour data linearly, or as sRGB
+     * @param textureName input texture resource name.
+     * @param mapping input texture mapping.
+     * @param linear option to interpret colour data linearly, or as sRGB.
      */
     public SampledTexture(String textureName, TextureMapping mapping, boolean linear) {
         this(Texture.getResource(textureName), mapping, linear);
@@ -70,8 +70,8 @@ public class SampledTexture implements NativeResource {
     /**
      * Constructor for SampledTexture.
      *
-     * @param textureName input texture resource name
-     * @param mapping input texture mapping
+     * @param textureName input texture resource name.
+     * @param mapping input texture mapping.
      */
     public SampledTexture(String textureName, TextureMapping mapping) {
         this(Texture.getResource(textureName), mapping);
@@ -80,8 +80,8 @@ public class SampledTexture implements NativeResource {
     /**
      * Constructor for SampledTexture.
      *
-     * @param textureName input texture resource name
-     * @param linear option to interpret colour data linearly, or as sRGB
+     * @param textureName input texture resource name.
+     * @param linear option to interpret colour data linearly, or as sRGB.
      */
     public SampledTexture(String textureName, boolean linear) {
         this(textureName, new TextureMapping(), linear);
@@ -90,12 +90,17 @@ public class SampledTexture implements NativeResource {
     /**
      * Constructor for SampledTexture.
      *
-     * @param textureName input texture resource name
+     * @param textureName input texture resource name.
      */
     public SampledTexture(String textureName) {
         this(textureName, false);
     }
 
+    /**
+     * Clone the texture.
+     *
+     * @return new {@link SampledTexture} with the same texture used.
+     */
     public SampledTexture clone() {
         return new SampledTexture(mTexture == null ? null : mTexture.clone(), mMapping);
     }

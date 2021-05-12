@@ -388,13 +388,16 @@ public class Renderer implements NativeResource {
          * Create a image context.
          *
          * @param renderer handle to the parent renderer. It is needed to store reference to the
-         *     underlying device, and creating a framebuffer
-         * @param image the swapchain image that things will be drawn to
-         * @param imageIndex the index of this image
-         * @param commandBuffer the command buffer that will be used to record rendering commands to
+         *     underlying device, and creating a framebuffer.
+         * @param image the swapchain image that things will be drawn to.
+         * @param imageIndex the index of this image.
+         * @param commandBuffer the command buffer that will be used to record rendering commands
+         *     to.
+         * @throws RendererException if framebuffer creation fails.
          */
         private ImageContext(
-                Renderer renderer, VulkanImage image, int imageIndex, long commandBuffer) {
+                Renderer renderer, VulkanImage image, int imageIndex, long commandBuffer)
+                throws RendererException {
             this.mCommandBuffer = new VkCommandBuffer(commandBuffer, renderer.mDevice);
             this.mImageView = image.createImageView();
             this.mFramebuffer = createFramebuffer(renderer);
@@ -410,8 +413,9 @@ public class Renderer implements NativeResource {
          *
          * @param renderer the parent renderer.
          * @return handle to the framebuffer.
+         * @throws RendererException if framebuffer creation fails.
          */
-        private long createFramebuffer(Renderer renderer) {
+        private long createFramebuffer(Renderer renderer) throws RendererException {
             try (MemoryStack stack = stackPush()) {
                 VkFramebufferCreateInfo createInfo = VkFramebufferCreateInfo.callocStack(stack);
                 createInfo.sType(VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO);
@@ -430,7 +434,7 @@ public class Renderer implements NativeResource {
                 int result = vkCreateFramebuffer(renderer.mDevice, createInfo, null, framebuffer);
 
                 if (result != VK_SUCCESS) {
-                    throw new RuntimeException(
+                    throw new RendererException(
                             String.format(
                                     "Failed to create framebuffer for %x! Error: %x",
                                     mImageView, -result));
@@ -458,10 +462,11 @@ public class Renderer implements NativeResource {
      *
      * @param appName name of the rendered application.
      * @param window handle to GLFW window.
-     * @throws RuntimeException when initialization fails.
+     * @param settings target renderer settings.
+     * @throws RendererException when initialization fails.
      */
     public Renderer(String appName, long window, RendererSettings settings)
-            throws RuntimeException {
+            throws RendererException {
         log.fine("Initialize renderer");
         mRendererSettings = settings;
         mInstanceBufferSize = 4096;
@@ -486,14 +491,29 @@ public class Renderer implements NativeResource {
         mFrameContexts = createFrameContexts(FRAMES_IN_FLIGHT);
     }
 
+    /**
+     * Get supported MSAA samples on current physical device.
+     *
+     * @return bitfield of supported MSAA samples.
+     */
     public int getSupportedMSAASamples() {
         return mPhysicalDevice.getFeatureSupport().getMsaaSamples();
     }
 
+    /**
+     * Get the name of current physical device.
+     *
+     * @return name of the device.
+     */
     public String getPhysicalDeviceName() {
         return mPhysicalDevice.getDeviceName();
     }
 
+    /**
+     * Get a list of supported vblank modes.
+     *
+     * @return list of supported vblank/vsync modes.
+     */
     public VBlankMode[] getVBlankModes() {
         return mPhysicalDevice.getSwapchainSupport().mVBlankModes;
     }
@@ -505,8 +525,10 @@ public class Renderer implements NativeResource {
      * freeze.
      *
      * @param newSettings new graphics settings to choose
+     * @throws RendererException if an error occurs within the renderer. After this point, in this
+     *     case, {@link Renderer} should not be used.
      */
-    public void setSettings(RendererSettings newSettings) {
+    public void setSettings(RendererSettings newSettings) throws RendererException {
         RendererSettings oldSettings = mRendererSettings;
 
         if (newSettings.equals(oldSettings)) {
@@ -523,11 +545,14 @@ public class Renderer implements NativeResource {
      * <p>This method will take a list of renderable objects, alongside lights, and render them from
      * the camera point of view.
      *
-     * @param camera object from where the renderer should render
-     * @param objects list of objects that should be rendered
-     * @param lights list of lights to light the objects with
+     * @param camera object from where the renderer should render.
+     * @param objects list of objects that should be rendered.
+     * @param lights list of lights to light the objects with.
+     * @throws RendererException if an error occurs in the renderer. In this case, renderer should
+     *     not be used.
      */
-    public void render(Camera camera, List<Renderable> objects, List<Light> lights) {
+    public void render(Camera camera, List<Renderable> objects, List<Light> lights)
+            throws RendererException {
         if (mImageContexts == null) {
             recreateSwapchain();
         }
@@ -611,7 +636,7 @@ public class Renderer implements NativeResource {
 
             if (res != VK_SUCCESS) {
                 vkResetFences(mDevice, ctx.mInFlightFence);
-                throw new RuntimeException(
+                throw new RendererException(
                         String.format("Failed to submit draw command buffer! Ret: %x", -res));
             }
 
@@ -629,7 +654,8 @@ public class Renderer implements NativeResource {
             if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR) {
                 recreateSwapchain();
             } else if (res != VK_SUCCESS) {
-                throw new RuntimeException(String.format("Failed to present image! Ret: %x", -res));
+                throw new RendererException(
+                        String.format("Failed to present image! Ret: %x", -res));
             }
         }
     }
@@ -640,7 +666,7 @@ public class Renderer implements NativeResource {
      * <p>This method needs to be called by the app every time the window gets resized, so that the
      * renderer can change its render resolution.
      */
-    public void onResize() {
+    public void onResize() throws RendererException {
         recreateSwapchain();
     }
 
@@ -691,8 +717,12 @@ public class Renderer implements NativeResource {
 
     /// Internal code
 
-    /** Recreate swapchain when it becomes invalid. */
-    private void recreateSwapchain() {
+    /**
+     * Recreate swapchain when it becomes invalid.
+     *
+     * @throws RendererException if swapchain fails to be recreated.
+     */
+    private void recreateSwapchain() throws RendererException {
         if (mImageContexts != null) {
             vkQueueWaitIdle(mPresentQueue);
             vkQueueWaitIdle(mGraphicsQueue);
@@ -777,12 +807,14 @@ public class Renderer implements NativeResource {
     /// Internal setup code.
 
     /**
-     * Create swapchain objects
+     * Create swapchain objects.
      *
      * <p>Create all objects that depend on the swapchain. Unlike initial setup, this method will be
      * called multiple times in situations like window resizes.
+     *
+     * @throws RendererException if swapchain objects fail to be created.
      */
-    private void createSwapchainObjects() {
+    private void createSwapchainObjects() throws RendererException {
         mRendererSettings.setMSAACount(
                 mPhysicalDevice.findSuitableMSAACount(mRendererSettings.getMSAACount()));
         mSurfaceFormat = mPhysicalDevice.getSwapchainSupport().chooseSurfaceFormat();
@@ -806,9 +838,11 @@ public class Renderer implements NativeResource {
      * <p>Vulkan instance is needed for the duration of the renderer. If debug mode is on, the
      * instance will also enable debug validation layers, which allow to track down issues.
      *
-     * @return the created VkInstance
+     * @param appName name of the application to set.
+     * @return the created VkInstance.
+     * @throws RendererException if vulkan instance fails to be created.
      */
-    private VkInstance createInstance(String appName) {
+    private VkInstance createInstance(String appName) throws RendererException {
         log.fine("Create instance");
 
         try (MemoryStack stack = stackPush()) {
@@ -843,7 +877,7 @@ public class Renderer implements NativeResource {
             int result = vkCreateInstance(createInfo, null, instancePtr);
 
             if (result != VK_SUCCESS) {
-                throw new RuntimeException(
+                throw new RendererException(
                         String.format("Failed to create VK instance. Error: %x", -result));
             }
 
@@ -873,15 +907,17 @@ public class Renderer implements NativeResource {
     }
 
     /**
-     * Sets up validation layers used for debugging
+     * Sets up validation layers used for debugging.
      *
      * <p>Throws if the layers were not available, createInfo gets bound to the data on the stack
      * frame. Do not pop the stack before using up createInfo!!!
      *
-     * @param createInfo instance creation info that will have the validation layers set
-     * @param stack stack of the caller for where the validation layer info will be stored on
+     * @param createInfo instance creation info that will have the validation layers set.
+     * @param stack stack of the caller for where the validation layer info will be stored on.
+     * @throws RendererException if validation layers are not found.
      */
-    private void setupDebugValidationLayers(VkInstanceCreateInfo createInfo, MemoryStack stack) {
+    private void setupDebugValidationLayers(VkInstanceCreateInfo createInfo, MemoryStack stack)
+            throws RendererException {
         log.fine("Setup VK validation layers");
 
         Set<String> wantedSet = new HashSet<>(WANTED_VALIDATION_LAYERS_LIST);
@@ -898,7 +934,7 @@ public class Renderer implements NativeResource {
         if (containsAll) {
             createInfo.ppEnabledLayerNames(toPointerBuffer(WANTED_VALIDATION_LAYERS_LIST, stack));
         } else {
-            throw new RuntimeException("Some VK validation layers were not found!");
+            throw new RendererException("Some VK validation layers were not found!");
         }
     }
 
@@ -918,9 +954,10 @@ public class Renderer implements NativeResource {
     /**
      * Utility for converting a collection of pointer types to pointer buffer.
      *
-     * @param array the array to convert
-     * @param stack stack of the caller for where the data will be stored on
-     * @return the pointer buffer representing the data
+     * @param <T> type of the collection.
+     * @param array the array to convert.
+     * @param stack stack of the caller for where the data will be stored on.
+     * @return the pointer buffer representing the data.
      */
     private <T extends Pointer> PointerBuffer toPointerBuffer(T[] array, MemoryStack stack) {
         PointerBuffer buffer = stack.mallocPointer(array.length);
@@ -931,8 +968,8 @@ public class Renderer implements NativeResource {
     /**
      * Utility for retrieving instance VkLayerProperties list.
      *
-     * @param stack stack of the caller for where the data will be stored on
-     * @return properties for the instance layers
+     * @param stack stack of the caller for where the data will be stored on.
+     * @return properties for the instance layers.
      */
     private VkLayerProperties.Buffer getInstanceLayerProperties(MemoryStack stack) {
         IntBuffer propertyCount = stack.ints(0);
@@ -946,8 +983,8 @@ public class Renderer implements NativeResource {
     /**
      * Creates default debug messenger info for logging.
      *
-     * @param stack stack of the caller for where the data will be stored on
-     * @return create struct for the debug messenger that's used for validation layers
+     * @param stack stack of the caller for where the data will be stored on.
+     * @return create struct for the debug messenger that's used for validation layers.
      */
     private VkDebugUtilsMessengerCreateInfoEXT createDebugLoggingInfo(MemoryStack stack) {
         VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo =
@@ -974,11 +1011,11 @@ public class Renderer implements NativeResource {
     /**
      * VK logging entrypoint.
      *
-     * @param messageSeverity severity of the message, which will be translated to log level
-     * @param messageType type of the message, unused
-     * @param pCallbackData pointer to the callback data
-     * @param pUserData pointer to the user data (unused)
-     * @return VK_FALSE
+     * @param messageSeverity severity of the message, which will be translated to log level.
+     * @param messageType type of the message, unused.
+     * @param pCallbackData pointer to the callback data.
+     * @param pUserData pointer to the user data (unused).
+     * @return VK_FALSE.
      */
     private static int debugCallback(
             int messageSeverity, int messageType, long pCallbackData, long pUserData) {
@@ -1004,14 +1041,15 @@ public class Renderer implements NativeResource {
      * Initializes debugMessenger to receive VK log messages.
      *
      * @return handle to the newly created debug messenger
+     * @throws RendererException if debug messenger fails to initialise.
      */
-    private long createDebugLogger() {
+    private long createDebugLogger() throws RendererException {
         try (MemoryStack stack = stackPush()) {
             LongBuffer pDebugMessenger = stack.longs(0);
             if (vkCreateDebugUtilsMessengerEXT(
                             mInstance, createDebugLoggingInfo(stack), null, pDebugMessenger)
                     != VK_SUCCESS) {
-                throw new RuntimeException("Failed to initialize debug messenger");
+                throw new RendererException("Failed to initialise debug messenger");
             }
             return pDebugMessenger.get();
         }
@@ -1022,18 +1060,19 @@ public class Renderer implements NativeResource {
     /**
      * Create a window surface.
      *
-     * <p>This method uses window to get its surface that the renderer will draw to
+     * <p>This method uses window to get its surface that the renderer will draw to.
      *
-     * @return the surface
+     * @return the surface.
+     * @throws RendererException if surface fails to be created.
      */
-    private long createSurface() {
+    private long createSurface() throws RendererException {
         log.fine("Create surface");
 
         try (MemoryStack stack = stackPush()) {
             LongBuffer pSurface = stack.callocLong(1);
             int result = glfwCreateWindowSurface(mInstance, mWindow, null, pSurface);
             if (result != VK_SUCCESS) {
-                throw new RuntimeException(
+                throw new RendererException(
                         String.format("Failed to create windows surface! %x", -result));
             }
             return pSurface.get(0);
@@ -1045,15 +1084,16 @@ public class Renderer implements NativeResource {
     /**
      * Sets up one physical device for use.
      *
-     * @return the most optimal physical device
+     * @return the most optimal physical device.
+     * @throws RendererException if physical device fails to be selected.
      */
-    private PhysicalDevice pickPhysicalDevice() {
+    private PhysicalDevice pickPhysicalDevice() throws RendererException {
         log.fine("Pick physical device");
         PhysicalDevice physicalDevice =
                 PhysicalDevice.pickPhysicalDevice(
                         mInstance, mSurface, TARGET_GPU, DEVICE_EXTENSIONS);
         if (physicalDevice == null) {
-            throw new RuntimeException("Failed to find compatible GPU!");
+            throw new RendererException("Failed to find compatible GPU!");
         }
         log.fine(String.format("Picked GPU: %s", physicalDevice.getDeviceName()));
         return physicalDevice;
@@ -1065,8 +1105,9 @@ public class Renderer implements NativeResource {
      * Creates a logical device with required features.
      *
      * @return the logical device
+     * @throws RendererException if logical device fails to be created.
      */
-    private VkDevice createLogicalDevice() {
+    private VkDevice createLogicalDevice() throws RendererException {
         log.fine("Create logical device");
 
         try (MemoryStack stack = stackPush()) {
@@ -1107,7 +1148,7 @@ public class Renderer implements NativeResource {
             int result = vkCreateDevice(mPhysicalDevice.getDevice(), createInfo, null, pDevice);
 
             if (result != VK_SUCCESS) {
-                throw new RuntimeException(
+                throw new RendererException(
                         String.format("Failed to create VK logical device! Err: %x", -result));
             }
 
@@ -1157,8 +1198,9 @@ public class Renderer implements NativeResource {
      * <p>This method creates a command pool which is used for creating command buffers.
      *
      * @return the command pool
+     * @throws RendererException if command pool fails to be created.
      */
-    private long createCommandPool() {
+    private long createCommandPool() throws RendererException {
         log.fine("Create command pool");
 
         try (MemoryStack stack = stackPush()) {
@@ -1172,7 +1214,7 @@ public class Renderer implements NativeResource {
             int result = vkCreateCommandPool(mDevice, poolInfo, null, pCommandPool);
 
             if (result != VK_SUCCESS) {
-                throw new RuntimeException(
+                throw new RendererException(
                         String.format("Failed to create command pool! Err: %x", -result));
             }
 
@@ -1185,9 +1227,10 @@ public class Renderer implements NativeResource {
     /**
      * Sets up the swapchain required for rendering.
      *
-     * @return the swapchain that's used to present drawn frames on the screen
+     * @return the swapchain that's used to present drawn frames on the screen.
+     * @throws RendererException if swapchain fails to be created.
      */
-    private long createSwapchain() {
+    private long createSwapchain() throws RendererException {
         log.fine("Setup swapchain");
 
         try (MemoryStack stack = stackPush()) {
@@ -1233,7 +1276,7 @@ public class Renderer implements NativeResource {
             int result = vkCreateSwapchainKHR(mDevice, createInfo, null, pSwapchain);
 
             if (result != VK_SUCCESS) {
-                throw new RuntimeException(
+                throw new RendererException(
                         String.format("Failed to create swapchain! Error: %x", -result));
             }
 
@@ -1264,8 +1307,9 @@ public class Renderer implements NativeResource {
      * @param imageCount the number of images that the swapchain has
      * @return imageCount size ImageContext array that represents a context for a single swachain
      *     image
+     * @throws RendererException if command buffer allocation fails.
      */
-    private ImageContext[] createImageContexts(int imageCount) {
+    private ImageContext[] createImageContexts(int imageCount) throws RendererException {
         try (MemoryStack stack = stackPush()) {
             // Get swapchain images
             LongBuffer pSwapchainImages = stack.mallocLong(imageCount);
@@ -1288,22 +1332,23 @@ public class Renderer implements NativeResource {
             int result = vkAllocateCommandBuffers(mDevice, cmdAllocInfo, buffers);
 
             if (result != VK_SUCCESS) {
-                throw new RuntimeException(
+                throw new RendererException(
                         String.format("Failed to create command buffers! Err: %x", -result));
             }
 
-            return IntStream.range(0, imageCount)
-                    .mapToObj(
-                            i ->
-                                    new ImageContext(
-                                            this,
-                                            new VulkanImage(
-                                                    mDevice,
-                                                    mSurfaceFormat.format(),
-                                                    pSwapchainImages.get(i)),
-                                            i,
-                                            buffers.get(i)))
-                    .toArray(ImageContext[]::new);
+            ImageContext[] ret = new ImageContext[imageCount];
+
+            for (int i = 0; i < imageCount; i++) {
+                ret[i] =
+                        new ImageContext(
+                                this,
+                                new VulkanImage(
+                                        mDevice, mSurfaceFormat.format(), pSwapchainImages.get(i)),
+                                i,
+                                buffers.get(i));
+            }
+
+            return ret;
         }
     }
 
@@ -1317,8 +1362,9 @@ public class Renderer implements NativeResource {
      * <p>TODO: move to material system? Move to render pass manager?
      *
      * @return the render pass
+     * @throws RendererException if render pass fails to be created.
      */
-    private long createRenderPass() {
+    private long createRenderPass() throws RendererException {
         log.fine("Create render pass");
 
         try (MemoryStack stack = stackPush()) {
@@ -1405,7 +1451,7 @@ public class Renderer implements NativeResource {
             int result = vkCreateRenderPass(mDevice, renderPassInfo, null, pRenderPass);
 
             if (result != VK_SUCCESS) {
-                throw new RuntimeException(
+                throw new RendererException(
                         String.format("Failed to create render pass! Err: %x", -result));
             }
 
@@ -1419,8 +1465,9 @@ public class Renderer implements NativeResource {
      * Create a colour attachment image.
      *
      * @return the colour image
+     * @throws RendererException if buffer fails to be created.
      */
-    private VulkanImage createColorImage() {
+    private VulkanImage createColorImage() throws RendererException {
         VkCommandBuffer tmpCommandBuffer = beginSingleUseCommandBuffer();
         VulkanImage colorImage =
                 new VulkanImage(
@@ -1442,11 +1489,12 @@ public class Renderer implements NativeResource {
     /// Depth texture setup
 
     /**
-     * Create a depth image that is used for depth testing
+     * Create a depth image that is used for depth testing.
      *
      * @return the depth image
+     * @throws RendererException if buffer fails to be created.
      */
-    private VulkanImage createDepthImage() {
+    private VulkanImage createDepthImage() throws RendererException {
         VkCommandBuffer tmpCommandBuffer = beginSingleUseCommandBuffer();
         VulkanImage depthImage =
                 VulkanImage.createDepthImage(
@@ -1457,6 +1505,7 @@ public class Renderer implements NativeResource {
                         mExtent.height(),
                         mRendererSettings.getMSAACount());
         endSingleUseCommandBuffer(tmpCommandBuffer);
+        depthImage.freeStagingBuffer();
         return depthImage;
     }
 
@@ -1465,11 +1514,13 @@ public class Renderer implements NativeResource {
     /**
      * Create a instance buffer.
      *
-     * <p>As the name implies, this buffer holds base per-instance data
+     * <p>As the name implies, this buffer holds base per-instance data.
      *
-     * @return the instance buffer
+     * @param sizeOfBuffer size of the instance buffer to create.
+     * @return the instance buffer.
+     * @throws RendererException if buffer fails to be created.
      */
-    private VulkanBuffer createInstanceBuffer(int sizeOfBuffer) {
+    private VulkanBuffer createInstanceBuffer(int sizeOfBuffer) throws RendererException {
         log.fine("Create instance buffer");
 
         try (MemoryStack stack = stackPush()) {
@@ -1573,10 +1624,11 @@ public class Renderer implements NativeResource {
     /**
      * Create the frame context (synchronizatin objects).
      *
-     * @param framesInFlight the number of frames that can be drawn at the same time
-     * @return framesInFlight sized array of FrameContext
+     * @param framesInFlight the number of frames that can be drawn at the same time.
+     * @return framesInFlight sized array of FrameContext.
+     * @throws RendererException if frame contexts fail to be created.
      */
-    private FrameContext[] createFrameContexts(int framesInFlight) {
+    private FrameContext[] createFrameContexts(int framesInFlight) throws RendererException {
         log.fine("Setup sync objects");
 
         try (MemoryStack stack = stackPush()) {
@@ -1589,34 +1641,31 @@ public class Renderer implements NativeResource {
             VkSemaphoreCreateInfo semaphoreInfo = VkSemaphoreCreateInfo.callocStack(stack);
             semaphoreInfo.sType(VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO);
 
-            IntStream.range(0, framesInFlight)
-                    .forEach(
-                            i -> {
-                                FrameContext ctx = new FrameContext();
+            for (int i = 0; i < framesInFlight; i++) {
+                FrameContext ctx = new FrameContext();
 
-                                LongBuffer pSem1 = stack.longs(0);
-                                LongBuffer pSem2 = stack.longs(0);
-                                LongBuffer pFence = stack.longs(0);
+                LongBuffer pSem1 = stack.longs(0);
+                LongBuffer pSem2 = stack.longs(0);
+                LongBuffer pFence = stack.longs(0);
 
-                                int res1 = vkCreateSemaphore(mDevice, semaphoreInfo, null, pSem1);
-                                int res2 = vkCreateSemaphore(mDevice, semaphoreInfo, null, pSem2);
-                                int res3 = vkCreateFence(mDevice, fenceInfo, null, pFence);
+                int res1 = vkCreateSemaphore(mDevice, semaphoreInfo, null, pSem1);
+                int res2 = vkCreateSemaphore(mDevice, semaphoreInfo, null, pSem2);
+                int res3 = vkCreateFence(mDevice, fenceInfo, null, pFence);
 
-                                if (res1 != VK_SUCCESS
-                                        || res2 != VK_SUCCESS
-                                        || res3 != VK_SUCCESS) {
-                                    throw new RuntimeException(
-                                            String.format(
-                                                    "Failed to create semaphores! Err: %x %x",
-                                                    -res1, -res2, -res2));
-                                }
+                if (res1 != VK_SUCCESS || res2 != VK_SUCCESS || res3 != VK_SUCCESS) {
+                    throw new RendererException(
+                            String.format(
+                                    "Failed to create semaphores! Err: %x %x",
+                                    -res1, -res2, -res2));
+                }
 
-                                ctx.mImageAvailableSemaphore = pSem1.get(0);
-                                ctx.mRenderFinishedSemaphore = pSem2.get(0);
-                                ctx.mInFlightFence = pFence.get(0);
+                ctx.mImageAvailableSemaphore = pSem1.get(0);
+                ctx.mRenderFinishedSemaphore = pSem2.get(0);
+                ctx.mInFlightFence = pFence.get(0);
 
-                                frames[i] = ctx;
-                            });
+                frames[i] = ctx;
+            }
+
             return frames;
         }
     }
@@ -1627,18 +1676,20 @@ public class Renderer implements NativeResource {
      * Updates the instance buffer.
      *
      * <p>This method will update the instance buffer, load any unloaded meshes, batch up the list
-     * of objects into instantiatable draw calls, and generate a list of non-instanced draws
+     * of objects into instantiatable draw calls, and generate a list of non-instanced draws.
      *
-     * @param ctx the image context to update the instance buffer for
-     * @param intersector frustum intersector for the objects
-     * @param renderables the list of objects that need to be rendered
-     * @param lights the list of lights that exist in the world
+     * @param ctx the image context to update the instance buffer for.
+     * @param intersector frustum intersector for the objects.
+     * @param renderables the list of objects that need to be rendered.
+     * @param lights the list of lights that exist in the world.
+     * @throws RendererException if instance buffer fails to reallocate.
      */
-    void updateInstanceBuffer(
+    private void updateInstanceBuffer(
             ImageContext ctx,
             FrustumIntersection intersector,
             List<Renderable> renderables,
-            List<Light> lights) {
+            List<Light> lights)
+            throws RendererException {
 
         mToPresort.clear();
 
@@ -1782,7 +1833,7 @@ public class Renderer implements NativeResource {
      * @param ctx the image context to record the command buffer for
      * @param camera the camera to render from
      */
-    void recordCommandBuffer(ImageContext ctx, Camera camera) {
+    void recordCommandBuffer(ImageContext ctx, Camera camera) throws RendererException {
 
         mInstancedCalls = 0;
         mSlowCalls = 0;
@@ -1840,7 +1891,7 @@ public class Renderer implements NativeResource {
             if (res != VK_SUCCESS) {
                 String format =
                         String.format("Failed to begin recording command buffer! Err: %x", res);
-                throw new RuntimeException(format);
+                throw new RendererException(format);
             }
 
             renderPassInfo.framebuffer(ctx.mFramebuffer);
@@ -1989,7 +2040,7 @@ public class Renderer implements NativeResource {
             if (res != VK_SUCCESS) {
                 String format =
                         String.format("Failed to end recording command buffer! Err: %x", res);
-                throw new RuntimeException(format);
+                throw new RendererException(format);
             }
         }
     }

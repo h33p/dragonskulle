@@ -28,6 +28,7 @@ import lombok.extern.java.Log;
 import org.dragonskulle.input.Bindings;
 import org.dragonskulle.input.Input;
 import org.dragonskulle.renderer.Renderer;
+import org.dragonskulle.renderer.RendererException;
 import org.dragonskulle.renderer.RendererSettings;
 import org.dragonskulle.settings.Settings;
 import org.joml.Vector2i;
@@ -75,7 +76,7 @@ public class GLFWState implements NativeResource {
      * @throws RuntimeException if initialization fails
      */
     public GLFWState(int width, int height, String appName, Bindings bindings, Settings settings)
-            throws RuntimeException {
+            throws RendererException {
         DEBUG.set(DEBUG_MODE);
 
         if (LOAD_RENDERDOC) {
@@ -138,7 +139,12 @@ public class GLFWState implements NativeResource {
 
         if (mFramebufferResized) {
             mFramebufferResized = false;
-            mRenderer.onResize();
+            try {
+                mRenderer.onResize();
+            } catch (RendererException e) {
+                log.severe("Renderer exception in onResize! " + e.toString());
+                return false;
+            }
         }
 
         try (MemoryStack stack = MemoryStack.stackPush()) {

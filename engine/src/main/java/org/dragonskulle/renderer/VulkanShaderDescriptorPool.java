@@ -49,31 +49,54 @@ import org.lwjgl.vulkan.VkWriteDescriptorSet;
 @Log
 class VulkanShaderDescriptorPool implements NativeResource {
 
+    /** Describes a single desciptor binding. */
     @Builder
     private static class DescriptorBinding {
+        /** Where the descriptor is bound. */
         public int mBindingId;
+        /** Size of the binding. */
         public int mSize;
     }
 
+    /** Describes a single descriptor set. */
     @Builder
     private static class DescriptorSetInfo {
+        /** Which shader binding the descriptor is bound on. */
         DescriptorBinding mBindingDescriptor;
+        /** Which uniform buffer the descriptor is on. */
         VulkanBuffer mUniformBuffer;
+        /** At which shader stage the descriptor should be bound. */
         int mStageFlags;
     }
 
+    /** Logical device. */
     private VkDevice mDevice;
+    /** Allocated pool. */
     private long mPool;
+    /** Descriptor set layout. */
     @Getter private long mSetLayout;
+    /** Handles to allocated descriptor sets. */
     private long[] mDescriptorSets;
 
+    /** Infos for each descriptor sets in the pool. */
     private DescriptorSetInfo[] mDescriptorSetInfos;
 
+    /**
+     * Create a descriptor pool.
+     *
+     * @param device logical device to use.
+     * @param physicalDevice physical device to use.
+     * @param shaderSet shader set to use.
+     * @param descriptorCount number of descriptors to allocate.
+     * @return vulkan descriptor pool for the input. {@code null} if there is a failure.
+     * @throws RendererException if there is a severe error creating the pool.
+     */
     public static VulkanShaderDescriptorPool createPool(
             VkDevice device,
             PhysicalDevice physicalDevice,
             ShaderSet shaderSet,
-            int descriptorCount) {
+            int descriptorCount)
+            throws RendererException {
         VulkanShaderDescriptorPool ret = new VulkanShaderDescriptorPool();
         ret.mDevice = device;
         ret.mPool = ret.createDescriptorPool(shaderSet, descriptorCount);
@@ -103,7 +126,7 @@ class VulkanShaderDescriptorPool implements NativeResource {
             int res = vkAllocateDescriptorSets(device, allocInfo, pDescriptorSets);
 
             if (res != VK_SUCCESS) {
-                throw new RuntimeException(
+                throw new RendererException(
                         String.format("Failed to create descriptor sets! Res: %x", -res));
             }
 
@@ -118,15 +141,23 @@ class VulkanShaderDescriptorPool implements NativeResource {
         return ret;
     }
 
+    /**
+     * Get descriptor set by index.
+     *
+     * @param index index of the descriptor set to use.
+     * @return handle to the descriptor set at a given index.
+     */
     public long getDescriptorSet(int index) {
         return mDescriptorSets == null ? 0 : mDescriptorSets[index];
     }
 
     /**
-     * Update a descriptor set
+     * Update a descriptor set.
      *
      * <p>This method will simply update the attached descriptor set to have correct layout for
      * uniform buffers.
+     *
+     * @param index index of the descriptor set to update.
      */
     private void updateDescriptorSet(int index) {
         try (MemoryStack stack = stackPush()) {
@@ -157,7 +188,16 @@ class VulkanShaderDescriptorPool implements NativeResource {
         }
     }
 
-    private long createDescriptorPool(ShaderSet shaderSet, int descriptorCount) {
+    /**
+     * Create a descriptor pool.
+     *
+     * @param shaderSet shader set to use.
+     * @param descriptorCount number of descriptors to allocate.
+     * @return handle to newly created descriptor pool.
+     * @throws RendererException if there is an error creating the pool
+     */
+    private long createDescriptorPool(ShaderSet shaderSet, int descriptorCount)
+            throws RendererException {
         log.fine("Setup descriptor pool");
 
         try (MemoryStack stack = stackPush()) {
@@ -183,7 +223,7 @@ class VulkanShaderDescriptorPool implements NativeResource {
             int res = vkCreateDescriptorPool(mDevice, poolInfo, null, pDescriptorPool);
 
             if (res != VK_SUCCESS) {
-                throw new RuntimeException(
+                throw new RendererException(
                         String.format("Failed to create descriptor pool! Res: %x", -res));
             }
 
@@ -192,13 +232,20 @@ class VulkanShaderDescriptorPool implements NativeResource {
     }
 
     /**
-     * Create a descriptor set layout and uniform buffers
+     * Create a descriptor set layout and uniform buffers.
      *
      * <p>This layout is used in creating descriptor sets. It describes the properties shaders have
      * in different stages.
+     *
+     * @param shaderSet shader set to use.
+     * @param physicalDevice physical device to use.
+     * @param descriptorCount number of descriptors to create.
+     * @return newly created descriptor set layout. Buffers are set inside the method.
+     * @throws RendererException if there is an error allocating memory
      */
     private long createDescriptorSetLayoutAndBuffers(
-            ShaderSet shaderSet, PhysicalDevice physicalDevice, int descriptorCount) {
+            ShaderSet shaderSet, PhysicalDevice physicalDevice, int descriptorCount)
+            throws RendererException {
         log.fine("Create descriptor set layout");
 
         try (MemoryStack stack = stackPush()) {
@@ -254,7 +301,7 @@ class VulkanShaderDescriptorPool implements NativeResource {
             int res = vkCreateDescriptorSetLayout(mDevice, layoutInfo, null, pDescriptorSetLayout);
 
             if (res != VK_SUCCESS) {
-                throw new RuntimeException(
+                throw new RendererException(
                         String.format("Failed to create descriptor set layout! Res: %x", -res));
             }
 
@@ -262,9 +309,9 @@ class VulkanShaderDescriptorPool implements NativeResource {
         }
     }
 
+    /** Free the descriptor pool. */
     @Override
     public void free() {
-
         if (mDescriptorSetInfos != null) {
             for (DescriptorSetInfo info : mDescriptorSetInfos) {
                 info.mUniformBuffer.free();

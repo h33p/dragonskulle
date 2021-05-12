@@ -74,10 +74,20 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
         Integer mGraphicsFamily;
         Integer mPresentFamily;
 
+        /**
+         * Returns whether the queue family indices complete.
+         *
+         * @return {@code true} if all family indices are present. {@code false} otherwise.
+         */
         boolean isComplete() {
             return mGraphicsFamily != null && mPresentFamily != null;
         }
 
+        /**
+         * Get all unique family indices.
+         *
+         * @return array of unique family indices.
+         */
         int[] uniqueFamilies() {
             return IntStream.of(mGraphicsFamily, mPresentFamily).distinct().toArray();
         }
@@ -86,20 +96,37 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
     /** Describes physical graphics feature support. */
     @Getter
     static class FeatureSupportDetails {
+        /** Is anisotrophic filtering available. */
         boolean mAnisotropyEnable;
+        /** Maximum anisotrophic filtering value. */
         float mMaxAnisotropy;
+        /** Are geometry shaders available. */
         boolean mGeometryShaders;
+        /** Optimal tiling format. */
         boolean mOptimalLinearTiling;
+        /** Bitfield of supported MSAA sample values. */
         int mMsaaSamples;
 
+        /** Required tiled formats for the device to be supported. */
         static final int[] REQUIRED_TILED_FORMATS = {VK_FORMAT_R8G8B8A8_SRGB};
 
+        /**
+         * Returns whether all required features present on the device.
+         *
+         * @return {@code true} if all required features are present. Currently, this is always
+         *     true, but it can change in the future.
+         */
         public boolean isSuitable() {
             return true;
         }
     }
 
-    /** Gathers information about physical device and stores it on `PhysicalDevice`. */
+    /**
+     * Gathers information about physical device and stores it on `PhysicalDevice`.
+     *
+     * @param device input {@link VkPhysicalDevice}.
+     * @param surface target surface to render to.
+     */
     private PhysicalDevice(VkPhysicalDevice device, long surface) {
         this.mDevice = device;
 
@@ -163,6 +190,12 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
         }
     }
 
+    /**
+     * Order physical devices by their suitability score.
+     *
+     * @param other other physical device to compare against.
+     * @return ordering of the devices.
+     */
     @Override
     public int compareTo(PhysicalDevice other) {
         return Integer.compare(other.mScore, mScore);
@@ -214,6 +247,14 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
         return VK_SAMPLE_COUNT_1_BIT;
     }
 
+    /**
+     * Find supported device format.
+     *
+     * @param candidates list of formats to try.
+     * @param tiling target tiling mode.
+     * @param features required tiling features.
+     * @return supported format. {@code -1} if no format available.
+     */
     private int findSupportedFormat(int[] candidates, int tiling, int features) {
         try (MemoryStack stack = stackPush()) {
             VkFormatProperties props = VkFormatProperties.callocStack(stack);
@@ -232,13 +273,24 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
         }
     }
 
-    /** Update swapchain support details. */
+    /**
+     * Update swapchain support details.
+     *
+     * @param surface new surface.
+     */
     public void onRecreateSwapchain(long surface) {
         mSwapchainSupport = new SwapchainSupportDetails(mDevice, surface);
     }
 
-    /** Find a suitable memory type for the GPU. */
-    public int findMemoryType(int filterBits, int properties) {
+    /**
+     * Find a suitable memory type for the GPU.
+     *
+     * @param filterBits memory types to use.
+     * @param properties required memory properties.
+     * @return supported memory type.
+     * @throws RendererException if unable to find suitable memory type.
+     */
+    public int findMemoryType(int filterBits, int properties) throws RendererException {
         try (MemoryStack stack = stackPush()) {
             VkPhysicalDeviceMemoryProperties memProperties =
                     VkPhysicalDeviceMemoryProperties.callocStack(stack);
@@ -252,11 +304,20 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
                 }
             }
 
-            throw new RuntimeException("Failed to find suitable memory type!");
+            throw new RendererException("Failed to find suitable memory type!");
         }
     }
 
-    /** Picks a physical device with required features. */
+    /**
+     * Picks a physical device with required features.
+     *
+     * @param instance target vulkan instance.
+     * @param surface target surface.
+     * @param targetDevice target device name to pick. Use {@code null}, or empty string to pick the
+     *     first (most suitable) device in the list.
+     * @return chosen physical device. {@code null} if could not find a suitable one.
+     * @param neededExtensions needed device extensions for the target device.
+     */
     public static PhysicalDevice pickPhysicalDevice(
             VkInstance instance, long surface, String targetDevice, Set<String> neededExtensions) {
         PhysicalDevice[] devices = enumeratePhysicalDevices(instance, surface, neededExtensions);
@@ -282,7 +343,14 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
         return null;
     }
 
-    /** Collect all compatible physical GPUs into an array, sorted by decreasing score. */
+    /**
+     * Collect all compatible physical GPUs into an array, sorted by decreasing score.
+     *
+     * @param instance current vulkan instance.
+     * @param surface target surface.
+     * @param extensions required extensions by the device.
+     * @return Sorted array of physical GPUs.
+     */
     private static PhysicalDevice[] enumeratePhysicalDevices(
             VkInstance instance, long surface, Set<String> extensions) {
         try (MemoryStack stack = stackPush()) {
@@ -301,6 +369,12 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
         }
     }
 
+    /**
+     * Get device extension properties.
+     *
+     * @param stack stack on which the buffer will be allocated on.
+     * @return vulkan extension properties buffer containing one entry, and properties within.
+     */
     private VkExtensionProperties.Buffer getDeviceExtensionProperties(MemoryStack stack) {
         IntBuffer propertyCount = stack.ints(0);
         vkEnumerateDeviceExtensionProperties(mDevice, (String) null, propertyCount, null);
@@ -310,7 +384,13 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
         return properties;
     }
 
-    /** check whether the device in question is suitable for us. */
+    /**
+     * Check whether the device in question is suitable for us.
+     *
+     * @param device target physical device.
+     * @param extensions required physical device extensions.
+     * @return {@code true}, if the device is suitable, {@code false} otherwise.
+     */
     private static boolean isPhysicalDeviceSuitable(PhysicalDevice device, Set<String> extensions) {
         try (MemoryStack stack = stackPush()) {
             return device.mIndices.isComplete()
@@ -323,7 +403,12 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
         }
     }
 
-    /** Utility for retrieving VkQueueFamilyProperties list. */
+    /**
+     * Utility for retrieving VkQueueFamilyProperties list.
+     *
+     * @param device target physical device
+     * @return list of queue family properties.
+     */
     private static VkQueueFamilyProperties.Buffer getQueueFamilyProperties(
             VkPhysicalDevice device) {
         try (MemoryStack stack = stackPush()) {

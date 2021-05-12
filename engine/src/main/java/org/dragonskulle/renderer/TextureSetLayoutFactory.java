@@ -10,7 +10,8 @@ import static org.lwjgl.vulkan.VK10.vkCreateDescriptorSetLayout;
 import static org.lwjgl.vulkan.VK10.vkDestroyDescriptorSetLayout;
 
 import java.nio.LongBuffer;
-import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 import lombok.extern.java.Log;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.NativeResource;
@@ -27,10 +28,17 @@ import org.lwjgl.vulkan.VkDevice;
  */
 @Log
 class TextureSetLayoutFactory implements NativeResource {
+    /** Logical device use. */
     private VkDevice mDevice;
 
-    private HashMap<Integer, Long> mLayouts = new HashMap<>();
+    /** Map from number of images and the texture set layouts. */
+    private Map<Integer, Long> mLayouts = new TreeMap<>();
 
+    /**
+     * Constructor for {@link TextureSetLayoutFactory}.
+     *
+     * @param device logical device to use.
+     */
     public TextureSetLayoutFactory(VkDevice device) {
         mDevice = device;
     }
@@ -43,15 +51,19 @@ class TextureSetLayoutFactory implements NativeResource {
      * @param textureCount number of textures used in the layout
      * @return created layout, or null if textureCount was zero, or there was an error creating the
      *     layout
+     * @throws RendererException if there is a failure creating the descriptor set layout.
      */
-    public Long getLayout(int textureCount) {
+    public Long getLayout(int textureCount) throws RendererException {
         if (textureCount < 0) {
             return null;
         }
 
-        Long layout =
-                mLayouts.computeIfAbsent(
-                        textureCount, k -> createDescriptorSetLayout(textureCount));
+        Long layout = mLayouts.get(textureCount);
+
+        if (layout == null) {
+            layout = createDescriptorSetLayout(textureCount);
+            mLayouts.put(textureCount, layout);
+        }
 
         return layout;
     }
@@ -61,8 +73,11 @@ class TextureSetLayoutFactory implements NativeResource {
      *
      * <p>This layout is used in creating descriptor sets. It describes all attached textures shader
      * has.
+     *
+     * @param textureCount number of textures this layout should have.
+     * @return descriptor set layout for the number of images given.
      */
-    private long createDescriptorSetLayout(int textureCount) {
+    private long createDescriptorSetLayout(int textureCount) throws RendererException {
         log.fine("Create texture descriptor set layout");
 
         try (MemoryStack stack = stackPush()) {
@@ -87,7 +102,7 @@ class TextureSetLayoutFactory implements NativeResource {
             int res = vkCreateDescriptorSetLayout(mDevice, layoutInfo, null, pDescriptorSetLayout);
 
             if (res != VK_SUCCESS) {
-                throw new RuntimeException(
+                throw new RendererException(
                         String.format("Failed to create descriptor set layout! Res: %x", -res));
             }
 

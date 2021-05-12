@@ -58,7 +58,7 @@ public class TextureMapping {
     }
 
     /**
-     * Constructor for {@link TextureMapping}
+     * Constructor for {@link TextureMapping}.
      *
      * @param filtering filtering mode to use
      */
@@ -81,11 +81,21 @@ public class TextureMapping {
 
         @Getter private final int mValue;
 
+        /**
+         * Construct {@link TextureFiltering}.
+         *
+         * @param value value of the vulkan filtering mode.
+         */
         private TextureFiltering(int value) {
             this.mValue = value;
         }
 
-        /** Create texture filtering from glTF filtering values. */
+        /**
+         * Create texture filtering from glTF filtering values.
+         *
+         * @param value filtering value in glTF format.
+         * @return filtering mode from the value, defaulting to LINEAR.
+         */
         public static TextureFiltering fromGLTF(Integer value) {
             if (value == null) {
                 return LINEAR;
@@ -116,11 +126,21 @@ public class TextureMapping {
 
         @Getter private final int mValue;
 
+        /**
+         * Construct a texture wrapping mode.
+         *
+         * @param value vulkan texture sampler address mode.
+         */
         private TextureWrapping(int value) {
             this.mValue = value;
         }
 
-        /** Create a {@link TextureWrapping} from glTF wrapping value. */
+        /**
+         * Create a {@link TextureWrapping} from glTF wrapping value.
+         *
+         * @param value glTF integer value for wrapping mode.
+         * @return texture wrapping mode.
+         */
         public static TextureWrapping fromGLTF(Integer value) {
             if (value == null) {
                 return REPEAT;

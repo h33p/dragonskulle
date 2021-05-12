@@ -22,7 +22,7 @@ import org.joml.Matrix4fc;
 import org.joml.Vector4f;
 
 /**
- * Reference unlit material
+ * Reference unlit material.
  *
  * <p>This material provides basic unlit rendering of objects with textures. One texture is
  * settable, alongside per-object colour value.
@@ -30,9 +30,10 @@ import org.joml.Vector4f;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class UnlitMaterial implements IMaterial, IColouredMaterial, IRefCountedMaterial {
+public class UnlitMaterial implements IColouredMaterial, IRefCountedMaterial {
+    /** Shader set for unlit materials. */
     public static class UnlitShaderSet extends ShaderSet {
-        /** Creates a unlit shader set */
+        /** Creates a unlit shader set. */
         public UnlitShaderSet() {
             mVertexShader = ShaderBuf.getResource("unlit", ShaderKind.VERTEX_SHADER);
             mFragmentShader = ShaderBuf.getResource("unlit", ShaderKind.FRAGMENT_SHADER);
@@ -45,9 +46,9 @@ public class UnlitMaterial implements IMaterial, IColouredMaterial, IRefCountedM
         }
 
         /**
-         * Enables ordered alpha blending for the shader set
+         * Enables ordered alpha blending for the shader set.
          *
-         * @return this
+         * @return this.
          */
         public UnlitShaderSet enableAlpha() {
             // TODO: add order independent transparency
@@ -58,22 +59,22 @@ public class UnlitMaterial implements IMaterial, IColouredMaterial, IRefCountedM
         }
     }
 
-    /** Shader set used for opaque unlit objects */
+    /** Shader set used for opaque unlit objects. */
     private static final UnlitShaderSet OPAQUE_SET = new UnlitShaderSet();
-    /** Shader set used for transparent unlit objects */
+    /** Shader set used for transparent unlit objects. */
     private static final UnlitShaderSet TRANSPARENT_SET = new UnlitShaderSet().enableAlpha();
 
-    /** Fragment texture used for drawing */
+    /** Fragment texture used for drawing. */
     protected SampledTexture[] mFragmentTextures = {
         new SampledTexture(
                 Texture.getResource("test_cc0_texture.jpg"),
                 new TextureMapping(TextureFiltering.LINEAR, TextureWrapping.REPEAT))
     };
 
-    /** Colour of the surface. It will multiply the texture's colour */
+    /** Colour of the surface. It will multiply the texture's colour. */
     @Getter private final Vector4f mColour = new Vector4f(1.f);
 
-    /** The internal reference count */
+    /** The internal reference count. */
     private int mRefCount = 0;
 
     /** Constructor for UnlitMaterial. */
@@ -82,7 +83,7 @@ public class UnlitMaterial implements IMaterial, IColouredMaterial, IRefCountedM
     /**
      * Constructor for UnlitMaterial.
      *
-     * @param texture initial texture of the object
+     * @param texture initial texture of the object.
      */
     public UnlitMaterial(SampledTexture texture) {
         mFragmentTextures[0] = texture;
@@ -91,8 +92,8 @@ public class UnlitMaterial implements IMaterial, IColouredMaterial, IRefCountedM
     /**
      * Constructor for UnlitMaterial.
      *
-     * @param texture initial texture of the object
-     * @param colour colour of the material
+     * @param texture initial texture of the object.
+     * @param colour colour of the material.
      */
     public UnlitMaterial(SampledTexture texture, Vector4f colour) {
         mFragmentTextures[0] = texture;
@@ -102,32 +103,31 @@ public class UnlitMaterial implements IMaterial, IColouredMaterial, IRefCountedM
     /**
      * Constructor for UnlitMaterial.
      *
-     * @param colour colour of the material
+     * @param colour colour of the material.
      */
     public UnlitMaterial(Vector4f colour) {
         mColour.set(colour);
     }
 
     /**
-     * Gets the shader set of this material
+     * Gets the shader set of this material.
      *
-     * <p>TODO: probably enable alpha blending the same way it's handled in PBRMaterial
-     *
-     * @return {@code OPAQUE_SET}, if the colour alpha is 1, {@code TRANSPARENT_SET} otherwise
+     * @return {@code OPAQUE_SET}, if the colour alpha is 1, {@code TRANSPARENT_SET} otherwise.
      */
     public ShaderSet getShaderSet() {
         return mColour.w < 1f ? TRANSPARENT_SET : OPAQUE_SET;
     }
 
     /**
-     * Writes the vertex shader instance data
+     * Writes the vertex shader instance data.
      *
-     * @param offset where to write the data to inside the buffer
-     * @param buffer where to write the data to
-     * @param matrix the world space matrix of the object
-     * @param lights the world lights (unused)
-     * @return the offset after written data
+     * @param offset where to write the data to inside the buffer.
+     * @param buffer where to write the data to.
+     * @param matrix the world space matrix of the object.
+     * @param lights the world lights (unused).
+     * @return the offset after written data.
      */
+    @Override
     public int writeVertexInstanceData(
             int offset, ByteBuffer buffer, Matrix4fc matrix, List<Light> lights) {
         offset = ShaderSet.writeMatrix(offset, buffer, matrix);
@@ -137,26 +137,28 @@ public class UnlitMaterial implements IMaterial, IColouredMaterial, IRefCountedM
 
     /**
      * Gets the list of fragment shader textures used. It should be the same size as {@link
-     * ShaderSet#mNumFragmentTextures}
+     * ShaderSet#mNumFragmentTextures}.
      *
-     * @return the array of SampledTexture
+     * @return the array of SampledTexture.
      */
+    @Override
     public SampledTexture[] getFragmentTextures() {
         return mFragmentTextures;
     }
 
     /**
-     * Increase the reference count and return the material
+     * Increase the reference count and return the material.
      *
-     * @return this
+     * @return this.
      */
+    @Override
     public IRefCountedMaterial incRefCount() {
         mRefCount++;
         return this;
     }
 
     /**
-     * Free the material. It will release fragment textures if the reference count drops below zero
+     * Free the material. It will release fragment textures if the reference count drops below zero.
      */
     public void free() {
         if (--mRefCount < 0) {

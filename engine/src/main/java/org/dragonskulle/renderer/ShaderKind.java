@@ -23,6 +23,11 @@ public enum ShaderKind {
     @Getter
     private final int mKind;
 
+    /**
+     * Construct a shader kind.
+     *
+     * @param kind shaderc shader kind value.
+     */
     ShaderKind(int kind) {
         this.mKind = kind;
     }
