@@ -32,6 +32,10 @@ public class WaveSound extends Sound {
     private int mBits;
     private int mChannels;
 
+    /**
+     * Gets the correct value of the openAL format from the number of channels and bits of each
+     * sample.
+     */
     private void setALFormat() {
         switch (mBits) {
             case 16:
@@ -135,6 +139,7 @@ public class WaveSound extends Sound {
         return null;
     }
 
+    /** Default constructor. */
     private WaveSound() {}
 
     /**

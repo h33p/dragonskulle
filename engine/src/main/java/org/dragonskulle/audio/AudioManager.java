@@ -330,6 +330,11 @@ public class AudioManager {
         setMasterMute(mMasterMuted);
     }
 
+    /**
+     * Set the master mute value
+     *
+     * @param muted New value of master mute
+     */
     public void setMasterMute(boolean muted) {
         if (muted) {
             mMasterMuted = true;

@@ -17,6 +17,14 @@ import org.dragonskulle.core.Scene;
 import org.joml.Vector3f;
 import org.lwjgl.openal.AL11;
 
+/**
+ * Class representing a single audio source within the game.
+ *
+ * @author Harry Stoltz
+ *     <p>By itself does nothing, but when playSound is called, it will be assigned an openAL source
+ *     by the AudioManager and then will start playing sound. The sound is played from the location
+ *     of the parent game object in the world.
+ */
 @Accessors(prefix = "m")
 @Log
 public class AudioSource extends Component implements IFixedUpdate, ILateFrameUpdate {
