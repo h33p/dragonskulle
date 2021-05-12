@@ -37,8 +37,10 @@ import org.lwjgl.vulkan.VkWriteDescriptorSet;
 @Log
 class TextureSet implements NativeResource {
 
+    /** Array of on-GPU vulkan textures. */
     @Getter private VulkanSampledTexture[] mTextures;
 
+    /** Logical device the set is on. */
     private VkDevice mDevice;
 
     /** Descriptor pool of this TextureSet. */
@@ -46,6 +48,7 @@ class TextureSet implements NativeResource {
     /** Layout of the descriptor sets. */
     @Getter private long mSetLayout;
 
+    /** Allocated descriptor sets. */
     private long[] mDescriptorSets;
 
     /**
@@ -55,12 +58,14 @@ class TextureSet implements NativeResource {
      * @param factory factory of texture set layouts
      * @param textures textures used
      * @param descriptorSetCount number of descriptor sets to create
+     * @throws RendererException if there is an error creating the texture set.
      */
     public TextureSet(
             VkDevice device,
             TextureSetLayoutFactory factory,
             VulkanSampledTexture[] textures,
-            int descriptorSetCount) {
+            int descriptorSetCount)
+            throws RendererException {
         mTextures = Arrays.copyOf(textures, textures.length);
         mSetLayout = factory.getLayout(textures.length);
 
@@ -85,7 +90,7 @@ class TextureSet implements NativeResource {
             int res = vkAllocateDescriptorSets(mDevice, allocInfo, pDescriptorSets);
 
             if (res != VK_SUCCESS) {
-                throw new RuntimeException(
+                throw new RendererException(
                         String.format("Failed to create descriptor sets! Res: %x", -res));
             }
 
@@ -137,8 +142,10 @@ class TextureSet implements NativeResource {
      * @param textureCount number of textures used
      * @param descriptorSetCount number of descriptor sets to create
      * @return the created descriptor pool
+     * @throws RendererException if there is an error creating the descriptor pool.
      */
-    private long createDescriptorPool(int textureCount, int descriptorSetCount) {
+    private long createDescriptorPool(int textureCount, int descriptorSetCount)
+            throws RendererException {
         log.fine("Setup texture descriptor pool");
 
         try (MemoryStack stack = stackPush()) {
@@ -158,7 +165,7 @@ class TextureSet implements NativeResource {
             int res = vkCreateDescriptorPool(mDevice, poolInfo, null, pDescriptorPool);
 
             if (res != VK_SUCCESS) {
-                throw new RuntimeException(
+                throw new RendererException(
                         String.format("Failed to create descriptor pool! Res: %x", -res));
             }
 
@@ -166,7 +173,12 @@ class TextureSet implements NativeResource {
         }
     }
 
-    /** Retrieve a descriptor set by image index. */
+    /**
+     * Retrieve a descriptor set by image index.
+     *
+     * @param index index of the descriptor set to retrieve.
+     * @return descriptor set at that index.
+     */
     public long getDescriptorSet(int index) {
         return mDescriptorSets[index];
     }

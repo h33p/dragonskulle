@@ -13,6 +13,7 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.game.input.GameActions;
 import org.dragonskulle.input.Cursor;
 import org.dragonskulle.renderer.Renderer;
+import org.dragonskulle.renderer.RendererException;
 import org.dragonskulle.renderer.RendererSettings;
 import org.dragonskulle.renderer.VBlankMode;
 import org.dragonskulle.settings.Settings;
@@ -78,9 +79,12 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
 
                         newSettings.setMSAACount(mSupportedMSAAModes.get(val));
 
-                        rend.setSettings(newSettings);
-
-                        rend.getRendererSettings().writeSettings(Settings.getInstance());
+                        try {
+                            rend.setSettings(newSettings);
+                            rend.getRendererSettings().writeSettings(Settings.getInstance());
+                        } catch (RendererException e) {
+                            e.printStackTrace();
+                        }
 
                         updateGraphicsSettings();
                     });
@@ -103,9 +107,12 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
 
                         newSettings.setVBlankMode(mSupportedVSyncModes[val]);
 
-                        rend.setSettings(newSettings);
-
-                        rend.getRendererSettings().writeSettings(Settings.getInstance());
+                        try {
+                            rend.setSettings(newSettings);
+                            rend.getRendererSettings().writeSettings(Settings.getInstance());
+                        } catch (RendererException e) {
+                            e.printStackTrace();
+                        }
 
                         updateGraphicsSettings();
                     });

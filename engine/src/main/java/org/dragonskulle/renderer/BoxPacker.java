@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 
 /**
- * Box packer. Based on lightmap packing techniques.
+ * Box packer used for font atlases. Based on lightmap packing techniques.
  *
  * <p>One of which: https://blackpawn.com/texts/lightmaps/default.html
  *
@@ -25,6 +25,14 @@ class BoxPacker<T extends IBox> {
         private BoxNode<T> mRight;
         private boolean mFilledLeaf = false;
 
+        /**
+         * Construct a box node.
+         *
+         * @param x target X coordinate.
+         * @param y target Y coordinate.
+         * @param width width of the box.
+         * @param height height of the box.
+         */
         public BoxNode(int x, int y, int width, int height) {
             mX = x;
             mY = y;
@@ -35,12 +43,26 @@ class BoxPacker<T extends IBox> {
 
     private BoxNode<T> mRoot;
 
+    /**
+     * Construct a box node at origin.
+     *
+     * @param width width of the box
+     * @param height height of the box.
+     */
     public BoxPacker(int width, int height) {
         mRoot = new BoxNode<T>(0, 0, width, height);
     }
 
     // TODO: Add resizing support
 
+    /**
+     * Pack a box node into the pack.
+     *
+     * @param node current node.
+     * @param newBox element to pack into the box.
+     * @param gap gap between elements.
+     * @return packed box node, {@code null} if unsuccessful.
+     */
     private BoxNode<T> pack(BoxNode<T> node, T newBox, int gap) {
 
         if (node.mFilledLeaf) {

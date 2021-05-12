@@ -37,6 +37,11 @@ public class ShaderSet implements NativeResource {
 
         @Getter private final int mValue;
 
+        /**
+         * Construct the render order.
+         *
+         * @param value integer ordering value.
+         */
         private RenderOrder(int value) {
             mValue = value;
         }
@@ -143,23 +148,37 @@ public class ShaderSet implements NativeResource {
     /**
      * Write the uniform data used by vertex shader.
      *
-     * <p>TODO: actually support this in the renderer
+     * <p>TODO: support this in the renderer
+     *
+     * @param offset input offset in the uniform buffer.
+     * @param buffer uniform buffer.
+     * @return offset after this shader's data.
      */
-    public void writeVertexUniformData(int offset, ByteBuffer buffer) {}
+    public int writeVertexUniformData(int offset, ByteBuffer buffer) {
+        return offset;
+    }
 
     /**
      * Write the uniform data used by vertex shader.
      *
-     * <p>TODO: actually support this in the renderer
+     * <p>TODO: support this in the renderer
+     *
+     * @param offset input offset in the uniform buffer.
+     * @param buffer uniform buffer.
+     * @return offset after this shader's data.
      */
-    public void writeGeometryUniformData(int offset, ByteBuffer buffer) {}
+    public int writeGeometryUniformData(int offset, ByteBuffer buffer) {
+        return offset;
+    }
 
     /**
      * Get the push constants used by fragment shader
      *
      * <p>Currently using this feature is unsupported.
      *
-     * <p>TODO: actually support this in the renderer
+     * <p>TODO: support this in the renderer
+     *
+     * @param stack memory stack to allocate the constants on.
      */
     public ByteBuffer getFragmentPushConstants(MemoryStack stack) {
         return null;
@@ -168,9 +187,15 @@ public class ShaderSet implements NativeResource {
     /**
      * Write the uniform data used by fragment shader.
      *
-     * <p>TODO: actually support this in the renderer
+     * <p>TODO: support this in the renderer
+     *
+     * @param offset input offset in the uniform buffer.
+     * @param buffer uniform buffer.
+     * @return offset after this shader's data.
      */
-    public void writeFragmentUniformData(int offset, ByteBuffer buffer) {}
+    public int writeFragmentUniformData(int offset, ByteBuffer buffer) {
+        return offset;
+    }
 
     /**
      * Retrieve number of uniform bindings used.

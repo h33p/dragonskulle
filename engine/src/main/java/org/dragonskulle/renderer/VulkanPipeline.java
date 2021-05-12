@@ -68,13 +68,23 @@ import org.lwjgl.vulkan.VkViewport;
  */
 @Log
 class VulkanPipeline implements NativeResource {
+    /** Underlying vulkan pipeline. */
     public long mPipeline;
+    /** Underlying vulkan pipeline layout. */
     public long mLayout;
 
+    /** Underlying vulkan device. */
     private VkDevice mDevice;
+    /** {@link ShaderSet} compatible with this pipeline. */
     private ShaderSet mShaderSet;
 
-    /** Get vulkan binding descriptors for the vertex shader. */
+    /**
+     * Get vulkan binding descriptors for the vertex shader.
+     *
+     * @param stack stack on which to allocate the buffer on.
+     * @param instanceBindingDescription input binding description.
+     * @return vulkanized binding descriptions, with standard vertex data attached to the start.
+     */
     private static VkVertexInputBindingDescription.Buffer getBindingDescriptions(
             MemoryStack stack, BindingDescription instanceBindingDescription) {
 
@@ -94,7 +104,14 @@ class VulkanPipeline implements NativeResource {
         return bindingDescriptionsOut;
     }
 
-    /** Get memory attribute descriptions for the vertex shader. */
+    /**
+     * Get memory attribute descriptions for the vertex shader.
+     *
+     * @param stack stack on which to allocate the buffer on.
+     * @param attributeDescriptions input attribute description.
+     * @return vulkanized attribute descriptions, with standard vertex attributes attached to the
+     *     start.
+     */
     private static VkVertexInputAttributeDescription.Buffer getAttributeDescriptions(
             MemoryStack stack, AttributeDescription... attributeDescriptions) {
 
@@ -128,13 +145,25 @@ class VulkanPipeline implements NativeResource {
         return attributeDescriptionsOut;
     }
 
+    /**
+     * Construct a vulkan pipeline.
+     *
+     * @param shaderSet target shader set.
+     * @param descriptorSetLayouts layouts for attached descriptor sets.
+     * @param device vulkan device to use.
+     * @param extent render surface size.
+     * @param renderPass render pass to render on.
+     * @param msaaCount number of MSAA samples to make.
+     * @throws RendererException if there is an error creating the pipeline.
+     */
     public VulkanPipeline(
             ShaderSet shaderSet,
             long[] descriptorSetLayouts,
             VkDevice device,
             VkExtent2D extent,
             long renderPass,
-            int msaaCount) {
+            int msaaCount)
+            throws RendererException {
         log.fine("Setup pipeline");
 
         mDevice = device;
@@ -150,7 +179,7 @@ class VulkanPipeline implements NativeResource {
             vertShader = Shader.getShader(vertShaderBuf, mDevice);
 
             if (vertShader == null) {
-                throw new RuntimeException("Failed to retrieve vertex shader!");
+                throw new RendererException("Failed to retrieve vertex shader!");
             }
             shaderStageCount++;
         }
@@ -162,7 +191,7 @@ class VulkanPipeline implements NativeResource {
             geomShader = Shader.getShader(geomShaderBuf, mDevice);
 
             if (geomShader == null) {
-                throw new RuntimeException("Failed to retrieve vertex shader!");
+                throw new RendererException("Failed to retrieve vertex shader!");
             }
             shaderStageCount++;
         }
@@ -174,7 +203,7 @@ class VulkanPipeline implements NativeResource {
             fragShader = Shader.getShader(fragShaderBuf, mDevice);
 
             if (fragShader == null) {
-                throw new RuntimeException("Failed to retrieve fragment shader!");
+                throw new RendererException("Failed to retrieve fragment shader!");
             }
             shaderStageCount++;
         }
@@ -350,7 +379,7 @@ class VulkanPipeline implements NativeResource {
             int result = vkCreatePipelineLayout(mDevice, pipelineLayoutInfo, null, pPipelineLayout);
 
             if (result != VK_SUCCESS) {
-                throw new RuntimeException(
+                throw new RendererException(
                         String.format("Failed to create pipeline layout! Err: %x", -result));
             }
 
@@ -381,7 +410,7 @@ class VulkanPipeline implements NativeResource {
                             mDevice, VK_NULL_HANDLE, pipelineInfo, null, pPipeline);
 
             if (result != VK_SUCCESS) {
-                throw new RuntimeException(
+                throw new RendererException(
                         String.format("Failed to create graphics pipeline! Err: %x", -result));
             }
 
@@ -399,6 +428,7 @@ class VulkanPipeline implements NativeResource {
         }
     }
 
+    /** Free the underlying pipeline and its layout. */
     @Override
     public void free() {
         vkDestroyPipeline(mDevice, mPipeline, null);

@@ -35,7 +35,6 @@ import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.renderer.components.Light;
 import org.dragonskulle.settings.Settings;
 import org.dragonskulle.ui.TransformUI;
-import org.dragonskulle.ui.UIButton;
 import org.dragonskulle.ui.UIManager;
 import org.dragonskulle.ui.UIRenderable;
 import org.dragonskulle.ui.UIText;
@@ -417,25 +416,25 @@ public class App implements NativeResource {
 
         final UIManager uiManager = UIManager.getInstance();
 
-        uiManager.buildVerticalUi(
-                mainUi,
-                0.3f,
-                0,
-                1,
-                null,
-                new UIButton(
-                        "Play Game",
-                        (__, ___) -> {
-                            mainUi.setEnabled(false);
-                            lobby.get().getLobbyUi().setEnabled(true);
-                        }),
-                new UIButton(
-                        "Settings",
-                        (__, ___) -> {
-                            mainUi.setEnabled(false);
-                            settingsUI.setEnabled(true);
-                        }),
-                new UIButton("Quit", (__, ___) -> Engine.getInstance().stop()));
+        /*uiManager.buildVerticalUi(
+        mainUi,
+        0.3f,
+        0,
+        1,
+        null,
+        new UIButton(
+                "Play Game",
+                (__, ___) -> {
+                    mainUi.setEnabled(false);
+                    lobby.get().getLobbyUi().setEnabled(true);
+                }),
+        new UIButton(
+                "Settings",
+                (__, ___) -> {
+                    mainUi.setEnabled(false);
+                    settingsUI.setEnabled(true);
+                }),
+        new UIButton("Quit", (__, ___) -> Engine.getInstance().stop()));*/
 
         mainMenu.addRootObject(serverNetworkManagerObject);
         mainMenu.addRootObject(clientNetworkManagerObject);

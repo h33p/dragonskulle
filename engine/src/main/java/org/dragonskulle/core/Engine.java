@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import lombok.Getter;
 import lombok.experimental.Accessors;
+import lombok.extern.java.Log;
 import org.dragonskulle.audio.AudioManager;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IFixedUpdate;
@@ -20,6 +21,7 @@ import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.futures.Future;
 import org.dragonskulle.input.Bindings;
 import org.dragonskulle.network.UPnP;
+import org.dragonskulle.renderer.RendererException;
 import org.dragonskulle.renderer.components.Camera;
 import org.dragonskulle.renderer.components.Light;
 import org.dragonskulle.renderer.components.Renderable;
@@ -34,6 +36,7 @@ import org.dragonskulle.ui.UIManager;
  *     components access to engine components such as the AudioManager and InputManager.
  */
 @Accessors(prefix = "m")
+@Log
 public class Engine {
     private static final Engine ENGINE_INSTANCE = new Engine();
 
@@ -98,9 +101,15 @@ public class Engine {
     public void start(String gameName, Bindings bindings, Settings settings) {
         // TODO: Any initialization of engine components like renderer, audio, input, etc done here
 
-        UPnP.initialise();
+        try {
+            mGLFWState = new GLFWState(WINDOW_WIDTH, WINDOW_HEIGHT, gameName, bindings, settings);
+        } catch (RendererException e) {
+            log.severe("Renderer exception occured!");
+            e.printStackTrace();
+            return;
+        }
 
-        mGLFWState = new GLFWState(WINDOW_WIDTH, WINDOW_HEIGHT, gameName, bindings, settings);
+        UPnP.initialise();
 
         mIsRunning = true;
         mainLoop(mGLFWState::processEvents, true);
@@ -510,7 +519,12 @@ public class Engine {
         Camera mainCamera = mPresentationScene.getSingleton(Camera.class);
 
         if (mainCamera != null) {
-            mGLFWState.getRenderer().render(mainCamera, mTmpRenderables, mTmpLights);
+            try {
+                mGLFWState.getRenderer().render(mainCamera, mTmpRenderables, mTmpLights);
+            } catch (RendererException e) {
+                log.severe("Renderer exception! " + e.toString());
+                mIsRunning = false;
+            }
         }
     }
 
