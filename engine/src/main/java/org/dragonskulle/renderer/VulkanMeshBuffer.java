@@ -37,48 +37,92 @@ import org.lwjgl.vulkan.VkQueue;
 @Accessors(prefix = "m")
 @Log
 class VulkanMeshBuffer implements NativeResource {
+    /** Handle to underlying logical device. */
     private VkDevice mDevice;
+    /** Handle to underlying physical device. */
     private PhysicalDevice mPhysicalDevice;
+    /** Handle to underlying vertex buffer. */
     private VulkanBuffer mVertexBuffer;
+    /** Handle to underlying index buffer. */
     private VulkanBuffer mIndexBuffer;
 
+    /** Vertex count within the buffer. */
     @Getter private int mMaxVertexOffset;
+    /** Index count within the buffer. */
     @Getter private int mMaxIndexOffset;
 
+    /** Whether the buffer dirty, and should be rebuilt on commit. */
     @Getter private boolean mDirty = false;
+
+    /** Map between meshes and array list indices. */
     private Map<Mesh, Integer> mLoadedMeshes = new HashMap<Mesh, Integer>();
 
+    /** Mesh entries within the buffer. */
     private ArrayList<MeshBufferEntry> mEntries = new ArrayList<>();
 
     /** Description where mesh data resides in. */
     @Builder
     @Getter
     public static class MeshDescriptor {
+        /**
+         * Offset withing the mesh buffer for vertices.
+         *
+         * <p>Vertex count is irrelevant here, because only index count is needed to be known.
+         */
         private int mVertexOffset;
+        /** Offset within the mesh buffer for indices. */
         private int mIndexOffset;
+        /** Number of indices within the mesh buffer. */
         private int mIndexCount;
     }
 
+    /** Entry of the mesh buffer. */
     private static class MeshBufferEntry {
+        /** Mesh used in the mesh buffer. */
         private Mesh mMesh;
+        /** Offset descriptor of the mesh. */
         private MeshDescriptor mMeshDescriptor;
     }
 
+    /** Constructor for {@link VulkanMeshBuffer}. */
     private VulkanMeshBuffer() {}
 
+    /**
+     * Construct a mesh buffer.
+     *
+     * @param device target logical vulkan device.
+     * @param physicalDevice target physical device.
+     */
     public VulkanMeshBuffer(VkDevice device, PhysicalDevice physicalDevice) {
         mDevice = device;
         mPhysicalDevice = physicalDevice;
     }
 
+    /**
+     * Get the vertex buffer handle.
+     *
+     * @return handle to the vertex buffer.
+     */
     public long getVertexBuffer() {
         return mVertexBuffer != null ? mVertexBuffer.mBuffer : 0;
     }
 
+    /**
+     * Get the index buffer handle.
+     *
+     * @return handle to the index buffer.
+     */
     public long getIndexBuffer() {
         return mIndexBuffer.mBuffer;
     }
 
+    /**
+     * Get the mesh descriptor for a mesh.
+     *
+     * @param mesh mesh to find the descriptor for.
+     * @return a mesh descriptor representing offsets withing the underlying mesh buffer, or {@code
+     *     null}, if it does not exist.
+     */
     public MeshDescriptor getMeshDescriptor(Mesh mesh) {
         Integer idx = mLoadedMeshes.get(mesh);
         return idx == null ? null : mEntries.get(idx).mMeshDescriptor;
@@ -121,8 +165,10 @@ class VulkanMeshBuffer implements NativeResource {
      * @param commandPool command pool of the device
      * @return new VulkanMeshBuffer if this one was dirty (check with {@code isDirty}), {@code this}
      *     otherwise.
+     * @throws RendererException if a buffer fails to be created.
      */
-    public VulkanMeshBuffer commitChanges(VkQueue graphicsQueue, long commandPool) {
+    public VulkanMeshBuffer commitChanges(VkQueue graphicsQueue, long commandPool)
+            throws RendererException {
         if (mDirty) {
             mDirty = false;
             VulkanMeshBuffer ret = new VulkanMeshBuffer();
@@ -182,6 +228,7 @@ class VulkanMeshBuffer implements NativeResource {
         }
     }
 
+    /** Free the mesh buffer. */
     @Override
     public void free() {
         if (mVertexBuffer != null) {
@@ -199,8 +246,14 @@ class VulkanMeshBuffer implements NativeResource {
      * Create a vertex buffer.
      *
      * <p>As the name implies, this buffer holds vertices
+     *
+     * @param graphicsQueue graphics queue of the device.
+     * @param commandPool command pool of the device.
+     * @return new vertex buffer.
+     * @throws RendererException if vertex buffer fails to be created.
      */
-    private VulkanBuffer createVertexBuffer(VkQueue graphicsQueue, long commandPool) {
+    private VulkanBuffer createVertexBuffer(VkQueue graphicsQueue, long commandPool)
+            throws RendererException {
         log.fine("Create vertex buffer");
 
         int vertexCount = 0;
@@ -249,8 +302,14 @@ class VulkanMeshBuffer implements NativeResource {
      * Create index buffer
      *
      * <p>This buffer holds indices of the vertices to render in multiples of 3.
+     *
+     * @param graphicsQueue graphics queue of the device.
+     * @param commandPool command pool of the device.
+     * @return new index buffer.
+     * @throws RendererException if index buffer fails to be created.
      */
-    private VulkanBuffer createIndexBuffer(VkQueue graphicsQueue, long commandPool) {
+    private VulkanBuffer createIndexBuffer(VkQueue graphicsQueue, long commandPool)
+            throws RendererException {
         log.fine("Setup index buffer");
 
         int indexCount = 0;
@@ -295,13 +354,24 @@ class VulkanMeshBuffer implements NativeResource {
         }
     }
 
-    /** Transition a staging buffer into device local memory. */
+    /**
+     * Transition a staging buffer into device local memory.
+     *
+     * @param stagingBuffer staging vulkan buffer.
+     * @param size size of the buffer.
+     * @param usageBits target usage bits for the buffer.
+     * @param graphicsQueue graphics queue of the device.
+     * @param commandPool command pool for the device.
+     * @return buffer inside local graphics memory.
+     * @throws RendererException if local buffer fails to be created.
+     */
     private VulkanBuffer transitionToLocalMemory(
             VulkanBuffer stagingBuffer,
             long size,
             int usageBits,
             VkQueue graphicsQueue,
-            long commandPool) {
+            long commandPool)
+            throws RendererException {
         VulkanBuffer outputBuffer =
                 new VulkanBuffer(
                         mDevice,

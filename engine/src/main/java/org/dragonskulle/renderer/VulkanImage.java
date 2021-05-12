@@ -87,23 +87,40 @@ import org.lwjgl.vulkan.VkMemoryRequirements;
  */
 @Accessors(prefix = "m")
 class VulkanImage implements NativeResource {
+    /** Underlying handle to the image itself. */
     public long mImage;
+    /** Underlying handle to the image memory. */
     public long mMemory;
 
+    /** Image format. */
     private int mFormat;
+    /** Image subresource range aspect mask. */
     private int mAspectMask;
+    /** Current image layout. */
     private int mImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    /** Number of mipmap levels used. */
     @Getter private int mMipLevels = 1;
+    /** Logical device used. */
     private VkDevice mDevice;
 
+    /** Controls whether the handles on this image are released on free. */
     private boolean mNeedsFree = true;
 
+    /** Temporary staging buffer for the image. */
     private VulkanBuffer mStagingBuffer;
 
     /**
      * Create a depth texture
      *
      * <p>Staging buffer should be freed after the command buffer is flushed/freed.
+     *
+     * @param commandBuffer command buffer to use to load this image.
+     * @param device logical device to use.
+     * @param physicalDevice physical device to use.
+     * @param width width of the image.
+     * @param height height of the image.
+     * @param numSamples number of mipmap samples to use.
+     * @return the newly created depth image.
      */
     public static VulkanImage createDepthImage(
             VkCommandBuffer commandBuffer,
@@ -111,7 +128,8 @@ class VulkanImage implements NativeResource {
             PhysicalDevice physicalDevice,
             int width,
             int height,
-            int numSamples) {
+            int numSamples)
+            throws RendererException {
         return new VulkanImage(
                 commandBuffer,
                 device,
@@ -129,6 +147,10 @@ class VulkanImage implements NativeResource {
      * Create a VulkanImage with provided image
      *
      * <p>This method is provided for swapchain images, that do not need to be freed manually.
+     *
+     * @param device logical device to use.
+     * @param format target image format.
+     * @param image on-GPU image.
      */
     public VulkanImage(VkDevice device, int format, long image) {
         this.mDevice = device;
@@ -138,6 +160,20 @@ class VulkanImage implements NativeResource {
         this.mNeedsFree = false;
     }
 
+    /**
+     * Create a vulkan image.
+     *
+     * @param commandBuffer command buffer to use to load this image.
+     * @param device logical device to use.
+     * @param physicalDevice physical device to use.
+     * @param width width of the image.
+     * @param height height of the image.
+     * @param usage target usage of the image.
+     * @param numSamples number of mipmap samples to use.
+     * @param format target image format.
+     * @param aspectMask subresource range aspect mask.
+     * @param targetLayout target layout of the image.
+     */
     public VulkanImage(
             VkCommandBuffer commandBuffer,
             VkDevice device,
@@ -148,7 +184,8 @@ class VulkanImage implements NativeResource {
             int numSamples,
             int format,
             int aspectMask,
-            int targetLayout) {
+            int targetLayout)
+            throws RendererException {
         this(
                 device,
                 physicalDevice,
@@ -164,12 +201,22 @@ class VulkanImage implements NativeResource {
         transitionImageLayout(commandBuffer, targetLayout);
     }
 
+    /**
+     * Create a vulkan image.
+     *
+     * @param texture texture to load.
+     * @param linearData whether this texture is linear or sRGB.
+     * @param commandBuffer command buffer to use to load this image.
+     * @param device logical device to use.
+     * @param physicalDevice physical device to use.
+     */
     public VulkanImage(
             Texture texture,
             boolean linearData,
             VkCommandBuffer commandBuffer,
             VkDevice device,
-            PhysicalDevice physicalDevice) {
+            PhysicalDevice physicalDevice)
+            throws RendererException {
 
         this(
                 device,
@@ -216,6 +263,15 @@ class VulkanImage implements NativeResource {
         }
     }
 
+    /**
+     * Generate mipmaps for the image.
+     *
+     * @param commandBuffer command buffer to write the commands to.
+     * @param physDev physical device to use.
+     * @param format target image format.
+     * @param width width of the image.
+     * @param height height of the image.
+     */
     private void generateMipmaps(
             VkCommandBuffer commandBuffer,
             PhysicalDevice physDev,
@@ -319,6 +375,20 @@ class VulkanImage implements NativeResource {
         }
     }
 
+    /**
+     * Create a vulkan image.
+     *
+     * @param device logical device to use.
+     * @param physicalDevice physical device to use.
+     * @param width width of the image.
+     * @param height height of the image.
+     * @param format image format.
+     * @param aspectMask subresource range aspect mask.
+     * @param numSamples number of mipmap samples to use.
+     * @param tiling target tiling of the image.
+     * @param usage how is this image used.
+     * @param properties target memory type properties.
+     */
     public VulkanImage(
             VkDevice device,
             PhysicalDevice physicalDevice,
@@ -329,7 +399,8 @@ class VulkanImage implements NativeResource {
             int numSamples,
             int tiling,
             int usage,
-            int properties) {
+            int properties)
+            throws RendererException {
         mDevice = device;
         mFormat = format;
         mAspectMask = aspectMask;
@@ -359,7 +430,7 @@ class VulkanImage implements NativeResource {
             int res = vkCreateImage(mDevice, imageInfo, null, pImage);
 
             if (res != VK_SUCCESS) {
-                throw new RuntimeException(String.format("Failed to create image! Res: %x", -res));
+                throw new RendererException(String.format("Failed to create image! Res: %x", -res));
             }
 
             this.mImage = pImage.get(0);
@@ -378,7 +449,7 @@ class VulkanImage implements NativeResource {
             res = vkAllocateMemory(mDevice, allocateInfo, null, pBufferMemory);
 
             if (res != VK_SUCCESS) {
-                throw new RuntimeException(
+                throw new RendererException(
                         String.format("Failed to allocate buffer memory! Ret: %x", -res));
             }
 
@@ -387,7 +458,7 @@ class VulkanImage implements NativeResource {
             res = vkBindImageMemory(mDevice, this.mImage, this.mMemory, 0);
 
             if (res != VK_SUCCESS) {
-                throw new RuntimeException(
+                throw new RendererException(
                         String.format("Failed to bind image memory! Ret: %x", -res));
             }
         }
@@ -397,8 +468,11 @@ class VulkanImage implements NativeResource {
      * Creates a image view for an image
      *
      * <p>Image views are needed to render to/read from.
+     *
+     * @return newly created image view.
+     * @throws RendererException if there is a failure creating image view.
      */
-    public long createImageView() {
+    public long createImageView() throws RendererException {
         try (MemoryStack stack = stackPush()) {
             VkImageViewCreateInfo createInfo = VkImageViewCreateInfo.callocStack(stack);
             createInfo.sType(VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO);
@@ -422,7 +496,7 @@ class VulkanImage implements NativeResource {
 
             int result = vkCreateImageView(mDevice, createInfo, null, imageView);
             if (result != VK_SUCCESS) {
-                throw new RuntimeException(
+                throw new RendererException(
                         String.format(
                                 "Failed to create image view for %x! Error: %x", mImage, -result));
             }
@@ -431,6 +505,7 @@ class VulkanImage implements NativeResource {
         }
     }
 
+    /** Free the staging buffer. */
     public void freeStagingBuffer() {
         if (mStagingBuffer != null) {
             mStagingBuffer.free();
@@ -454,11 +529,23 @@ class VulkanImage implements NativeResource {
         }
     }
 
+    /**
+     * Check whether the image format has stencil component.
+     *
+     * @return {@code true} if the image has the stencil component. {@code false} otherwise.
+     */
     private boolean hasStencilComponent() {
         return mFormat == VK_FORMAT_D32_SFLOAT_S8_UINT || mFormat == VK_FORMAT_D24_UNORM_S8_UINT;
     }
 
-    private void transitionImageLayout(VkCommandBuffer commandBuffer, int newLayout) {
+    /**
+     * Transition image layout to a new one.
+     *
+     * @param commandBuffer command buffer to use.
+     * @param newLayout target image layout.
+     */
+    private void transitionImageLayout(VkCommandBuffer commandBuffer, int newLayout)
+            throws RendererException {
         try (MemoryStack stack = stackPush()) {
             VkImageMemoryBarrier.Buffer barrier = VkImageMemoryBarrier.callocStack(1, stack);
             barrier.sType(VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER);
@@ -518,7 +605,7 @@ class VulkanImage implements NativeResource {
                 srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
                 dstStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
             } else {
-                throw new RuntimeException("Unsupported layout transition!");
+                throw new RendererException("Unsupported layout transition!");
             }
 
             vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, null, null, barrier);
@@ -526,6 +613,14 @@ class VulkanImage implements NativeResource {
         }
     }
 
+    /**
+     * Copy image from one a buffer.
+     *
+     * @param buffer buffer to copy from.
+     * @param commandBuffer buffer for commands.
+     * @param width width of the image.
+     * @param height height of the image.
+     */
     private void copyFromBuffer(
             VulkanBuffer buffer, VkCommandBuffer commandBuffer, int width, int height) {
         try (MemoryStack stack = stackPush()) {

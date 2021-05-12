@@ -38,10 +38,23 @@ public class Texture implements NativeResource {
                 (buffer, args) -> loadTexture(buffer, args.getName()));
     }
 
+    /**
+     * Get a texture by name.
+     *
+     * @param name name of the texture. Relative to resources/textures directory.
+     * @return texture resource that was loaded. {@code null} if it fails to load.
+     */
     public static Resource<Texture> getResource(String name) {
         return ResourceManager.getResource(Texture.class, name);
     }
 
+    /**
+     * Load texture from buffer.
+     *
+     * @param buffer bytes containing the texture file data.
+     * @param name name of the texture.
+     * @return loaded texture.
+     */
     private static Texture loadTexture(byte[] buffer, String name) {
         Texture ret = new Texture();
         ByteBuffer buf = MemoryUtil.memAlloc(buffer.length);
@@ -61,6 +74,7 @@ public class Texture implements NativeResource {
         return ret;
     }
 
+    /** Free the texture resource. */
     @Override
     public void free() {
         if (mBuffer != null) {
@@ -69,6 +83,11 @@ public class Texture implements NativeResource {
         }
     }
 
+    /**
+     * Get the size of the texture in bytes.
+     *
+     * @return texture buffer's capacity.
+     */
     public int size() {
         return mBuffer.capacity();
     }

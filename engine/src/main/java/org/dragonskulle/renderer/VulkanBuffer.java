@@ -30,13 +30,27 @@ import org.lwjgl.vulkan.VkMemoryRequirements;
  * @author Aurimas Blažulionis
  */
 class VulkanBuffer implements NativeResource {
+    /** Handle to the vulkan buffer. */
     public long mBuffer;
+    /** Handle to buffer's memory. */
     public long mMemory;
 
+    /** Logical device that the buffer is on. */
     private VkDevice mDevice;
 
+    /**
+     * create a {@link VulkanBuffer}.
+     *
+     * @param device logical device to use.
+     * @param physicalDevice physical device to use.
+     * @param size size of the buffer.
+     * @param usage how this buffer is going to be used.
+     * @param properties wanted memory properties for the buffer.
+     * @throws RendererException if tehre is a failure creating the buffer.
+     */
     public VulkanBuffer(
-            VkDevice device, PhysicalDevice physicalDevice, long size, int usage, int properties) {
+            VkDevice device, PhysicalDevice physicalDevice, long size, int usage, int properties)
+            throws RendererException {
         mDevice = device;
         try (MemoryStack stack = stackPush()) {
             VkBufferCreateInfo createInfo = VkBufferCreateInfo.callocStack(stack);
@@ -50,7 +64,8 @@ class VulkanBuffer implements NativeResource {
             int res = vkCreateBuffer(mDevice, createInfo, null, pBuffer);
 
             if (res != VK_SUCCESS) {
-                throw new RuntimeException(String.format("Failed to create buffer! Ret: %x", -res));
+                throw new RendererException(
+                        String.format("Failed to create buffer! Ret: %x", -res));
             }
 
             this.mBuffer = pBuffer.get(0);
@@ -69,7 +84,7 @@ class VulkanBuffer implements NativeResource {
             res = vkAllocateMemory(mDevice, allocateInfo, null, pBufferMemory);
 
             if (res != VK_SUCCESS) {
-                throw new RuntimeException(
+                throw new RendererException(
                         String.format("Failed to allocate buffer memory! Ret: %x", -res));
             }
 
@@ -78,12 +93,19 @@ class VulkanBuffer implements NativeResource {
             res = vkBindBufferMemory(mDevice, this.mBuffer, this.mMemory, 0);
 
             if (res != VK_SUCCESS) {
-                throw new RuntimeException(
+                throw new RendererException(
                         String.format("Failed to bind buffer memory! Ret: %x", -res));
             }
         }
     }
 
+    /**
+     * Copy this buffer to another buffer.
+     *
+     * @param commandBuffer command buffer to use.
+     * @param to where to copy to.
+     * @param size size of data to copy.
+     */
     public void copyTo(VkCommandBuffer commandBuffer, VulkanBuffer to, long size) {
         try (MemoryStack stack = stackPush()) {
             VkBufferCopy.Buffer copyRegion = VkBufferCopy.callocStack(1, stack);

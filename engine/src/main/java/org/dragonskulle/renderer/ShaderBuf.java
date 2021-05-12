@@ -49,6 +49,12 @@ public class ShaderBuf implements NativeResource {
         private final String mName;
         private final String mValue;
 
+        /**
+         * Construct a new macro definition.
+         *
+         * @param name name of the macro.
+         * @param value value of the macro.
+         */
         public MacroDefinition(String name, String value) {
             mName = name;
             mValue = value;
@@ -61,7 +67,13 @@ public class ShaderBuf implements NativeResource {
         private final ShaderKind mKind;
         private final MacroDefinition[] mDefinitions;
 
-        ShaderBufLoadArgs(ShaderKind kind, MacroDefinition... definitions) {
+        /**
+         * Construct shaderbuf load args.
+         *
+         * @param kind shader kind to use.
+         * @param definitions extra macro definitions to use.
+         */
+        private ShaderBufLoadArgs(ShaderKind kind, MacroDefinition... definitions) {
             mKind = kind;
             mDefinitions = definitions;
         }
@@ -86,8 +98,9 @@ public class ShaderBuf implements NativeResource {
     /**
      * Load a shader resource.
      *
-     * @param name name of the shader
-     * @param kind kind of the shader (vertex, fragment, geometry)
+     * @param name name of the shader.
+     * @param kind kind of the shader (vertex, fragment, geometry).
+     * @param macros macros to define.
      * @return shader resource if loaded, null otherwise
      */
     public static Resource<ShaderBuf> getResource(

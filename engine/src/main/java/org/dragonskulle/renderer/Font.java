@@ -23,18 +23,40 @@ import org.lwjgl.stb.STBTTFontinfo;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
+/**
+ * Font resource, represented as an atlas texture, with character lookup.
+ *
+ * @author Aurimas Blažulionis
+ */
 @Accessors(prefix = "m")
 @Getter
 public final class Font extends Texture {
 
+    /** Represents a single character glyph. */
     private static class Glyph implements IBox {
+        /** Width of the glyph. */
         @Getter private int mWidth;
+        /** Height of the glyph. */
         @Getter private int mHeight;
+        /** Y axis bearing of the glyph. */
         @Getter private int mYBearing;
+        /** X axis bearing of the glyph. */
         @Getter private int mXBearing;
+        /** Where is the origin of the next character shifted to. */
         @Getter private int mAdvance;
+        /** Code character of the glyph. */
         private int mCode;
 
+        /**
+         * Construct a glyph.
+         *
+         * @param width target width.
+         * @param height target height.
+         * @param yBearing target Y axis bearing.
+         * @param xBearing target X axis bearing.
+         * @param advance target advance.
+         * @param code character code.
+         */
         public Glyph(int width, int height, int yBearing, int xBearing, int advance, int code) {
             mWidth = width;
             mHeight = height;
@@ -95,15 +117,20 @@ public final class Font extends Texture {
         // todo: stbtt_GetCodepointKernAdvance
     }
 
+    /** Map from character to glyph. */
     private Map<Integer, BoxPacker.BoxNode<Glyph>> mCharToGlyph = new TreeMap<>();
+    /** What the offset to next line. */
     private int mNextLineOffset = LINE_HEIGHT;
 
+    /** Which characters to generate. */
     private static final int[][] GLYPH_RANGES = {
         {' ', '~'},
         {0, 0}
     };
 
+    /** What is the size of the generated font textures. */
     private static final int ATLAS_SIZE = 2048;
+    /** How high is a single line of text. */
     public static final int LINE_HEIGHT = 128;
 
     static {
@@ -220,10 +247,17 @@ public final class Font extends Texture {
                 });
     }
 
+    /**
+     * Load a font.
+     *
+     * @param name name of the font.
+     * @return loaded font resource. {@code null} if it fails to load.
+     */
     public static Resource<Font> getFontResource(String name) {
         return ResourceManager.getResource(Font.class, name);
     }
 
+    /** Free the ofnt. */
     @Override
     public final void free() {
         if (mBuffer != null) {
@@ -232,6 +266,11 @@ public final class Font extends Texture {
         }
     }
 
+    /**
+     * Get the size of the font in bytes.
+     *
+     * @return size of the font atlas buffer.
+     */
     public int size() {
         return mBuffer.capacity();
     }

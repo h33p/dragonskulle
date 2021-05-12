@@ -33,6 +33,13 @@ public class Shader implements NativeResource {
     @Getter
     private long mModule;
 
+    /**
+     * Load the shader on GPU and get its handle.
+     *
+     * @param shader shader buffer to load.
+     * @param device logical vulkan device to load the shader on.
+     * @return handle to the on-GPU shader module. {@code null} if it fails to load.
+     */
     public static Shader getShader(ShaderBuf shader, VkDevice device) {
         try (MemoryStack stack = stackPush()) {
             Shader ret = new Shader();
@@ -53,6 +60,14 @@ public class Shader implements NativeResource {
         }
     }
 
+    /**
+     * Compile the shader, load it on GPU and get its handle.
+     *
+     * @param name name of the shader.
+     * @param kind kind of the shader.
+     * @param device logical vulkan device to load the shader on.
+     * @return handle to the on-GPU shader module. {@code null} if it fails to load.
+     */
     public static Shader getShader(String name, ShaderKind kind, VkDevice device) {
         log.fine("Get shader... " + name);
 

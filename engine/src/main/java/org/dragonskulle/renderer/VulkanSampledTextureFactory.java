@@ -28,7 +28,15 @@ class VulkanSampledTextureFactory implements NativeResource {
         VulkanSampledTexture mSampledTexture;
         VulkanImage mImage;
 
-        private Entry(VulkanSampledTextureFactory factory, SampledTexture texture) {
+        /**
+         * Create a sampled texture entry, loading the texture onto GPU memory.
+         *
+         * @param factory one-time parent sampled texture factory reference.
+         * @param texture texture to crate the entry for.
+         * @throws RendererException if loading the image fails.
+         */
+        private Entry(VulkanSampledTextureFactory factory, SampledTexture texture)
+                throws RendererException {
             VkCommandBuffer cmd =
                     Renderer.beginSingleUseCommandBuffer(factory.mDevice, factory.mCommandPool);
             mImage =
@@ -40,6 +48,7 @@ class VulkanSampledTextureFactory implements NativeResource {
                             factory.mPhysicalDevice);
             Renderer.endSingleUseCommandBuffer(
                     cmd, factory.mDevice, factory.mGraphicsQueue, factory.mCommandPool);
+            mImage.freeStagingBuffer();
             mSampledTexture =
                     new VulkanSampledTexture(
                             mImage.createImageView(),
@@ -48,6 +57,15 @@ class VulkanSampledTextureFactory implements NativeResource {
         }
     }
 
+    /**
+     * Create a sampled texture factory.
+     *
+     * @param device logical device to use.
+     * @param physicalDevice physical device to use.
+     * @param commandPool command pool for queueing operations.
+     * @param graphicsQueue graphics queue to use for command buffer operations.
+     * @param samplerFactory texture sampler factory.
+     */
     public VulkanSampledTextureFactory(
             VkDevice device,
             PhysicalDevice physicalDevice,
@@ -61,11 +79,25 @@ class VulkanSampledTextureFactory implements NativeResource {
         mSamplerFactory = samplerFactory;
     }
 
-    public VulkanSampledTexture getTexture(SampledTexture texture) {
-        Entry entry = mTextures.computeIfAbsent(texture, k -> new Entry(this, texture));
+    /**
+     * Get a vulkan texture from input texture. Load it on GPU if needed.
+     *
+     * @param texture target texture to retrieve.
+     * @return On-GPU texture.
+     * @throws RendererException if loading the texture fails.
+     */
+    public VulkanSampledTexture getTexture(SampledTexture texture) throws RendererException {
+        Entry entry = mTextures.get(texture);
+
+        if (entry == null) {
+            entry = new Entry(this, texture);
+            mTextures.put(texture, entry);
+        }
+
         return entry.mSampledTexture;
     }
 
+    /** Free all textures. */
     @Override
     public void free() {
         for (Entry entry : mTextures.values()) {

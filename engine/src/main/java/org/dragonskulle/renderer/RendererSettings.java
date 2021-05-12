@@ -9,6 +9,11 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.settings.Settings;
 
+/**
+ * Configurable renderer settings.
+ *
+ * @author Aurimas Blažulionis
+ */
 @Accessors(prefix = "m")
 @EqualsAndHashCode
 public class RendererSettings {

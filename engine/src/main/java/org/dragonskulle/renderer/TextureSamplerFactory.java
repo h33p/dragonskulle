@@ -41,6 +41,12 @@ class TextureSamplerFactory implements NativeResource {
         /** Number of mip map levels used. */
         int mMipLevels;
 
+        /**
+         * Construct a sampler descriptor.
+         *
+         * @param mapping texture mapping used.
+         * @param mipLevels number of mip map levels used.
+         */
         public SamplerDescriptor(TextureMapping mapping, int mipLevels) {
             mMapping = mapping;
             mMipLevels = mipLevels;
@@ -63,12 +69,20 @@ class TextureSamplerFactory implements NativeResource {
     /**
      * Get a sampler with specified texture mapping.
      *
-     * @param mapping texture mapping properties to get the sampler for
-     * @param mipLevels mip map levels to use
+     * @param mapping texture mapping properties to get the sampler for.
+     * @param mipLevels mip map levels to use.
+     * @return handle to newly created sampler.
+     * @throws RendererException if there is a failure creating the sampler.
      */
-    public long getSampler(TextureMapping mapping, int mipLevels) {
+    public long getSampler(TextureMapping mapping, int mipLevels) throws RendererException {
         SamplerDescriptor desc = new SamplerDescriptor(mapping, mipLevels);
-        Long sampler = mSamplers.computeIfAbsent(desc, k -> createSampler(desc, mAnisotropyEnable));
+        Long sampler = mSamplers.get(desc);
+
+        if (sampler == null) {
+            sampler = createSampler(desc, mAnisotropyEnable);
+            mSamplers.put(desc, sampler);
+        }
+
         return sampler;
     }
 
@@ -80,11 +94,13 @@ class TextureSamplerFactory implements NativeResource {
     /**
      * Create a sampler.
      *
-     * @param desc sampler description
-     * @param anisotropyEnable controls whether anisotrophic filtering is enabled
-     * @return handle to the sampler
+     * @param desc sampler description.
+     * @param anisotropyEnable controls whether anisotrophic filtering is enabled.
+     * @return handle to the sampler.
+     * @throws RendererException if there is a failure creating the sampler.
      */
-    private long createSampler(SamplerDescriptor desc, boolean anisotropyEnable) {
+    private long createSampler(SamplerDescriptor desc, boolean anisotropyEnable)
+            throws RendererException {
         try (MemoryStack stack = stackPush()) {
             VkSamplerCreateInfo samplerInfo = VkSamplerCreateInfo.callocStack(stack);
             samplerInfo.sType(VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO);
@@ -109,7 +125,8 @@ class TextureSamplerFactory implements NativeResource {
             int res = vkCreateSampler(mDevice, samplerInfo, null, pSampler);
 
             if (res != VK_SUCCESS) {
-                throw new RuntimeException(String.format("Failed to setup sampler! Ret: %x", -res));
+                throw new RendererException(
+                        String.format("Failed to setup sampler! Ret: %x", -res));
             }
 
             return pSampler.get(0);

@@ -25,7 +25,7 @@ import org.lwjgl.vulkan.VkDevice;
 import org.lwjgl.vulkan.VkExtent2D;
 
 /**
- * Class abstracting a single graphics pipeline
+ * Class abstracting a single graphics pipeline.
  *
  * <p>This stores all data that is unique per material/pipeline, along with lists of objects that
  * are drawn using instanced rendering.
@@ -34,48 +34,49 @@ import org.lwjgl.vulkan.VkExtent2D;
  */
 @Accessors(prefix = "m")
 class DrawCallState implements NativeResource {
-    /** Reference to the device this state is on */
+    /** Reference to the device this state is on. */
     private VkDevice mDevice;
-    /** Descriptor pool for this drawcall state */
+    /** Descriptor pool for this drawcall state. */
     private VulkanShaderDescriptorPool mDescriptorPool;
-    /** Reference to the shader set of the state */
+    /** Reference to the shader set of the state. */
     @Getter private ShaderSet mShaderSet;
-    /** Vulkan pipeline used to render the objects with */
+    /** Vulkan pipeline used to render the objects with. */
     @Getter private VulkanPipeline mPipeline;
-    /** Reference to the texture set factory */
+    /** Reference to the texture set factory. */
     private TextureSetFactory mTextureSetFactory;
-    /** Reference to the texture factory */
+    /** Reference to the texture factory. */
     private VulkanSampledTextureFactory mTextureFactory;
-    /** Maps object mesh and textures to instanced draw data */
+    /** Maps object mesh and textures to instanced draw data. */
     private Map<DrawDataHashKey, DrawData> mDrawData = new HashMap<>();
 
-    /** Temporary hash key to avoid GC */
+    /** Temporary hash key to avoid GC. */
     private DrawDataHashKey mTmpDrawDataHashKey = new DrawDataHashKey();
 
-    /** The hash key used for splitting objects up into instanced draws */
+    /** The hash key used for splitting objects up into instanced draws. */
     private static class DrawDataHashKey {
-        /** Textures used for the objects */
+        /** Textures used for the objects. */
         SampledTexture[] mMatTextures;
-        /** Mesh used for the objects */
+        /** Mesh used for the objects. */
         Mesh mMesh;
 
+        /** Construct a {@link DrawDataHashKey}. */
         private DrawDataHashKey() {}
 
         /**
-         * Create the map key
+         * Create the map key.
          *
-         * @param material the material that's used on the object
-         * @param renderable the renderable of the object
+         * @param material the material that's used on the object.
+         * @param renderable the renderable of the object.
          */
         public DrawDataHashKey(IMaterial material, Renderable renderable) {
             setData(material, renderable);
         }
 
         /**
-         * Sets the map key data
+         * Sets the map key data.
          *
-         * @param material the material that's used on the object
-         * @param renderable the renderable of the object
+         * @param material the material that's used on the object.
+         * @param renderable the renderable of the object.
          */
         public void setData(IMaterial material, Renderable renderable) {
             mMatTextures = material.getFragmentTextures();
@@ -127,9 +128,9 @@ class DrawCallState implements NativeResource {
         /**
          * Update the instance buffer.
          *
-         * @param shaderSet the shader set of the parent supergroup
-         * @param buffer the instance buffer
-         * @param lights world lights
+         * @param shaderSet the shader set of the parent supergroup.
+         * @param buffer the instance buffer.
+         * @param lights world lights.
          */
         public void updateInstanceBuffer(
                 ShaderSet shaderSet, ByteBuffer buffer, List<Light> lights) {
@@ -144,15 +145,17 @@ class DrawCallState implements NativeResource {
          * Update the instance buffer.
          *
          * <p>This is a fallback method that is used whenever mapping all instance buffer memory
-         * fails
+         * fails.
          *
-         * @param shaderSet the shader set of the parent supergroup
-         * @param pData temporary pointer
-         * @param memory the memory address of the instance buffer
-         * @param lights world lights
+         * @param shaderSet the shader set of the parent supergroup.
+         * @param pData temporary pointer.
+         * @param memory the memory address of the instance buffer.
+         * @param lights world lights.
+         * @throws RendererException if there is an failure mapping GPU memory.
          */
         public void slowUpdateInstanceBuffer(
-                ShaderSet shaderSet, PointerBuffer pData, long memory, List<Light> lights) {
+                ShaderSet shaderSet, PointerBuffer pData, long memory, List<Light> lights)
+                throws RendererException {
             int shaderSetSize = shaderSet.getVertexBindingDescription().mSize;
             int cur_off = mInstanceBufferOffset;
             for (Renderable object : mObjects) {
@@ -160,7 +163,7 @@ class DrawCallState implements NativeResource {
                 int res = vkMapMemory(mDevice, memory, cur_off, shaderSetSize, 0, pData);
 
                 if (res != VK_SUCCESS) {
-                    throw new RuntimeException(
+                    throw new RendererException(
                             String.format(
                                     "Failed to map memory! Out of resources! off: %x sz: %x",
                                     cur_off, shaderSetSize));
@@ -179,9 +182,9 @@ class DrawCallState implements NativeResource {
         /**
          * Set the instance buffer offset and reserve space for itself.
          *
-         * @param shaderSet the shader set of the parent subgroup
-         * @param offset the current offset witin the instance buffer
-         * @return offset + any additional data that's needed for this group
+         * @param shaderSet the shader set of the parent subgroup.
+         * @param offset the current offset witin the instance buffer.
+         * @return offset + any additional data that's needed for this group.
          */
         public int setInstanceBufferOffset(ShaderSet shaderSet, int offset) {
             mInstanceBufferOffset = offset;
@@ -191,8 +194,8 @@ class DrawCallState implements NativeResource {
         /**
          * Ends the draw data, sets the right descriptor sets.
          *
-         * @param imageIndex the image context index
-         * @param descriptorSet optional descriptor set for uniform data
+         * @param imageIndex the image context index.
+         * @param descriptorSet optional descriptor set for uniform data.
          */
         public void endDrawData(int imageIndex, Long descriptorSet) {
             mDescriptorSets =
@@ -203,7 +206,7 @@ class DrawCallState implements NativeResource {
         }
     }
 
-    /** Specifies a non-instanced draw object. Mainly used in object pre-sorting */
+    /** Specifies a non-instanced draw object. Mainly used in object pre-sorting. */
     @Builder
     @Accessors(prefix = "m")
     @Getter
@@ -215,7 +218,11 @@ class DrawCallState implements NativeResource {
         /** The ID of this object. */
         private int mObjectId;
 
-        /** Retrieves the offset within the instance buffer for this object. */
+        /**
+         * Retrieves the offset within the instance buffer for this object.
+         *
+         * @return offset within the instance buffer to data.
+         */
         public int getInstanceBufferOffset() {
             ShaderSet shaderSet = mState.getShaderSet();
             return mData.getInstanceBufferOffset()
@@ -223,7 +230,7 @@ class DrawCallState implements NativeResource {
         }
     }
 
-    /** The error texture that every failed to load texture is subsituded with */
+    /** The error texture that every failed to load texture is subsituded with. */
     private static final SampledTexture ERROR_TEXTURE =
             new SampledTexture(
                     Texture.getResource("error.png"),
@@ -234,11 +241,13 @@ class DrawCallState implements NativeResource {
     /**
      * Creates a draw call state.
      *
-     * @param renderer reference to the renderer that is performing the draws
-     * @param imageCount the number of swapchain images used
-     * @param shaderSet the shader set that will be used to draw the objects with
+     * @param renderer reference to the renderer that is performing the draws.
+     * @param imageCount the number of swapchain images used.
+     * @param shaderSet the shader set that will be used to draw the objects with.
+     * @throws RendererException if there is a failure creating the state.
      */
-    public DrawCallState(Renderer renderer, int imageCount, ShaderSet shaderSet) {
+    public DrawCallState(Renderer renderer, int imageCount, ShaderSet shaderSet)
+            throws RendererException {
         this(
                 renderer.getDevice(),
                 renderer.getPhysicalDevice(),
@@ -255,14 +264,17 @@ class DrawCallState implements NativeResource {
     /**
      * Creates a draw call state.
      *
-     * @param device the device to draw with
-     * @param physicalDevice the physical device to draw with
-     * @param extent the render bounds of the window
-     * @param renderPass the render pass used
-     * @param layoutFactory texture descriptor set layout factory
-     * @param textureSetFactory texture descriptor set factory
-     * @param imageCount number of swapchain images used
-     * @param shaderSet the shader set that will be used to draw the objects with
+     * @param device the device to draw with.
+     * @param physicalDevice the physical device to draw with.
+     * @param extent the render bounds of the window.
+     * @param renderPass the render pass used.
+     * @param layoutFactory texture descriptor set layout factory.
+     * @param textureSetFactory texture descriptor set factory.
+     * @param textureFactory texture factory.
+     * @param imageCount number of swapchain images used.
+     * @param msaaCount number of MSAA samples used.
+     * @param shaderSet the shader set that will be used to draw the objects with.
+     * @throws RendererException if there is a failure creating the state.
      */
     private DrawCallState(
             VkDevice device,
@@ -274,7 +286,8 @@ class DrawCallState implements NativeResource {
             VulkanSampledTextureFactory textureFactory,
             int imageCount,
             int msaaCount,
-            ShaderSet shaderSet) {
+            ShaderSet shaderSet)
+            throws RendererException {
         mDevice = device;
         mDescriptorPool =
                 VulkanShaderDescriptorPool.createPool(
@@ -298,7 +311,7 @@ class DrawCallState implements NativeResource {
     /**
      * Get the list of draw data.
      *
-     * @return {@code mDrawData.values()}
+     * @return {@code mDrawData.values()}.
      */
     public Collection<DrawData> getDrawData() {
         return mDrawData.values();
@@ -320,7 +333,7 @@ class DrawCallState implements NativeResource {
     /**
      * Ends draw data.
      *
-     * @param the index of framebuffer image that's used this frame
+     * @param imageIndex the index of framebuffer image that's used this frame.
      */
     public void endDrawData(int imageIndex) {
         Long descriptorSet =
@@ -333,6 +346,7 @@ class DrawCallState implements NativeResource {
     /**
      * Should this class be removed.
      *
+     * @param cleanupOutput output buffer to add itself, if the state should cleanup.
      * @return whether this class should be removed. If {@code true}, it will place itself into
      *     {@code cleanupOutput} to be cleaned up at appropriate time it's data.
      */
@@ -350,9 +364,10 @@ class DrawCallState implements NativeResource {
     /**
      * Add a renderable to the draw call state.
      *
-     * @param object object to add
+     * @param object object to add.
+     * @throws RendererException if loading textures on GPU fails.
      */
-    public void addObject(Renderable object) {
+    public void addObject(Renderable object) throws RendererException {
         IMaterial material = object.getMaterial();
         mTmpDrawDataHashKey.setData(material, object);
         DrawData drawData = mDrawData.get(mTmpDrawDataHashKey);
@@ -387,7 +402,7 @@ class DrawCallState implements NativeResource {
     /**
      * Update the mesh buffer with new data.
      *
-     * @param meshBuffer mesh buffer to update
+     * @param meshBuffer mesh buffer to update.
      */
     public void updateMeshBuffer(VulkanMeshBuffer meshBuffer) {
         for (DrawData data : mDrawData.values()) {
@@ -401,8 +416,8 @@ class DrawCallState implements NativeResource {
      * <p>Call this method to set an instance buffer offset. It will reserve enough space for itself
      * and then return the next free offset within the buffer.
      *
-     * @param offset input offset
-     * @return offset + any data this state needs
+     * @param offset input offset.
+     * @return offset + any data this state needs.
      */
     public int setInstanceBufferOffset(int offset) {
         for (DrawData d : mDrawData.values()) {
@@ -414,8 +429,8 @@ class DrawCallState implements NativeResource {
     /**
      * Update the instance buffer with new data.
      *
-     * @param buffer the instance buffer
-     * @param lights lights in the world
+     * @param buffer the instance buffer.
+     * @param lights lights in the world.
      */
     public void updateInstanceBuffer(ByteBuffer buffer, List<Light> lights) {
         for (DrawData d : mDrawData.values()) {
@@ -426,13 +441,15 @@ class DrawCallState implements NativeResource {
     /**
      * Update the instance buffer with new data (slow method).
      *
-     * <p>This method is a fallback in case mapping all memory fails
+     * <p>This method is a fallback in case mapping all memory fails.
      *
-     * @param pData temporary data pointer
-     * @param memory instance buffer memory handle
-     * @param lights lights in the world
+     * @param pData temporary data pointer.
+     * @param memory instance buffer memory handle.
+     * @param lights lights in the world.
+     * @throws RendererException if there is a failure creating the state.
      */
-    public void slowUpdateInstanceBuffer(PointerBuffer pData, long memory, List<Light> lights) {
+    public void slowUpdateInstanceBuffer(PointerBuffer pData, long memory, List<Light> lights)
+            throws RendererException {
         for (DrawData d : mDrawData.values()) {
             d.slowUpdateInstanceBuffer(mShaderSet, pData, memory, lights);
         }
@@ -450,9 +467,9 @@ class DrawCallState implements NativeResource {
      * Combine the descriptor sets into one long array.
      *
      * @param arr previous array. It will be returned out if its length is the same as the number of
-     *     non-null entries
-     * @param entries the entries that will be put into the array
-     * @return all non-null entries as an array
+     *     non-null entries.
+     * @param entries the entries that will be put into the array.
+     * @return all non-null entries as an array.
      */
     private static long[] combineDescriptorSets(long[] arr, Long... entries) {
         int elemCount = 0;
@@ -474,8 +491,8 @@ class DrawCallState implements NativeResource {
     /**
      * Combine the descriptor sets into one long array.
      *
-     * @param layouts the entries that will be put into the array
-     * @return all non-null entries as an array
+     * @param layouts the entries that will be put into the array.
+     * @return all non-null entries as an array.
      */
     private static long[] combineDescriptorSetLayouts(Long... layouts) {
         return combineDescriptorSets(null, layouts);
