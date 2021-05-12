@@ -64,13 +64,13 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
     /** The map that is created which is made of a 2d array of HexagonTiles. */
     private HexagonTileStore mTiles;
 
-    /** This will store what the largest landMass is */
+    /** This will store what the largest landMass is. */
     private int[] mLargestLandMass;
 
-    /** This will store what the next land mass number is */
+    /** This will store what the next land mass number is. */
     private int mLandMass = 0;
 
-    /** This will go through all the tiles and find all islands */
+    /** This will go through all the tiles and find all islands. */
     private void checkIslands() {
 
         mLargestLandMass = new int[2];
@@ -87,7 +87,7 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
 
     /**
      * This will use flood fill to find all connected tiles on land from the given {@link
-     * HexagonTile}
+     * HexagonTile}.
      *
      * @param tile The tile to start flooding from
      */
@@ -380,7 +380,7 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
 
     /**
      * This checks if the given {@link HexagonTile} is an island (An island is defined as a land
-     * mass which is disconnected completely from the largest land mass)
+     * mass which is disconnected completely from the largest land mass).
      *
      * @param tile The {@link HexagonTile} to check if its in an island
      * @return Returns {@code true} if it is an island, {@code false} if not

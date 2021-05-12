@@ -44,10 +44,20 @@ public class GameState extends NetworkableComponent implements IOnAwake, IFixedU
         }
     }
 
+    /**
+     * A networked event that allows playing of a certain clip from {@link
+     * org.dragonskulle.game.GameUIAppearance.AudioFiles}.
+     */
     public static class InvokeAudioEvent implements INetSerializable {
 
+        /** Constructor. */
         public InvokeAudioEvent() {}
 
+        /**
+         * Constructor.
+         *
+         * @param sound the sound to play
+         */
         public InvokeAudioEvent(GameUIAppearance.AudioFiles sound) {
             mSoundId = sound;
         }
@@ -155,6 +165,11 @@ public class GameState extends NetworkableComponent implements IOnAwake, IFixedU
         return (float) Math.pow(mConfig.getGlobal().getInflation(), deltaTime);
     }
 
+    /**
+     * Gets the {@link GameConfig} singleton from the scene if it exists, otherwise {@code null}.
+     *
+     * @return the scene config
+     */
     public static GameConfig getSceneConfig() {
         GameState state = Scene.getActiveScene().getSingleton(GameState.class);
 

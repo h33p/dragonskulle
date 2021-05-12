@@ -24,6 +24,7 @@ public class BuildData implements INetSerializable {
     private int mR;
     @Setter private int mDescriptorIndex;
 
+    /** Constructor. */
     public BuildData() {}
 
     /**
@@ -62,6 +63,12 @@ public class BuildData implements INetSerializable {
         mDescriptorIndex = stream.readInt();
     }
 
+    /**
+     * Gets the tile the data is about from the map using its coordinates.
+     *
+     * @param map the map
+     * @return the {@link HexagonTile}
+     */
     public HexagonTile getTile(HexagonMap map) {
         return map.getTile(mQ, mR);
     }

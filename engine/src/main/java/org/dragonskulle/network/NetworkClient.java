@@ -237,6 +237,10 @@ public class NetworkClient {
         }
     }
 
+    public int processGameRequests() {
+        return processRequests(mGameRequests);
+    }
+
     public int processAllRequests() {
         return processRequests() + processGameRequests();
     }
@@ -246,10 +250,6 @@ public class NetworkClient {
         queueDelayedRequests();
 
         return processRequests(mRequests);
-    }
-
-    public int processGameRequests() {
-        return processRequests(mGameRequests);
     }
 
     /** Processes all requests. */

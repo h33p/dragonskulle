@@ -101,10 +101,21 @@ public class Server {
         mServerThread.start();
     }
 
+    /**
+     * Get a client by their network id.
+     *
+     * @param id the network id
+     * @return the client, if one exists otherwise {@code null}
+     */
     public ServerClient getClient(Integer id) {
         return mClients.get(id);
     }
 
+    /**
+     * Gets all connected clients.
+     *
+     * @return the clients
+     */
     public Collection<ServerClient> getClients() {
         return mClients.values();
     }
@@ -179,6 +190,12 @@ public class Server {
         mPendingDisconnectedClients.add(client);
     }
 
+    /**
+     * Removes and disconnects a client.
+     *
+     * @param c the client to remove
+     * @return true if successfully removed the client
+     */
     private boolean removeClient(ServerClient c) {
         ServerClient mapClient = mClients.remove(c.getNetworkID());
 

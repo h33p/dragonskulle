@@ -136,6 +136,12 @@ public class GameConfig implements ISyncVar {
         }
     }
 
+    /**
+     * Load {@link GameConfig} from a valid JSON file.
+     *
+     * @param path the path to the file
+     * @return the generated game config, or {@code null} if invalid.
+     */
     public static GameConfig fromFile(String path) {
         File file = new File(path);
 
@@ -294,7 +300,7 @@ public class GameConfig implements ISyncVar {
     public static class AiAimerConfig implements INetSerializable {
         /** Whether to use the A* route. */
         private float mPlayAStar;
-        /** The number of attempts before it will always aim for a Capital */
+        /** The number of attempts before it will always aim for a Capital. */
         private int mMaxAttempts;
         /** This is the number of tries we should do before resetting. */
         private int mTries;

@@ -19,6 +19,7 @@ public final class SellData implements INetSerializable {
     private int mQ;
     private int mR;
 
+    /** Constructor. */
     public SellData() {}
 
     /**
@@ -54,6 +55,12 @@ public final class SellData implements INetSerializable {
         mR = stream.readInt();
     }
 
+    /**
+     * Gets the building which the data is referencing.
+     *
+     * @param map the map
+     * @return the building to sell
+     */
     public Building getBuilding(HexagonMap map) {
         HexagonTile tile = map.getTile(mQ, mR);
         return tile == null ? null : tile.getBuilding();

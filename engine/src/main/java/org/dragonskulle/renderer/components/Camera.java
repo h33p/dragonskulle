@@ -23,7 +23,7 @@ public class Camera extends Component implements IFrameUpdate {
     /* Define which way is up */
     private static final Vector3f UP_DIR = new Vector3f(0f, 0f, 1f);
 
-    /* Option whether camera is in perspective (3D), or orthographic (2D) mode */
+    /** Option whether camera is in perspective (3D), or orthographic (2D) mode. */
     public static enum Projection {
         ORTHOGRAPHIC,
         PERSPECTIVE
@@ -71,6 +71,8 @@ public class Camera extends Component implements IFrameUpdate {
      * Get the current projection matrix.
      *
      * <p>This method will update the camera's projection matrix and return it back
+     *
+     * @return the projection. The same as {@link #mProj}
      */
     public Matrix4fc getProj() {
         switch (mProjection) {

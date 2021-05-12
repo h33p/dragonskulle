@@ -80,7 +80,7 @@ public abstract class AiPlayer extends Component implements IFixedUpdate, IOnSta
     }
 
     /**
-     * This will get the config value for the AI Player
+     * This will get the config value for the AI Player.
      *
      * @return The {@link AiConfig} to be used
      */

@@ -96,8 +96,8 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
 
     private class ArcUpdater implements IPathUpdater, IArcHandler {
 
-        private final Vector3f posStart = new Vector3f();
-        private final Vector3f posEnd = new Vector3f();
+        private final Vector3f mPosStart = new Vector3f();
+        private final Vector3f mPosEnd = new Vector3f();
 
         private float mLerpedStart = -1;
         private boolean mDidSet = false;
@@ -139,30 +139,30 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             HexagonTile hexEnd = target.getTile();
 
             TransformHex.axialToCartesian(
-                    new Vector2f(hex.getQ(), hex.getR()), hex.getHeight(), posStart);
+                    new Vector2f(hex.getQ(), hex.getR()), hex.getHeight(), mPosStart);
             TransformHex.axialToCartesian(
-                    new Vector2f(hexEnd.getQ(), hexEnd.getR()), hexEnd.getSurfaceHeight(), posEnd);
+                    new Vector2f(hexEnd.getQ(), hexEnd.getR()), hexEnd.getSurfaceHeight(), mPosEnd);
 
             HexagonMap map = mPlayer.get().getMap();
 
             Matrix4fc mat = map.getGameObject().getTransform().getWorldMatrix();
 
-            mat.transformPosition(posStart);
-            mat.transformPosition(posEnd);
+            mat.transformPosition(mPosStart);
+            mat.transformPosition(mPosEnd);
 
             float amplitude = hex.distTo(hexEnd.getQ(), hexEnd.getR()) * 0.2f + 0.5f;
 
             if (!mDidSet) {
-                mArcPath.get().getPosStart().set(posStart);
-                mArcPath.get().getPosTarget().set(posEnd);
+                mArcPath.get().getPosStart().set(mPosStart);
+                mArcPath.get().getPosTarget().set(mPosEnd);
 
                 mArcPath.get().setAmplitude(amplitude);
 
                 mDidSet = true;
             }
 
-            arcPath.getPosStart().lerp(posStart, lerptime);
-            arcPath.getPosTarget().lerp(posEnd, lerptime);
+            arcPath.getPosStart().lerp(mPosStart, lerptime);
+            arcPath.getPosTarget().lerp(mPosEnd, lerptime);
             arcPath.setAmplitude(MathUtils.lerp(arcPath.getAmplitude(), amplitude, lerptime));
         }
 
@@ -357,7 +357,6 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             case BUILDING_SELECTED_SCREEN:
                 if (Reference.isValid(mBuildingChosen)) {
                     Building b = mBuildingChosen.get();
-
                     if (!b.getAttackableBuildings().isEmpty()
                             && GameActions.ATTACK_MODE.isJustActivated()) {
                         nextScreen = Screen.ATTACKING_SCREEN;
@@ -367,11 +366,13 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         nextScreen = Screen.SELLING_SCREEN;
                     }
                 }
+                break;
             case ATTACKING_SCREEN:
             case DEFAULT_SCREEN:
                 if (GameActions.BUILD_MODE.isJustActivated()) {
                     nextScreen = Screen.PLACING_NEW_BUILDING;
                 }
+                break;
             default:
                 break;
         }
@@ -496,7 +497,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
-    /** This updates what the user can see */
+    /** This updates what the user can see. */
     private void updateVisuals() {
 
         // Ensure Player and MapEffects exist.

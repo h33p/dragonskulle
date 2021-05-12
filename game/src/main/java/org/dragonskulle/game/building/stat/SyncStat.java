@@ -314,6 +314,8 @@ public class SyncStat extends SyncInt {
     }
 
     /**
+     * Gets the level of the stat.
+     *
      * @return The level.
      * @deprecated Please use #getLevel() for clarity.
      *     <p>Get the stat's current level.

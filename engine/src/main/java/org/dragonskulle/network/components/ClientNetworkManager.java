@@ -201,6 +201,8 @@ public class ClientNetworkManager {
      * @param ip target connection IP address
      * @param port target connection port
      * @param handler connection result callback
+     * @param startHandler start game callback
+     * @param closedHandler end game callback
      */
     ClientNetworkManager(
             NetworkManager manager,

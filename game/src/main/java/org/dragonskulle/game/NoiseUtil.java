@@ -12,7 +12,7 @@ import lombok.experimental.Accessors;
 @Accessors(prefix = "m")
 public class NoiseUtil {
     /**
-     * Get noise height
+     * Get noise height.
      *
      * @param q first coordinate axis
      * @param r second coordinate axis

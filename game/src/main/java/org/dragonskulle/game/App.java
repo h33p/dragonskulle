@@ -56,8 +56,6 @@ public class App implements NativeResource {
 
     public static final Resource<GLTF> TEMPLATES = GLTF.getResource("templates");
 
-    public static final float MENU_BASEWIDTH = 0.2f;
-
     /**
      * Adds the debug overlay, this is enabled by pressing F3.
      *
@@ -471,6 +469,7 @@ public class App implements NativeResource {
         System.exit(0);
     }
 
+    /** Load the Game and Start it!. */
     private void run() {
         // Create the main menu
         Scene mainMenu = createMainMenu();

@@ -19,7 +19,7 @@ import org.dragonskulle.renderer.components.Renderable;
 import org.dragonskulle.renderer.materials.IColouredMaterial;
 
 /**
- * Fade highlight menu objects!
+ * Fade highlight menu objects.
  *
  * @author Aurimas Blažulionis
  */

@@ -22,6 +22,7 @@ import org.joml.Vector3f;
 @Accessors(prefix = "m")
 public class ScrollTranslate extends Component implements IFrameUpdate, IOnAwake {
 
+    /** Ran on zoom change. */
     public static interface IZoomNotify {
         void setZoomLevel(float level);
     }

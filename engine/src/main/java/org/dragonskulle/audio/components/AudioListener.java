@@ -6,6 +6,10 @@ import org.dragonskulle.components.Component;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.Scene;
 
+/**
+ * Defines where the audio will be 'heard' from. All spatial audio will be towards this components
+ * location.
+ */
 @Accessors(prefix = "m")
 public class AudioListener extends Component implements IOnStart {
 

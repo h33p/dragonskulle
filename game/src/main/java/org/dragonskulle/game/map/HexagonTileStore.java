@@ -297,10 +297,10 @@ class HexagonTileStore implements ISyncVar {
         }
 
         /* Generates the middle part of the map */
-        int r_m = (size / 2);
+        int rM = (size / 2);
         for (int q = 0; q < size; q++) {
             int q1 = q - mCoordShift;
-            int r1 = r_m - mCoordShift;
+            int r1 = rM - mCoordShift;
             float height = getHeight(q1, r1);
             setTile(new HexagonTile(q1, r1, height, mHandler));
         }

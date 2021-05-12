@@ -73,7 +73,7 @@ public class UIButton extends UITextRect implements IFrameUpdate {
     }
 
     /**
-     * Constructor for UIButton
+     * Constructor for UIButton.
      *
      * @param label a text label to render inside the button
      */

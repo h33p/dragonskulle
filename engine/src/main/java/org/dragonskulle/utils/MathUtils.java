@@ -78,18 +78,29 @@ public class MathUtils {
         return Math.round(val / step) * step;
     }
 
+    /**
+     * Map a value between one range to another.
+     *
+     * @param sourceNumber the source number to be mapped
+     * @param lBoundA the lower bound of range A
+     * @param uBoundA the upper bound of range A
+     * @param lBoundB the lower bound of range B
+     * @param uBoundB the upper bound of range B
+     * @param decimalPrecision the decimal precision of the mapping
+     * @return the new value
+     */
     public static double mapOneRangeToAnother(
             double sourceNumber,
-            double fromA,
-            double fromB,
-            double toA,
-            double toB,
+            double lBoundA,
+            double uBoundA,
+            double lBoundB,
+            double uBoundB,
             int decimalPrecision) {
-        double deltaA = fromB - fromA;
-        double deltaB = toB - toA;
+        double deltaA = uBoundA - lBoundA;
+        double deltaB = uBoundB - lBoundB;
         double scale = deltaB / deltaA;
-        double negA = -1 * fromA;
-        double offset = (negA * scale) + toA;
+        double negA = -1 * lBoundA;
+        double offset = (negA * scale) + lBoundB;
         double finalNumber = (sourceNumber * scale) + offset;
         int calcScale = (int) Math.pow(10, decimalPrecision);
         return (double) Math.round(finalNumber * calcScale) / calcScale;

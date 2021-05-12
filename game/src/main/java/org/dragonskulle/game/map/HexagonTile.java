@@ -88,7 +88,7 @@ public class HexagonTile implements INetSerializable {
     /** The Axial Coordinate in the Q Position. */
     @Getter private final int mQ;
 
-    /** The Axial Coordinate in the R Position */
+    /** The Axial Coordinate in the R . */
     @Getter private final int mR;
 
     @Setter(AccessLevel.PACKAGE)
@@ -111,12 +111,12 @@ public class HexagonTile implements INetSerializable {
     @Getter(AccessLevel.PACKAGE)
     private GameObject mGameObject;
 
-    /** Controls height and fading of the tile */
+    /** Controls height and fading of the tile. */
     private Reference<FadeTile> mFadeControl;
-    /** Controls height and fading of secondary tile surface */
+    /** Controls height and fading of secondary tile surface. */
     private Reference<FadeTile> mSecondaryFade;
 
-    /** Controls highlighting on the tile */
+    /** Controls highlighting on the tile. */
     @Getter(AccessLevel.PACKAGE)
     private Reference<HighlightControls> mHighlightControls;
 
@@ -135,6 +135,7 @@ public class HexagonTile implements INetSerializable {
      *
      * @param q The first coordinate.
      * @param r The second coordinate.
+     * @param height the height of the tile, this decides the {@link TileType}
      * @param handler handler passed by {@link HexagonTileStore} to be called on changes
      */
     HexagonTile(int q, int r, float height, TileToStoreActions handler) {
@@ -483,7 +484,7 @@ public class HexagonTile implements INetSerializable {
     }
 
     /**
-     * Update the height of the tile
+     * Update the height of the tile.
      *
      * @param fadeIn whether the tile should fade in, or fade out
      * @param destroyOnFadeOut set to automatically destroy the object if it fades out
@@ -505,7 +506,7 @@ public class HexagonTile implements INetSerializable {
         }
     }
 
-    /** Builds the tile object, and notifies {@link HexagonMap} of this change */
+    /** Builds the tile object, and notifies {@link HexagonMap} of this change. */
     private void buildGameObject() {
         mSecondaryFade = null;
 

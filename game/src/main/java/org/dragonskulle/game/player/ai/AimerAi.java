@@ -65,7 +65,7 @@ public class AimerAi extends ProbabilisticAiPlayer {
     /** The chance to aim at a capital. */
     private float mAimAtCapital = 0.0f;
 
-    /** The number of times we've attempted A* */
+    /** The number of times we've attempted A*. */
     private int mAStarAttempts = 0;
 
     /** Basic Constructor. */

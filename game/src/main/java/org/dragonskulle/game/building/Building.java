@@ -363,6 +363,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         generateClaimTiles();
     }
 
+    /** Fetches a valid {@link Reference} to the map and stores it in {@link #mMap}. */
     private void mapCheck() {
         // Store the map.
         Reference<HexagonMap> mapCheck =
@@ -657,7 +658,10 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
                 1);
     }
 
-    /** Store the tiles that are suitable for attacking. */
+    /**
+     * Explores around the neighbouring tiles and stores those that are within an attacking range in
+     * {@link #mAttackableTiles}.
+     */
     private void generateAttackableTiles() {
         // Clear the current list of attackable tiles.
         mAttackableTiles.clear();
@@ -816,6 +820,13 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
 
     private static final int DIE_SIDES = 100;
 
+    /**
+     * Gets value of attacking, this is the value used to determine if the attack succeeds. The
+     * larger it is the higher the chance of an attack succeeding.
+     *
+     * @param opponent the opponent
+     * @return the attack val
+     */
     private float getAttackVal(Building opponent) {
         HexagonTile myTile = getTile();
         HexagonTile opponentTile = opponent.getTile();
@@ -841,6 +852,12 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         return getAttack().getValue() + heightDelta;
     }
 
+    /**
+     * Calculates the odds of winning an attack against another building.
+     *
+     * @param opponent the opponent we are attacking
+     * @return the odds of winning
+     */
     public float calculateAttackOdds(Building opponent) {
         // Get the attacker and defender's stats.
         double attack = getAttackVal(opponent);

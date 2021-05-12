@@ -341,6 +341,7 @@ public class AudioManager {
         Settings.getInstance().saveValue(SETTINGS_MUTE_STRING, muted, true);
     }
 
+    /** Toggles the master mute. */
     public void toggleMasterMute() {
         setMasterMute(!mMasterMuted);
     }

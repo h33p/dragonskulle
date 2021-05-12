@@ -42,7 +42,7 @@ public class NetworkedTestContext {
     /** Public timeout for timed waits. */
     public static final float TIMEOUT = 5;
     /** Port used for tests. */
-    private static int PORT = 7000;
+    private static final int sPORT = 7000;
 
     private static final ReentrantLock sEngineLock = new ReentrantLock();
 
@@ -192,16 +192,6 @@ public class NetworkedTestContext {
     }
 
     /**
-     * Get a client manager.
-     *
-     * @param i client's index.
-     * @return client's client manager.
-     */
-    public ClientNetworkManager getClientManager(int i) {
-        return getClient(i).getManager().getClientManager();
-    }
-
-    /**
      * Get client's scene.
      *
      * @param i client's index.
@@ -218,6 +208,16 @@ public class NetworkedTestContext {
      */
     public Scene getClientScene() {
         return getClientScene(0);
+    }
+
+    /**
+     * Get a client manager.
+     *
+     * @param i client's index.
+     * @return client's client manager.
+     */
+    public ClientNetworkManager getClientManager(int i) {
+        return getClient(i).getManager().getClientManager();
     }
 
     /**
@@ -312,7 +312,7 @@ public class NetworkedTestContext {
                                 (__) ->
                                         ctx.getManager()
                                                 .createServer(
-                                                        PORT,
+                                                        sPORT,
                                                         null,
                                                         onConnectedOnServer,
                                                         onLoadedOnServer,
@@ -350,7 +350,7 @@ public class NetworkedTestContext {
                                 ctx.getManager()
                                         .createClient(
                                                 "127.0.0.1",
-                                                PORT,
+                                                sPORT,
                                                 (manager, netID) -> {
                                                     if (onClientConnected != null) {
                                                         onClientConnected.handle(manager, netID);

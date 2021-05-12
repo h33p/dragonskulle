@@ -25,5 +25,10 @@ public interface ISyncVar extends INetSerializable {
      */
     default void resetDirtyFlag(int clientId) {}
 
+    /**
+     * Sets is a flag on the client that the variable is dirty.
+     *
+     * @param isDirty true if to be dirty
+     */
     default void setIsClientDirty(boolean isDirty) {}
 }

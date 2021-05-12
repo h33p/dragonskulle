@@ -179,7 +179,11 @@ public class UIDropDown extends UIBuildableComponent implements IOnAwake, IFrame
         }
     }
 
-    /** Select an element and invoke OnSelect event. */
+    /**
+     * Select an element and invoke OnSelect event.
+     *
+     * @param index the index of the selected item
+     */
     private void select(int index) {
         setSelected(index);
 

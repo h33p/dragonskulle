@@ -23,7 +23,7 @@ public class NetworkMessage {
     }
 
     /**
-     * Calculates how many bytes input booleans use
+     * Calculates how many bytes input booleans use.
      *
      * @param boolCount number of booleans that are to be packed together
      * @return how many bytes this mask would take
