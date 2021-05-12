@@ -105,7 +105,11 @@ class TextureSet implements NativeResource {
         }
     }
 
-    /** Update the descriptor set to have correct textures attached. */
+    /**
+     * Update the descriptor set to have correct textures attached.
+     *
+     * @param index index of the descriptor set to update.
+     */
     private void updateDescriptorSet(int index) {
         try (MemoryStack stack = stackPush()) {
 

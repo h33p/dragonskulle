@@ -17,18 +17,30 @@ import lombok.experimental.Accessors;
 @Accessors(prefix = "m")
 public enum VBlankMode {
     OFF(VK_PRESENT_MODE_IMMEDIATE_KHR, "Off"),
-    SINGLE_BUFFER(VK_PRESENT_MODE_FIFO_KHR, "Single-VSync"),
-    DOUBLE_BUFFER(VK_PRESENT_MODE_MAILBOX_KHR, "Double-VSync"),
-    SINGLE_RELAXED(VK_PRESENT_MODE_FIFO_RELAXED_KHR, "Relaxed-VSync");
+    SINGLE_BUFFER(VK_PRESENT_MODE_FIFO_KHR, "Single Buffered"),
+    DOUBLE_BUFFER(VK_PRESENT_MODE_MAILBOX_KHR, "Double Buffered"),
+    SINGLE_RELAXED(VK_PRESENT_MODE_FIFO_RELAXED_KHR, "Relaxed");
 
     @Getter private final int mValue;
     @Getter private final String mName;
 
+    /**
+     * Construct VBlank mode.
+     *
+     * @param value vulkan presentation mode value.
+     * @param name pretty name of the mode.
+     */
     private VBlankMode(int value, String name) {
         mValue = value;
         mName = name;
     }
 
+    /**
+     * Construct VBlank mode from vulkan presentation mode.
+     *
+     * @param val vulkan presentation mode.
+     * @return {@link VBlankMode} for this mode, or {@code null}, if mode not found.
+     */
     public static VBlankMode fromInt(int val) {
         switch (val) {
             case VK_PRESENT_MODE_IMMEDIATE_KHR:

@@ -117,6 +117,10 @@ class VulkanImage implements NativeResource {
      * @param commandBuffer command buffer to use to load this image.
      * @param device logical device to use.
      * @param physicalDevice physical device to use.
+     * @param width width of the image.
+     * @param height height of the image.
+     * @param numSamples number of mipmap samples to use.
+     * @return the newly created depth image.
      */
     public static VulkanImage createDepthImage(
             VkCommandBuffer commandBuffer,
@@ -164,6 +168,7 @@ class VulkanImage implements NativeResource {
      * @param physicalDevice physical device to use.
      * @param width width of the image.
      * @param height height of the image.
+     * @param usage target usage of the image.
      * @param numSamples number of mipmap samples to use.
      * @param format target image format.
      * @param aspectMask subresource range aspect mask.
@@ -258,6 +263,15 @@ class VulkanImage implements NativeResource {
         }
     }
 
+    /**
+     * Generate mipmaps for the image.
+     *
+     * @param commandBuffer command buffer to write the commands to.
+     * @param physDev physical device to use.
+     * @param format target image format.
+     * @param width width of the image.
+     * @param height height of the image.
+     */
     private void generateMipmaps(
             VkCommandBuffer commandBuffer,
             PhysicalDevice physDev,
@@ -368,6 +382,7 @@ class VulkanImage implements NativeResource {
      * @param physicalDevice physical device to use.
      * @param width width of the image.
      * @param height height of the image.
+     * @param format image format.
      * @param aspectMask subresource range aspect mask.
      * @param numSamples number of mipmap samples to use.
      * @param tiling target tiling of the image.
@@ -454,6 +469,7 @@ class VulkanImage implements NativeResource {
      *
      * <p>Image views are needed to render to/read from.
      *
+     * @return newly created image view.
      * @throws RendererException if there is a failure creating image view.
      */
     public long createImageView() throws RendererException {
@@ -489,6 +505,7 @@ class VulkanImage implements NativeResource {
         }
     }
 
+    /** Free the staging buffer. */
     public void freeStagingBuffer() {
         if (mStagingBuffer != null) {
             mStagingBuffer.free();
@@ -512,6 +529,11 @@ class VulkanImage implements NativeResource {
         }
     }
 
+    /**
+     * Check whether the image format has stencil component.
+     *
+     * @return {@code true} if the image has the stencil component. {@code false} otherwise.
+     */
     private boolean hasStencilComponent() {
         return mFormat == VK_FORMAT_D32_SFLOAT_S8_UINT || mFormat == VK_FORMAT_D24_UNORM_S8_UINT;
     }

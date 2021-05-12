@@ -36,23 +36,39 @@ public abstract class Vertexc {
         new AttributeDescription(0, 3, VK_FORMAT_R32G32_SFLOAT, UV_OFFSET),
     };
 
-    /** @return position of the vertex */
+    /**
+     * Get the position of the vertex.
+     *
+     * @return position of the vertex.
+     */
     public abstract Vector3fc getPos();
 
-    /** @return normal vector of the vertex (used for lighting calculations) */
+    /**
+     * Get the normal vector of the vertex.
+     *
+     * @return normal vector of the vertex (used for lighting calculations).
+     */
     public abstract Vector3fc getNormal();
 
-    /** @return colour of the vertex */
+    /**
+     * Get the colour of the vertex.
+     *
+     * @return colour of the vertex.
+     */
     public abstract Vector4fc getColor();
 
-    /** @return UV coordinate of the vertex */
+    /**
+     * Get the UV coordinates of the vertex.
+     *
+     * @return UV coordinate of the vertex.
+     */
     public abstract Vector2fc getUv();
 
     /**
-     * Copy the vertex to a byte buffer
+     * Copy the vertex to a byte buffer.
      *
-     * @param offset the offset within the byte buffer
-     * @param buffer the buffer to write the data to
+     * @param offset the offset within the byte buffer.
+     * @param buffer the buffer to write the data to.
      */
     public void copyTo(int offset, ByteBuffer buffer) {
         getPos().get(offset + POS_OFFSET, buffer);
@@ -62,7 +78,7 @@ public abstract class Vertexc {
     }
 
     /**
-     * Copy the vertex to a byte buffer
+     * Copy the vertex to a byte buffer.
      *
      * <p>This method will copy the vertex to the buffer at buffer's position, it will not move the
      * position, though

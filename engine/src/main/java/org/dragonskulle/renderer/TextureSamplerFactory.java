@@ -41,6 +41,12 @@ class TextureSamplerFactory implements NativeResource {
         /** Number of mip map levels used. */
         int mMipLevels;
 
+        /**
+         * Construct a sampler descriptor.
+         *
+         * @param mapping texture mapping used.
+         * @param mipLevels number of mip map levels used.
+         */
         public SamplerDescriptor(TextureMapping mapping, int mipLevels) {
             mMapping = mapping;
             mMipLevels = mipLevels;
@@ -63,8 +69,9 @@ class TextureSamplerFactory implements NativeResource {
     /**
      * Get a sampler with specified texture mapping.
      *
-     * @param mapping texture mapping properties to get the sampler for
-     * @param mipLevels mip map levels to use
+     * @param mapping texture mapping properties to get the sampler for.
+     * @param mipLevels mip map levels to use.
+     * @return handle to newly created sampler.
      * @throws RendererException if there is a failure creating the sampler.
      */
     public long getSampler(TextureMapping mapping, int mipLevels) throws RendererException {

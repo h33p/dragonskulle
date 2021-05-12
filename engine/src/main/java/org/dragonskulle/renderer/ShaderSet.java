@@ -179,6 +179,7 @@ public class ShaderSet implements NativeResource {
      * <p>TODO: support this in the renderer
      *
      * @param stack memory stack to allocate the constants on.
+     * @return byte buffer for the push constants. {@code null} if there are none.
      */
     public ByteBuffer getFragmentPushConstants(MemoryStack stack) {
         return null;

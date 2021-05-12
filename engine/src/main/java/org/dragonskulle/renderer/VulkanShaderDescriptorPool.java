@@ -141,15 +141,23 @@ class VulkanShaderDescriptorPool implements NativeResource {
         return ret;
     }
 
+    /**
+     * Get descriptor set by index.
+     *
+     * @param index index of the descriptor set to use.
+     * @return handle to the descriptor set at a given index.
+     */
     public long getDescriptorSet(int index) {
         return mDescriptorSets == null ? 0 : mDescriptorSets[index];
     }
 
     /**
-     * Update a descriptor set
+     * Update a descriptor set.
      *
      * <p>This method will simply update the attached descriptor set to have correct layout for
      * uniform buffers.
+     *
+     * @param index index of the descriptor set to update.
      */
     private void updateDescriptorSet(int index) {
         try (MemoryStack stack = stackPush()) {
@@ -181,10 +189,11 @@ class VulkanShaderDescriptorPool implements NativeResource {
     }
 
     /**
-     * Create a descriptor pool
+     * Create a descriptor pool.
      *
      * @param shaderSet shader set to use.
      * @param descriptorCount number of descriptors to allocate.
+     * @return handle to newly created descriptor pool.
      * @throws RendererException if there is an error creating the pool
      */
     private long createDescriptorPool(ShaderSet shaderSet, int descriptorCount)
@@ -223,7 +232,7 @@ class VulkanShaderDescriptorPool implements NativeResource {
     }
 
     /**
-     * Create a descriptor set layout and uniform buffers
+     * Create a descriptor set layout and uniform buffers.
      *
      * <p>This layout is used in creating descriptor sets. It describes the properties shaders have
      * in different stages.
@@ -231,6 +240,7 @@ class VulkanShaderDescriptorPool implements NativeResource {
      * @param shaderSet shader set to use.
      * @param physicalDevice physical device to use.
      * @param descriptorCount number of descriptors to create.
+     * @return newly created descriptor set layout. Buffers are set inside the method.
      * @throws RendererException if there is an error allocating memory
      */
     private long createDescriptorSetLayoutAndBuffers(

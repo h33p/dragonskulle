@@ -1489,7 +1489,7 @@ public class Renderer implements NativeResource {
     /// Depth texture setup
 
     /**
-     * Create a depth image that is used for depth testing
+     * Create a depth image that is used for depth testing.
      *
      * @return the depth image
      * @throws RendererException if buffer fails to be created.

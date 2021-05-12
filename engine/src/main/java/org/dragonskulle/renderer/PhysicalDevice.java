@@ -75,7 +75,7 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
         Integer mPresentFamily;
 
         /**
-         * Are the queue family indices complete?
+         * Returns whether the queue family indices complete.
          *
          * @return {@code true} if all family indices are present. {@code false} otherwise.
          */
@@ -111,7 +111,7 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
         static final int[] REQUIRED_TILED_FORMATS = {VK_FORMAT_R8G8B8A8_SRGB};
 
         /**
-         * Are all required features present on the device?
+         * Returns whether all required features present on the device.
          *
          * @return {@code true} if all required features are present. Currently, this is always
          *     true, but it can change in the future.
@@ -315,6 +315,7 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
      * @param surface target surface.
      * @param targetDevice target device name to pick. Use {@code null}, or empty string to pick the
      *     first (most suitable) device in the list.
+     * @return chosen physical device. {@code null} if could not find a suitable one.
      * @param neededExtensions needed device extensions for the target device.
      */
     public static PhysicalDevice pickPhysicalDevice(

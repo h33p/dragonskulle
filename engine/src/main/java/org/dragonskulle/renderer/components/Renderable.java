@@ -75,8 +75,9 @@ public class Renderable extends Component {
      *
      * <p>This method will attempt to get the material with specified class type.
      *
-     * @param type target material type
-     * @return the material, if cast was successful, or {@code null}, if type is incompatible
+     * @param <T> type of material to check against.
+     * @param type target material type.
+     * @return the material, if cast was successful, or {@code null}, if type is incompatible.
      */
     public <T extends IMaterial> T getMaterial(Class<T> type) {
         if (type.isInstance(mMaterial)) {
@@ -100,8 +101,9 @@ public class Renderable extends Component {
     /**
      * Get object depth from the camera.
      *
-     * @param camPosition input camera position
-     * @param tmpVec temporary vector that can be used for calculations
+     * @param camPosition input camera position.
+     * @param tmpVec temporary vector that can be used for calculations.
+     * @return distance from the camera representing depth.
      */
     public float getDepth(Vector3fc camPosition, Vector3f tmpVec) {
         tmpVec.set(mMesh.getBBCenter());
@@ -109,7 +111,13 @@ public class Renderable extends Component {
         return camPosition.distanceSquared(tmpVec);
     }
 
-    /** Set the mesh used on this renderable. */
+    /**
+     * Set the mesh used on this renderable.
+     *
+     * <p>This method will increase the reference count of the given mesh.
+     *
+     * @param mesh new mesh to use.
+     */
     public void setMesh(Mesh mesh) {
         if (mMesh != null) {
             mMesh.decRefCount();

@@ -27,7 +27,14 @@ public class AttributeDescription {
     public static final int MATRIX_SIZE = MATRIX_ROW_SIZE * 4;
     public static final int LIGHT_HALF_SIZE = 4 * 3;
 
-    /** Constructor for AttributeDescription. */
+    /**
+     * Constructor for AttributeDescription.
+     *
+     * @param bindingId attribute binding to use.
+     * @param location which shader location the binding uses.
+     * @param format format of the binding.
+     * @param offset offset of the binding within memory.
+     */
     public AttributeDescription(int bindingId, int location, int format, int offset) {
         this.mBindingId = bindingId;
         this.mLocation = location;
@@ -44,6 +51,7 @@ public class AttributeDescription {
      *     location} should start at 0, and {@code offset} should do as well. Inside the shader,
      *     {@code location} will start from 8 (since there is an implicit 4 shift due to per-vertex
      *     data).
+     * @return list of attribute descriptions with the matrix description appended.
      */
     public static AttributeDescription[] withMatrix(AttributeDescription... descriptions) {
         AttributeDescription[] ret = new AttributeDescription[4 + descriptions.length];
@@ -73,6 +81,7 @@ public class AttributeDescription {
      *     lights. {@code location} should start at 0, and {@code offset} should do as well. Inside
      *     the shader, {@code location} will start at {@code lightCount * 2 + 4} (since there is an
      *     implicit 4 shift for vertex data), unless shifted by any of the other functions.
+     * @return attribute descriptions with light attribute descriptions appended.
      */
     public static AttributeDescription[] withLights(
             int lightCount, AttributeDescription... descriptions) {

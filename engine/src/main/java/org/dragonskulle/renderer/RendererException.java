@@ -7,7 +7,12 @@ package org.dragonskulle.renderer;
  * @author Aurimas Blažulionis
  */
 public class RendererException extends Exception {
-    RendererException(String s) {
-        super(s);
+    /**
+     * Create a new renderer exception.
+     *
+     * @param msg message to attach.
+     */
+    RendererException(String msg) {
+        super(msg);
     }
 }

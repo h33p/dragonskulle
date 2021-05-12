@@ -119,17 +119,29 @@ public class Mesh {
         calculateBoundingBox();
     }
 
-    /** Get the bounding box minimum. */
+    /**
+     * Get the bounding box minimum.
+     *
+     * @return bounding box minimum.
+     */
     public Vector3fc getBBMin() {
         return mBBMin;
     }
 
-    /** Get the bounding box maximum. */
+    /**
+     * Get the bounding box maximum.
+     *
+     * @return bounding box maximum.
+     */
     public Vector3fc getBBMax() {
         return mBBMax;
     }
 
-    /** Get the bounding box center. */
+    /**
+     * Get the bounding box center.
+     *
+     * @return bounding box center.
+     */
     public Vector3fc getBBCenter() {
         return mBBCenter;
     }
@@ -154,6 +166,17 @@ public class Mesh {
         addQuadToList(vertices, indices, startCoords, endCoords, startUV, endUV, new Vector4f(1f));
     }
 
+    /**
+     * Add a quad to list of vertices and indices.
+     *
+     * @param vertices input vertices list.
+     * @param indices input index list.
+     * @param startCoords starting coordinates of the quad.
+     * @param endCoords ending coordinates of the quad.
+     * @param startUV starting UV texture coordinates of the quad.
+     * @param endUV ending UV texture coordinates of the quad.
+     * @param colour colour of the quad to set.
+     */
     public static void addQuadToList(
             List<Vertex> vertices,
             List<Integer> indices,
@@ -200,6 +223,7 @@ public class Mesh {
      * @param endCoords ending coordinates where to place the quad
      * @param startUV UV coordinates at startCoords
      * @param endUV UV coordinates and endCoords
+     * @return built quad.
      */
     public static Mesh buildQuad(
             Vector2fc startCoords, Vector2fc endCoords, Vector2fc startUV, Vector2fc endUV) {
@@ -256,6 +280,7 @@ public class Mesh {
         return mVertices.length == mesh.mVertices.length && mIndices.length == mesh.mIndices.length;
     }
 
+    /** Calculate the bounding box of the mesh. */
     private void calculateBoundingBox() {
         if (mVertices.length == 0) {
             mBBMin.set(0);

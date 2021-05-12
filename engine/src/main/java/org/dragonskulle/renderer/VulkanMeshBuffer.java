@@ -51,7 +51,7 @@ class VulkanMeshBuffer implements NativeResource {
     /** Index count within the buffer. */
     @Getter private int mMaxIndexOffset;
 
-    /** Is this buffer dirty, and should it be rebuilt on commit? */
+    /** Whether the buffer dirty, and should be rebuilt on commit. */
     @Getter private boolean mDirty = false;
 
     /** Map between meshes and array list indices. */
@@ -84,7 +84,7 @@ class VulkanMeshBuffer implements NativeResource {
         private MeshDescriptor mMeshDescriptor;
     }
 
-    /** Constructor for {@link VulkanMeshBuffer} */
+    /** Constructor for {@link VulkanMeshBuffer}. */
     private VulkanMeshBuffer() {}
 
     /**
@@ -249,6 +249,7 @@ class VulkanMeshBuffer implements NativeResource {
      *
      * @param graphicsQueue graphics queue of the device.
      * @param commandPool command pool of the device.
+     * @return new vertex buffer.
      * @throws RendererException if vertex buffer fails to be created.
      */
     private VulkanBuffer createVertexBuffer(VkQueue graphicsQueue, long commandPool)
@@ -304,6 +305,7 @@ class VulkanMeshBuffer implements NativeResource {
      *
      * @param graphicsQueue graphics queue of the device.
      * @param commandPool command pool of the device.
+     * @return new index buffer.
      * @throws RendererException if index buffer fails to be created.
      */
     private VulkanBuffer createIndexBuffer(VkQueue graphicsQueue, long commandPool)
@@ -360,6 +362,7 @@ class VulkanMeshBuffer implements NativeResource {
      * @param usageBits target usage bits for the buffer.
      * @param graphicsQueue graphics queue of the device.
      * @param commandPool command pool for the device.
+     * @return buffer inside local graphics memory.
      * @throws RendererException if local buffer fails to be created.
      */
     private VulkanBuffer transitionToLocalMemory(
