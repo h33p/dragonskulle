@@ -6,6 +6,8 @@ import java.io.DataOutput;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
 /**
+ * An empty void.
+ *
  * @author Aurimas Blažulionis
  *     <p>This class represents empty data sent to the server. It takes up 0 bytes.
  */

@@ -38,9 +38,10 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
         void handle(NetworkManager manager, int netID);
     }
 
+    /** Event that gets called when host starts the game. */
     public interface IHostStartedGameEvent {
         /**
-         * Handle the host started game event
+         * Handle the host started game event.
          *
          * @param gameScene scene in which the game will be
          * @param manager network manager which the event is called from
@@ -67,8 +68,9 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
         Integer handle(NetworkManager manager, ServerClient client);
     }
 
+    /** Event that gets invoked when the player disconnects. */
     public interface IHostClosedGameEvent {
-        /** Handle the host ended game event */
+        /** Handle the host ended game event. */
         void handle();
     }
 
@@ -101,11 +103,12 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
         /**
          * Handle game start event.
          *
-         * @param manager network manager which the event is called from
+         * @param manager network manager which the event is called from.
          */
         void handle(NetworkManager manager);
     }
 
+    /** Event that gets invoked on the server side whenever the game ends. */
     public interface IGameEndEvent {
         /**
          * Handle game end event.
@@ -191,9 +194,11 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
     /**
      * Create a network client.
      *
-     * @param ip IP address to connect to
-     * @param port network port to connect to
-     * @param resultHandler connection result callback
+     * @param ip IP address to connect to.
+     * @param port network port to connect to.
+     * @param resultHandler connection result callback.
+     * @param startHandler game start event handler.
+     * @param closedHandler game end/closed event handler.
      */
     public void createClient(
             String ip,
@@ -211,11 +216,14 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
     /**
      * Create a network server.
      *
-     * @param port network port to bind
-     * @param connectionHandler callback that gets called on every client connection
+     * @param port network port to bind.
+     * @param connectionAttemptHandler callback that gets called whenever connection is attempted.
+     * @param connectionHandler callback that gets called on every client connection.
      * @param loadHandler callback that gets called on every client connection when it loads into
      *     game scene.
-     * @param startEventHandler callback that gets called when the game starts
+     * @param startEventHandler callback that gets called when the game starts.
+     * @param endEventHandler callback that gets called when the game ends.
+     * @return {@code true} if the server creation was successfull. {@code false} otherwise.
      */
     public boolean createServer(
             int port,
@@ -265,7 +273,7 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
     /**
      * Check whether we are running as client.
      *
-     * @return {@code true} if we are running as client, {@code false} otherwise
+     * @return {@code true} if we are running as client, {@code false} otherwise.
      */
     public boolean isClient() {
         return mClientManager != null;
@@ -274,7 +282,7 @@ public class NetworkManager extends Component implements INetworkUpdate, ILateNe
     /**
      * Get the number of clients in the current network instance.
      *
-     * <p>Return number of clients in the game.
+     * @return Return number of clients in the game.
      */
     public int getClientCount() {
         if (mServerManager != null) {

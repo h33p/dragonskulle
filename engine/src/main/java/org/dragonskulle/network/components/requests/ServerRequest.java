@@ -24,28 +24,30 @@ public class ServerRequest<T extends INetSerializable> {
     private NetworkObject mNetworkObject;
     private int mRequestId;
 
-    public static interface IInvokationSetter<T extends INetSerializable> {
-        void setValues(T data);
-    }
-
     /**
      * Defined how an event it to be handled on the server.
      *
-     * @param defaultValue the template of the event e.g {@code TestAttackData}
-     * @param handler the handler for the event
+     * @param defaultValue the template of the event e.g {@code TestAttackData}.
+     * @param handler the handler for the event.
      */
     public ServerRequest(T defaultValue, IHandler<T> handler) {
         mTmpData = defaultValue;
         mHandler = handler;
     }
 
+    /**
+     * Attach network object to the event.
+     *
+     * @param obj network object to attach.
+     * @param id request's allocated ID.
+     */
     public void attachNetworkObject(NetworkObject obj, int id) {
         mNetworkObject = obj;
         mRequestId = id;
     }
 
     /**
-     * Invoke a request with a setter lambda
+     * Invoke a request with a setter lambda.
      *
      * <p>This method should be more efficient than passing {@code new} data every time, since it
      * would not invoke GC allocations (if Java is smart about it).
@@ -58,7 +60,7 @@ public class ServerRequest<T extends INetSerializable> {
     }
 
     /**
-     * Invokes a request
+     * Invokes a request.
      *
      * <p>This method sends a request to the server, if the object is owned by the player, or calls
      * it directly, if was invoked by the server.
@@ -94,6 +96,15 @@ public class ServerRequest<T extends INetSerializable> {
         }
     }
 
+    /**
+     * Deserialize and handle the event.
+     *
+     * <p>This method accepts an input stream (with request ID already parsed), and invokes the
+     * event handler.
+     *
+     * @param inStream input stream.
+     * @throws IOException if there is a stream or parsing error.
+     */
     public void handle(DataInput inStream) throws IOException {
         mTmpData.deserialize(inStream);
         mHandler.invokeHandler(mTmpData);

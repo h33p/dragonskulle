@@ -1,10 +1,15 @@
 /* (C) 2021 DragonSkulle */
 package org.dragonskulle.network;
 
-/** @author Oscar L The Network config, more configuration van be moved here. */
+/**
+ * The Network config, more configuration can be moved here.
+ *
+ * @author Oscar L
+ */
 public class NetworkConfig {
     public static final int TERMINATE_BYTES_LENGTH = 10;
 
+    /** Standard message codes. */
     public static class Codes {
         /** ID of object update message. */
         public static final byte MESSAGE_DISCONNECT = -1;

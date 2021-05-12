@@ -384,6 +384,7 @@ public class ClientNetworkManager {
         }
     }
 
+    /** Method called when the player joins the server lobby. */
     private void joinLobby() {
         mConnectionState = ConnectionState.CONNECTED;
     }

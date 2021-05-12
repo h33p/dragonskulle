@@ -5,7 +5,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-/** @author Oscar L */
+/**
+ * Contains utilities for network message processing.
+ *
+ * @author Oscar L
+ * @author Aurimas Blažulionis
+ */
 public class NetworkMessage {
     /**
      * Converts an Array of Bytes to a byte array.

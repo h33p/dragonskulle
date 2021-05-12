@@ -13,9 +13,17 @@ import lombok.experimental.Accessors;
  */
 @Accessors(prefix = "m")
 public class NetworkMessageStream extends DataOutputStream {
+    /** Temporary byte output stream. */
     private final ByteArrayOutputStream mRawStream;
+    /** Real output stream. */
     private final DataOutputStream mRealOutputStream;
 
+    /**
+     * Construct a {@link NetworkMessageStream}.
+     *
+     * @param rawStream byte stream to wrap.
+     * @param realOutputStream real data output stream to write into on close.
+     */
     public NetworkMessageStream(
             ByteArrayOutputStream rawStream, DataOutputStream realOutputStream) {
         super(rawStream);
@@ -23,6 +31,11 @@ public class NetworkMessageStream extends DataOutputStream {
         mRealOutputStream = realOutputStream;
     }
 
+    /**
+     * Construct a {@link NetworkMessageStream}.
+     *
+     * @param realOutputStream real data output stream to write into on close.
+     */
     public NetworkMessageStream(DataOutputStream realOutputStream) {
         this(new ByteArrayOutputStream(), realOutputStream);
     }
