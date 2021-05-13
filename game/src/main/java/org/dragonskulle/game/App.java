@@ -44,6 +44,12 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.system.NativeResource;
 
+/**
+ * The entry point of the game.
+ *
+ * @author Aurimas Blažulionis
+ *     <p>others add yourself here..
+ */
 @Log
 public class App implements NativeResource {
     private static final Settings mSettings = Settings.getInstance().loadSettings();

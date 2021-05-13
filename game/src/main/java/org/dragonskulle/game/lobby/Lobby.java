@@ -391,8 +391,13 @@ public class Lobby extends Component implements IFrameUpdate {
         GameAPI.getAllHostsAsync(this::onGetAllHosts);
     }
 
+    /**
+     * Create the game server.
+     *
+     * @param isLocal whether the game is local.
+     * @param removePort whether to remove the UPnP port on stop.
+     */
     private void createServer(boolean isLocal, boolean removePort) {
-
         GameConfig.refreshConfig().schedule();
 
         if (isLocal) {
@@ -436,6 +441,12 @@ public class Lobby extends Component implements IFrameUpdate {
         }
     }
 
+    /**
+     * Create the game server.
+     *
+     * @param manager network manager to craete the server on.
+     * @param endEvent game end event.
+     */
     public static boolean createServer(NetworkManager manager, IGameEndEvent endEvent) {
         return manager.createServer(
                 PORT,

@@ -55,6 +55,12 @@ public class SyncStat extends SyncInt {
 
     /** An interface for getting the value of a stat at a given level. */
     public static interface IConfigChooser {
+        /**
+         * Get the target config.
+         *
+         * @param cfg {@link GameConfig} instance.
+         * @return {@link StatConfig} instance for the particular stat.
+         */
         StatConfig getConfig(GameConfig cfg);
     }
 

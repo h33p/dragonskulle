@@ -74,10 +74,25 @@ public class UIBuildingDescription extends Component implements IOnAwake, IFixed
         return component.getReference(UITextRect.class);
     }
 
+    /**
+     * Update the field with value.
+     *
+     * @param box field to update.
+     * @param text text to set.
+     * @return {@code true} if update was successful, {@code false} otherwise.
+     */
     private boolean updateField(Reference<UITextRect> box, String text) {
         return updateField(box, text, false);
     }
 
+    /**
+     * Update the field with value.
+     *
+     * @param box field to update.
+     * @param text text to set.
+     * @param red {@code true}, if the text should be red.
+     * @return {@code true} if update was successful, {@code false} otherwise.
+     */
     private boolean updateField(Reference<UITextRect> box, String text, boolean red) {
         if (!Reference.isValid(box)) return false;
 
