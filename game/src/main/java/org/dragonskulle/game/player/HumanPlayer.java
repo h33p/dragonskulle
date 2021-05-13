@@ -94,6 +94,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
     /** Whether the game is paused and hover highlights should be disabled. */
     private boolean mIsPaused = false;
 
+    /** Visual arc when aiming at a building to attack. */
     private class ArcUpdater implements IPathUpdater, IArcHandler {
 
         private final Vector3f mPosStart = new Vector3f();
@@ -102,6 +103,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         private float mLerpedStart = -1;
         private boolean mDidSet = false;
 
+        @Override
         public void handle(ArcPath arcPath) {
             float speed = 10f;
             float deltaTime = Engine.getInstance().getFrameDeltaTime();
@@ -166,6 +168,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
             arcPath.setAmplitude(MathUtils.lerp(arcPath.getAmplitude(), amplitude, lerptime));
         }
 
+        @Override
         public void handle(int id, float pathPoint, Transform3D transform) {
             float factor = 1.6f;
 
@@ -324,6 +327,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         updateVisibleTokens();
     }
 
+    /** Update visible tokens on UI. */
     private void updateVisibleTokens() {
         Player player = getPlayer();
         if (player == null) return;
@@ -350,6 +354,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         updateVisuals();
     }
 
+    /** Detect keyboard input for switching actions. */
     private void detectKeyboardInput() {
         Screen nextScreen = mCurrentScreen;
 
@@ -366,7 +371,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         nextScreen = Screen.SELLING_SCREEN;
                     }
                 }
-                break;
+            case SELLING_SCREEN:
             case ATTACKING_SCREEN:
             case DEFAULT_SCREEN:
                 if (GameActions.BUILD_MODE.isJustActivated()) {
@@ -382,6 +387,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
+    /** Detect when the player wants to move back. */
     private void detectBackAction() {
         Player player = getPlayer();
         Cursor cursor = Actions.getCursor();
@@ -406,6 +412,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         Player player = getPlayer();
         Cursor cursor = Actions.getCursor();
         if (player == null || cursor == null) return;
+
+        if (cursor.hadLittleDrag()) return;
+
+        if (Reference.isValid(UIManager.getInstance().getHoveredObject())) return;
 
         // Ensure a tile can be selected.
         HexagonMap map = player.getMap();
@@ -616,8 +626,22 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
+    /**
+     * Highlight hovered tile.
+     *
+     * @param effects map effects instance.
+     * @param highlight colour of highlight.
+     */
     private void highlightHoveredTile(MapEffects effects, StandardHighlightType highlight) {
-        if (!Reference.isValid(mPlayer) || mIsPaused) {
+        if (!Reference.isValid(mPlayer)
+                || mIsPaused
+                || Reference.isValid(UIManager.getInstance().getHoveredObject())) {
+            return;
+        }
+
+        Cursor cursor = Actions.getCursor();
+
+        if (cursor != null && cursor.hadLittleDrag()) {
             return;
         }
 
@@ -632,11 +656,23 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         effects.pulseHighlight(map.cursorToTile(), highlight.asSelection(), 0.6f, 2f, 0.05f);
     }
 
+    /**
+     * Highlight selected tile.
+     *
+     * @param effects map effects instance.
+     * @param highlight highlight to use.
+     */
     private void highlightSelectedTile(MapEffects effects, StandardHighlightType highlight) {
         if (mHexChosen == null || effects == null || highlight == null) return;
         effects.highlightTile(mHexChosen, highlight.asSelection());
     }
 
+    /**
+     * Highlight buildable tiles.
+     *
+     * @param fx map effects instance.
+     * @param highlight highlight to use.
+     */
     private void highlightBuildableTiles(MapEffects fx, StandardHighlightType highlight) {
         Player player = getPlayer();
         if (player == null || fx == null || highlight == null) return;

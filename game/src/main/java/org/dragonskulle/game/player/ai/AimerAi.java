@@ -586,6 +586,11 @@ public class AimerAi extends ProbabilisticAiPlayer {
         return buildings;
     }
 
+    /**
+     * This will choose randomly the HexagonTile to start from.
+     *
+     * @return The {@link HexagonTile} to start be the start node.
+     */
     private HexagonTile getStartHex() {
         List<Reference<Building>> ownedBuildings = getPlayer().getOwnedBuildings();
         if (ownedBuildings.size() == 0) {
