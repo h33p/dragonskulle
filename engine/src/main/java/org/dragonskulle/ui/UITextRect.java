@@ -21,6 +21,9 @@ public class UITextRect extends UIBuildableComponent implements IOnAwake {
     /** Underlying box renderable. */
     @Getter protected Reference<UIRenderable> mRenderable;
 
+    /** UI material used by this box. */
+    protected UIMaterial mMaterial;
+
     /** Texture used by the text box. */
     @Getter @Setter protected SampledTexture mRectTexture = null;
 
@@ -158,6 +161,14 @@ public class UITextRect extends UIBuildableComponent implements IOnAwake {
             }
             getGameObject().addComponent(uiRenderable);
             mRenderable = getGameObject().getComponent(UIRenderable.class);
+        }
+
+        UIRenderable rend = mRenderable.get();
+
+        if (rend != null) {
+            if (rend.getMaterial() instanceof UIMaterial) {
+                mMaterial = (UIMaterial) rend.getMaterial();
+            }
         }
 
         if (mLabelTextComp != null) {
