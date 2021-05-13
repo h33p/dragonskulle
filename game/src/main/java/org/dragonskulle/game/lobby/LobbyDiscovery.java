@@ -102,6 +102,12 @@ public class LobbyDiscovery {
         }
     }
 
+    /**
+     * Get a list of all udp broadcast addresses by iterating through all network interfaces.
+     *
+     * @return A list containing all broadcast addresses, or a list containing just 255.255.255.255
+     *     if no specific broadcast addresses could be found.
+     */
     private static ArrayList<InetSocketAddress> getBroadcastAddresses() {
         ArrayList<InetSocketAddress> addresses = new ArrayList<>();
 
