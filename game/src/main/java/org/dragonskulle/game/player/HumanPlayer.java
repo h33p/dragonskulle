@@ -371,6 +371,7 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
                         nextScreen = Screen.SELLING_SCREEN;
                     }
                 }
+                // fallthrough
             case SELLING_SCREEN:
             case ATTACKING_SCREEN:
             case DEFAULT_SCREEN:
