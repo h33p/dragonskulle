@@ -315,8 +315,8 @@ class PhysicalDevice implements Comparable<PhysicalDevice> {
      * @param surface target surface.
      * @param targetDevice target device name to pick. Use {@code null}, or empty string to pick the
      *     first (most suitable) device in the list.
-     * @return chosen physical device. {@code null} if could not find a suitable one.
      * @param neededExtensions needed device extensions for the target device.
+     * @return chosen physical device. {@code null} if could not find a suitable one.
      */
     public static PhysicalDevice pickPhysicalDevice(
             VkInstance instance, long surface, String targetDevice, Set<String> neededExtensions) {

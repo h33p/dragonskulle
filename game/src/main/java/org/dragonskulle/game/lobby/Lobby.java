@@ -26,20 +26,26 @@ import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkManager.IGameEndEvent;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.ServerNetworkManager;
-import org.dragonskulle.ui.*;
+import org.dragonskulle.ui.TransformUI;
+import org.dragonskulle.ui.UIButton;
+import org.dragonskulle.ui.UIInputBox;
+import org.dragonskulle.ui.UIManager;
+import org.dragonskulle.ui.UIRenderable;
+import org.dragonskulle.ui.UIText;
+import org.dragonskulle.ui.UITextRect;
 import org.joml.Vector4f;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-@Log
-@Accessors(prefix = "m")
 /**
- * Class that handles the creation, deletion, joining and leaving of game lobbies
+ * Class that handles the creation, deletion, joining and leaving of game lobbies.
  *
  * @author Harry Stoltz
  */
+@Log
+@Accessors(prefix = "m")
 public class Lobby extends Component implements IFrameUpdate {
 
     private static final int PORT = 17569;

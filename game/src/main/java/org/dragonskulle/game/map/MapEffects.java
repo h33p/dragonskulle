@@ -65,7 +65,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
         }
     }
 
-    /** Class controlling pulsating highlighting */
+    /** Class controlling pulsating highlighting. */
     private static class PulseHighlight {
         private Vector4fc mTargetColour;
         private final Vector4f mOut = new Vector4f(0f);

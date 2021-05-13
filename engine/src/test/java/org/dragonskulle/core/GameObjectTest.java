@@ -22,8 +22,6 @@ public class GameObjectTest {
         protected void onDestroy() {}
     }
 
-    /*
-    Tests still to do:
     /** Test that an instantiated GameObject is setup correctly */
     @Test
     public void instantiatePerformedCorrectly() {

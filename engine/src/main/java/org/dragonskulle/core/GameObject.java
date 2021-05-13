@@ -605,6 +605,15 @@ public class GameObject {
     }
 
     /**
+     * Getter for mComponents, should only be used by the engine.
+     *
+     * @return mComponents
+     */
+    protected ArrayList<Component> getComponents() {
+        return mComponents;
+    }
+
+    /**
      * Get all components of a given type T.
      *
      * @param type Class object of T
@@ -638,15 +647,6 @@ public class GameObject {
         if (mScene != null) {
             mScene.dirtyComponentLists();
         }
-    }
-
-    /**
-     * Getter for mComponents, should only be used by the engine.
-     *
-     * @return mComponents
-     */
-    protected ArrayList<Component> getComponents() {
-        return mComponents;
     }
 
     /** Handle the destruction of the object. */

@@ -242,8 +242,9 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     protected boolean tryToAttack(Building attacker) {
 
         // Ensure the player can afford to attack.
-        if (attacker == null || attacker.getAttackCost() > getPlayer().getTokens().get())
+        if (attacker == null || attacker.getAttackCost() > getPlayer().getTokens().get()) {
             return false;
+        }
 
         Building defender = attacker.getRandomAttackableBuilding();
         if (defender == null) return false;
