@@ -42,8 +42,9 @@ public class SingletonStore {
     /**
      * Retrieves a singleton for type if there is any.
      *
-     * @param type type to retrieve the reference to
-     * @return reference to the singleton. {@code null} if does not exist, or it has been destroyed
+     * @param <T> type of the singleton.
+     * @param type class of type T to retrieve the instance of.
+     * @return reference to the singleton. {@code null} if does not exist, or it has been destroyed.
      */
     @SuppressWarnings("unchecked")
     public <T extends Component> T get(Class<T> type) {
@@ -57,7 +58,8 @@ public class SingletonStore {
     /**
      * Retrieves a singleton reference for type if there is any.
      *
-     * @param type type to retrieve the reference to
+     * @param <T> type of the singleton.
+     * @param type class of type T to retrieve the instance reference of.
      * @return reference to the singleton. For invalid entries, it may be null, but may also be a
      *     non-null invalid reference.
      */

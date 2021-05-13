@@ -190,6 +190,13 @@ public class GLFWState implements NativeResource {
         setFullscreen(mSettings.retrieveBoolean(FULLSCREEN, false));
     }
 
+    /**
+     * Event called when framebuffer is resized.
+     *
+     * @param window window that got resized.
+     * @param width new width.
+     * @param height new height.
+     */
     private void onFramebufferResize(long window, int width, int height) {
         mFramebufferResized = true;
     }
