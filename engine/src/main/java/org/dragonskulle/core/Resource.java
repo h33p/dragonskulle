@@ -24,8 +24,14 @@ import org.lwjgl.system.NativeResource;
  */
 public class Resource<T> implements NativeResource {
 
+    /** Instance of the resource. */
     private ResourceManager.CountedResource<T> mInstance;
 
+    /**
+     * Create a new resource.
+     *
+     * @param i input counted resource.
+     */
     public Resource(ResourceManager.CountedResource<T> i) {
         mInstance = i;
     }
@@ -62,6 +68,13 @@ public class Resource<T> implements NativeResource {
         return mInstance != null ? mInstance.incRefCount() : null;
     }
 
+    /**
+     * Safely cast resource from one type to another.
+     *
+     * @param <F> target type.
+     * @param type class of type F.
+     * @return resource cast to the type, or {@code null}, if cast is invalid.
+     */
     @SuppressWarnings("unchecked")
     public final <F> Resource<F> cast(Class<F> type) {
         if (type.isInstance(get())) {
