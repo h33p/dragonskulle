@@ -446,6 +446,7 @@ public class Lobby extends Component implements IFrameUpdate {
      *
      * @param manager network manager to craete the server on.
      * @param endEvent game end event.
+     * @return {@code true} if server creation was successful.
      */
     public static boolean createServer(NetworkManager manager, IGameEndEvent endEvent) {
         return manager.createServer(
