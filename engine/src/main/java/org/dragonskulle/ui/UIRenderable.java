@@ -8,6 +8,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.input.Actions;
+import org.dragonskulle.input.Cursor;
 import org.dragonskulle.renderer.Mesh;
 import org.dragonskulle.renderer.SampledTexture;
 import org.dragonskulle.renderer.Texture;
@@ -45,6 +46,7 @@ public class UIRenderable extends Renderable implements IOnAwake {
      */
     @Getter @Setter private float mWidthHeightBlend = 0f;
 
+    /** Per-renderable depth (ordering) shift. */
     @Getter @Setter private float mDepthShift = 0f;
 
     /**
@@ -129,6 +131,11 @@ public class UIRenderable extends Renderable implements IOnAwake {
         return true;
     }
 
+    /**
+     * Returns whether the mouse cursor is over the renderable.
+     *
+     * @return {@code true} if the cursor is over the renderable, {@code false} otherwise.
+     */
     public boolean cursorOver() {
 
         if (!mHoverable) {
@@ -137,7 +144,13 @@ public class UIRenderable extends Renderable implements IOnAwake {
 
         mTmpMatrix.set(getGameObject().getTransform().getWorldMatrix());
 
-        Vector2fc cursorCoords = Actions.getCursor().getPosition();
+        Cursor cursor = Actions.getCursor();
+
+        if (cursor == null) {
+            return false;
+        }
+
+        Vector2fc cursorCoords = cursor.getPosition();
 
         mTmpMatrix.invert();
 

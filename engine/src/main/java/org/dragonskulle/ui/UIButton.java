@@ -333,6 +333,7 @@ public class UIButton extends UITextRect implements IFrameUpdate {
         }
     }
 
+    /** Update the appearance of the button. */
     private void updateAppearance() {
         mRegularColour = mAppearance.getRegularColour();
         mHoveredColour = mAppearance.getHoveredColour();

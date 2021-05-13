@@ -53,21 +53,38 @@ public abstract class Actions {
     /** An event which gets triggered when a character is inputted. */
     @Setter private static Reference<ICharEvent> sOnChar;
 
-    /** @return dereferenced {@link sOnPress}. */
+    /**
+     * Get button press event.
+     *
+     * @return dereferenced {@link sOnPress}.
+     */
     public static IButtonEvent getOnPress() {
         return Reference.isValid(sOnPress) ? sOnPress.get() : null;
     }
 
-    /** @return dereferenced {@link sOnRelease}. */
+    /**
+     * Get button release event.
+     *
+     * @return dereferenced {@link sOnRelease}.
+     */
     public static IButtonEvent getOnRelease() {
         return Reference.isValid(sOnRelease) ? sOnRelease.get() : null;
     }
 
-    /** @return dereferenced {@link sOnChar}. */
+    /**
+     * Get character input event.
+     *
+     * @return dereferenced {@link sOnChar}.
+     */
     public static ICharEvent getOnChar() {
         return Reference.isValid(sOnChar) ? sOnChar.get() : null;
     }
 
+    /**
+     * Get whether actions are being intercepted.
+     *
+     * @return {@code true} if any of the actions are being intercepted.
+     */
     public static boolean isBeingIntercepted() {
         return getOnPress() != null || getOnRelease() != null || getOnChar() != null;
     }

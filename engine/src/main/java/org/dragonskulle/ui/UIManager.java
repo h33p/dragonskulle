@@ -6,7 +6,6 @@ import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import lombok.extern.java.Log;
 import org.dragonskulle.components.Component;
 import org.dragonskulle.core.GameObject;
 import org.dragonskulle.core.Reference;
@@ -21,7 +20,6 @@ import org.dragonskulle.input.Cursor;
  *
  * @author Aurimas Blažulionis
  */
-@Log
 @Accessors(prefix = "m")
 public class UIManager {
     @Setter
@@ -111,9 +109,10 @@ public class UIManager {
         }
     }
 
+    /** UI build handler. */
     public static interface IUIBuildHandler {
         /**
-         * Handle building of UI object
+         * Handle building of UI object.
          *
          * <p>This method will be called to allow initial setup of the object. It will be already
          * linked up with its parent, if there is any.
@@ -123,6 +122,12 @@ public class UIManager {
         void handleUIBuild(GameObject go);
     }
 
+    /**
+     * Buildable UI component.
+     *
+     * <p>This class implements default UI build handler, which just adds itself as component on the
+     * object.
+     */
     public abstract static class UIBuildableComponent extends Component implements IUIBuildHandler {
         @Override
         public void handleUIBuild(GameObject go) {
