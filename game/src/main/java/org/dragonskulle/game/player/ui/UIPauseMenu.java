@@ -36,10 +36,6 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
 
     private final Reference<AudioSource> mEndGameJukeBox;
 
-    public interface IHandleEvent {
-        void handle();
-    }
-
     /** The possible states the settings menu can be in. */
     private static enum State {
         MENU,

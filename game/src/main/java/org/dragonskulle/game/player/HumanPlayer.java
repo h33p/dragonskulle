@@ -177,10 +177,10 @@ public class HumanPlayer extends Component implements IFrameUpdate, IFixedUpdate
         }
     }
 
-    /** Visual arc path shown on selections */
+    /** Visual arc path shown on selections. */
     private Reference<ArcPath> mArcPath;
 
-    /** Updater for mArcPath */
+    /** Updater for mArcPath. */
     private Reference<ArcUpdater> mUpdater;
 
     private boolean mArcFadeOut = false;

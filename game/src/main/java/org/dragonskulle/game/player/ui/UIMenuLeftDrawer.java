@@ -166,6 +166,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
      * @param setHexChosen the set hex chosen callback
      * @param notifyScreenChange the notify screen change callback
      * @param getPlayer the get player callback
+     * @param setPredefinedBuildingChosen the set predefined building callback
      */
     public UIMenuLeftDrawer(
             IGetBuildingChosen getBuildingChosen,

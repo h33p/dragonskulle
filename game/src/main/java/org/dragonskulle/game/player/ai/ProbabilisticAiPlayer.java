@@ -23,6 +23,12 @@ public class ProbabilisticAiPlayer extends AiPlayer {
 
     /** Used to run events for building and attacking. */
     public interface IRunBuildingEvent {
+        /**
+         * Run the building event.
+         *
+         * @param building the building which the event will be ran on
+         * @return {@code true} if the event was successful
+         */
         public boolean runEvent(Building building);
     }
 

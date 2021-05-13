@@ -33,7 +33,14 @@ public class GameAPI {
         }
     }
 
+    /** A method that is ran after an {@link AsyncRequest}.. */
     public interface IAsyncCallback {
+        /**
+         * Run the callback.
+         *
+         * @param response the response message
+         * @param success true if successful
+         */
         void call(String response, boolean success);
     }
 
