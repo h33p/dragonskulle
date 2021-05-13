@@ -52,7 +52,7 @@ public class Camera extends Component implements IFrameUpdate {
     private Matrix4f mProj = new Matrix4f();
 
     @Getter
-    /** Current screen aspect ratio. */
+    /* Current screen aspect ratio. */
     private float mAspectRatio = 1.f;
 
     /**

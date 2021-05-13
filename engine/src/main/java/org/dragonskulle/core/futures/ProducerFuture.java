@@ -44,9 +44,8 @@ public class ProducerFuture<T> extends Future {
     /** Thread used in production. */
     private final Thread mThread;
 
-    @Getter
     /** Produced data of this future. It becomes valid, only when {@code mComplete} is true. */
-    private T mProducedData;
+    @Getter private T mProducedData;
 
     /**
      * Constructor for {@link ProducerFuture}.

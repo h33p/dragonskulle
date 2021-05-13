@@ -102,10 +102,10 @@ public class Scene {
         }
     }
 
+    /** Currently active scene. */
     @Accessors(prefix = "s")
     @Getter
     @Setter(AccessLevel.PACKAGE)
-    /** Currently active scene. */
     private static Scene sActiveScene = null;
 
     /** Allows to temporarily override active scene. */
