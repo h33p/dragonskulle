@@ -594,6 +594,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         return val != null && val > 0;
     }
 
+    /**
+     * Get how viewable the tile is.
+     *
+     * @param tile tile to check.
+     * @return integer value for tile viewability. Only positive values mean viewable.
+     */
     public int getTileViewability(HexagonTile tile) {
         ensureViewableTilesAreValid();
         return mTilesAround.getOrDefault(tile, VIEWABILITY_LOWER_BOUND);
