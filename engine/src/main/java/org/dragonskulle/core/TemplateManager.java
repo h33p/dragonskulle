@@ -59,6 +59,14 @@ public class TemplateManager {
         return idx;
     }
 
+    /**
+     * Add all objects to the template manager.
+     *
+     * <p>This method will not return the IDs of the objects. It will be necessary to look them up
+     * by name instead.
+     *
+     * @param objects objects to add.
+     */
     public void addAllObjects(GameObject... objects) {
         for (GameObject go : objects) {
             addObject(go);

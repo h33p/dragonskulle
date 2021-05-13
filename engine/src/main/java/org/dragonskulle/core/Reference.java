@@ -28,6 +28,13 @@ public class Reference<T> {
         mObject = null;
     }
 
+    /**
+     * Safely cast the reference to another type.
+     *
+     * @param <F> target type of the reference.
+     * @param type class of type F.
+     * @return {@code this}, cast to type F reference, or {@code null}, if types are not valid.
+     */
     @SuppressWarnings("unchecked")
     public <F> Reference<F> cast(Class<F> type) {
         if (type.isInstance(mObject)) {
