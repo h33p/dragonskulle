@@ -15,8 +15,10 @@ import org.dragonskulle.renderer.materials.PBRMaterial;
 import org.dragonskulle.utils.MathUtils;
 
 /**
+ * Fade tiles in and out.
+ *
  * @author Aurimas Blažulionis
- *     <p>This component draws a visual fog of war for the players
+ *     <p>This component smoothly fades tiles in and out.
  */
 @Accessors(prefix = "m")
 public class FadeTile extends Component implements IOnAwake, IFrameUpdate {
@@ -36,6 +38,12 @@ public class FadeTile extends Component implements IOnAwake, IFrameUpdate {
 
     private Reference<HeightController> mHeightController;
 
+    /**
+     * Set the state of the tile.
+     *
+     * @param enabled whether the tile should show or not.
+     * @param height target height of the tile.
+     */
     public void setState(boolean enabled, float height) {
         mTarget = enabled ? 1f : -1f;
         mTargetHeight = height;

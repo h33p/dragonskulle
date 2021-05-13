@@ -267,6 +267,11 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
         return Math.max(Math.max(Math.abs(q), Math.abs(r)), Math.abs(s));
     }
 
+    /**
+     * Convert cursor position to the tile it is over.
+     *
+     * @return hexagon tile the mouse cursor is over.
+     */
     public HexagonTile cursorToTile() {
         Camera mainCam = Scene.getActiveScene().getSingleton(Camera.class);
 
@@ -336,6 +341,15 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
         return closestTile;
     }
 
+    /**
+     * How far away the cursor is from the center of a tile.
+     *
+     * @param tile tile to check
+     * @param cam camera to check from.
+     * @param screenPos cursor position on screen.
+     * @param pos output position of the cursor on the tile plane.
+     * @return distance from cursor to tile center.
+     */
     private float cursorDistanceFromCenter(
             HexagonTile tile, Camera cam, Vector2fc screenPos, Vector3f pos) {
         pos =
@@ -422,6 +436,11 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
         Scene.getActiveScene().registerSingleton(this);
     }
 
+    /**
+     * Update the visual game object of the tile.
+     *
+     * @param tile hexagon tile to update.
+     */
     void updateTileGameObject(HexagonTile tile) {
         getGameObject().addChild(tile.getGameObject());
     }

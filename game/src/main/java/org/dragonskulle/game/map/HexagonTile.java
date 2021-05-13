@@ -18,7 +18,6 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Resource;
 import org.dragonskulle.game.App;
 import org.dragonskulle.game.building.Building;
-import org.dragonskulle.game.building.TileProp;
 import org.dragonskulle.game.map.HexagonTileStore.TileToStoreActions;
 import org.dragonskulle.game.materials.HighlightControls;
 import org.dragonskulle.game.player.Player;
@@ -28,13 +27,13 @@ import org.dragonskulle.network.components.sync.INetSerializable;
 
 /**
  * @author Leela Muppala
+ * @author Aurimas Blažulionis
  *     <p>Creates each HexagonTile with their 3 coordinates. This stores information about the axial
  *     coordinates of each tile.
  */
 @Log
 @Accessors(prefix = "m")
 public class HexagonTile implements INetSerializable {
-    @Setter private TileProp mProp = null;
     static final Resource<GLTF> TEMPLATES = GLTF.getResource("templates");
 
     /** Describes a template for land hex tile. */
@@ -53,10 +52,7 @@ public class HexagonTile implements INetSerializable {
     static final GameObject MOUNTAIN_TILE =
             App.TEMPLATES.get().getDefaultScene().findRootObject("Mountains Hex");
 
-    public boolean hasProp() {
-        return mProp != null;
-    }
-
+    /** Describes the tile type on the map. */
     public static enum TileType {
         LAND((byte) 0),
         WATER((byte) 1),
@@ -67,10 +63,21 @@ public class HexagonTile implements INetSerializable {
 
         private static final TileType[] VALUES = TileType.values();
 
+        /**
+         * Create a {@link TileType}.
+         *
+         * @param value value used to identify the tile.
+         */
         private TileType(byte value) {
             mValue = value;
         }
 
+        /**
+         * Get the tile from byte value.
+         *
+         * @param value value to find.
+         * @return {@link TileType} with the value.
+         */
         public static TileType getTile(byte value) {
             for (TileType t : VALUES) {
                 if (t.mValue == value) {
@@ -479,6 +486,12 @@ public class HexagonTile implements INetSerializable {
         }
     }
 
+    /**
+     * Get the surface height of the tile.
+     *
+     * @return surface height of the tile. It might be different from actual height, it is the
+     *     current visual height.
+     */
     public float getSurfaceHeight() {
         return mGameObject.getTransform(TransformHex.class).getHeight();
     }
