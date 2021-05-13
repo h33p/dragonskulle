@@ -16,29 +16,55 @@ import org.joml.Vector4f;
 import org.joml.Vector4fc;
 
 /**
- * @author Aurimas Blažulionis This class converts object's materials to highlightable ones, and
- *     allows to change their highlighting.
+ * Controls highlights of tiles.
+ *
+ * @author Aurimas Blažulionis
+ *     <p>This class converts object's materials to highlightable ones, and allows to change their
+ *     highlighting.
  */
 @Accessors(prefix = "m")
 public class HighlightControls extends Component implements IOnAwake, IFrameUpdate {
 
+    /** Renderables to control the highlights for. */
     private List<Reference<Renderable>> mRenderables = new ArrayList<>();
+    /** Target child for highlighting. */
     private final String mChildName;
+    /** List of highlight materials to control. */
     @Getter private List<PBRHighlightMaterial> mHighlightMaterials = new ArrayList<>();
+    /** Target highlight colour. */
     @Getter private final Vector4f mTargetColour = new Vector4f(0f);
 
+    /** Default constructor for {@link HighlightControls}. */
     public HighlightControls() {
         this(null);
     }
 
+    /**
+     * Constructor for {@link HighlightControls}.
+     *
+     * @param childName target child to find on start. {@code null} to use self.
+     */
     public HighlightControls(String childName) {
         mChildName = childName;
     }
 
+    /**
+     * Set the object highlight.
+     *
+     * @param r red colour component.
+     * @param g green colour component.
+     * @param b blue colour component.
+     * @param a alpha colour component.
+     */
     public void setHighlight(float r, float g, float b, float a) {
         mTargetColour.set(r, g, b, a);
     }
 
+    /**
+     * Set the object highlight.
+     *
+     * @param col target colour to set.
+     */
     public void setHighlight(Vector4fc col) {
         setHighlight(col.x(), col.y(), col.z(), col.w());
     }

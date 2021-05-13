@@ -11,11 +11,19 @@ import org.dragonskulle.game.map.HexagonTile;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
 
+/**
+ * Stick an object to the map tile.
+ *
+ * <p>This works only, and only if the object does not move after spawning.
+ *
+ * @author Aurimas Blažulionis
+ */
 public class StickToTile extends Component implements IFrameUpdate {
 
     /** Store the {@link HexagonMap} that the object is on. */
     private Reference<HexagonMap> mMap = null;
 
+    /** Cached position on the map. */
     private Vector3i mPosition = null;
 
     @Override

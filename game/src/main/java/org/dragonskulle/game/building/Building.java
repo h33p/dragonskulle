@@ -710,6 +710,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         }
     }
 
+    /** Arc updater for attack visuals. */
     private class ArcUpdater implements IPathUpdater, IArcHandler {
         private final float mAttackStart;
         private final float mAttackTime;
@@ -718,6 +719,11 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
         private final float mRoty;
         private final float mRotz;
 
+        /**
+         * Constructor for {@link ArcUpdater}.
+         *
+         * @param attackTime how long the attack takes.
+         */
         public ArcUpdater(float attackTime) {
             mAttackStart = Engine.getInstance().getCurTime();
             mAttackTime = attackTime;
@@ -726,6 +732,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
             mRotz = (float) Math.random() * 360f;
         }
 
+        @Override
         public void handle(ArcPath arcPath) {
             float curtime = Engine.getInstance().getCurTime();
 
@@ -739,6 +746,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
             arcPath.setSpawnOffset(lerptime);
         }
 
+        @Override
         public void handle(int id, float pathPoint, Transform3D transform) {
             transform.rotateDeg(pathPoint * mRotx, pathPoint * mRoty, pathPoint * mRotz);
         }
