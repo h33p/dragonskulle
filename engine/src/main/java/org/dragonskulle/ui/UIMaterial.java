@@ -19,7 +19,6 @@ import org.dragonskulle.renderer.TextureMapping.TextureFiltering;
 import org.dragonskulle.renderer.TextureMapping.TextureWrapping;
 import org.dragonskulle.renderer.components.Light;
 import org.dragonskulle.renderer.materials.IColouredMaterial;
-import org.dragonskulle.renderer.materials.IMaterial;
 import org.joml.Matrix4fc;
 import org.joml.Vector3fc;
 import org.joml.Vector4f;
@@ -34,8 +33,10 @@ import org.joml.Vector4fc;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class UIMaterial implements IMaterial, IColouredMaterial {
+public class UIMaterial implements IColouredMaterial {
+    /** UI shader set used for UI object rendering. */
     public static class UIShaderSet extends ShaderSet {
+        /** Create a UI shader set. */
         public UIShaderSet() {
             mVertexShader = ShaderBuf.getResource("ui", ShaderKind.VERTEX_SHADER);
             mFragmentShader = ShaderBuf.getResource("ui", ShaderKind.FRAGMENT_SHADER);
@@ -64,10 +65,11 @@ public class UIMaterial implements IMaterial, IColouredMaterial {
     /** Colour of the surface. It will multiply the texture's colour */
     @Getter public Vector4f mColour = new Vector4f(1.f);
 
+    /** Default constructor for {@link UIMaterial}. */
     public UIMaterial() {}
 
     /**
-     * Constructor for UIMaterial.
+     * Constructor for {@link UIMaterial}.
      *
      * @param colour initial colour value of the object
      * @param texture initial texture of the object
@@ -78,7 +80,7 @@ public class UIMaterial implements IMaterial, IColouredMaterial {
     }
 
     /**
-     * Constructor for UIMaterial.
+     * Constructor for {@link UIMaterial}.
      *
      * @param colour initial colour value for the object, with full alpha
      * @param texture initial texture of the object
@@ -88,7 +90,7 @@ public class UIMaterial implements IMaterial, IColouredMaterial {
     }
 
     /**
-     * Constructor for UIMaterial.
+     * Constructor for {@link UIMaterial}.
      *
      * @param colour initial colour value of the object
      */
@@ -97,7 +99,7 @@ public class UIMaterial implements IMaterial, IColouredMaterial {
     }
 
     /**
-     * Constructor for UIMaterial.
+     * Constructor for {@link UIMaterial}.
      *
      * @param colour initial colour value for the object, with full alpha
      */
@@ -106,7 +108,7 @@ public class UIMaterial implements IMaterial, IColouredMaterial {
     }
 
     /**
-     * Constructor for UIMaterial.
+     * Constructor for {@link UIMaterial}.
      *
      * @param texture initial texture of the object
      */
@@ -114,10 +116,12 @@ public class UIMaterial implements IMaterial, IColouredMaterial {
         mFragmentTextures[0] = texture;
     }
 
+    @Override
     public ShaderSet getShaderSet() {
         return sShaderSet;
     }
 
+    @Override
     public int writeVertexInstanceData(
             int offset, ByteBuffer buffer, Matrix4fc matrix, List<Light> lights) {
         offset = ShaderSet.writeMatrix(offset, buffer, matrix);
@@ -125,10 +129,12 @@ public class UIMaterial implements IMaterial, IColouredMaterial {
         return offset + 4 * 4;
     }
 
+    @Override
     public SampledTexture[] getFragmentTextures() {
         return mFragmentTextures;
     }
 
+    @Override
     public void free() {
         for (SampledTexture tex : mFragmentTextures) {
             if (tex != null) {

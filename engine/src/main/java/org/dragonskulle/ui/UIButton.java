@@ -73,7 +73,7 @@ public class UIButton extends UITextRect implements IFrameUpdate {
     }
 
     /**
-     * Constructor for UIButton
+     * Constructor for UIButton.
      *
      * @param label a text label to render inside the button
      */
@@ -333,6 +333,7 @@ public class UIButton extends UITextRect implements IFrameUpdate {
         }
     }
 
+    /** Update the appearance of the button. */
     private void updateAppearance() {
         mRegularColour = mAppearance.getRegularColour();
         mHoveredColour = mAppearance.getHoveredColour();

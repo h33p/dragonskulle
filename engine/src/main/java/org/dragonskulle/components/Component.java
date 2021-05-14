@@ -73,13 +73,15 @@ public abstract class Component {
      *
      * <p>This getter type checks and casts the reference to a more concrete type
      *
-     * @param type type to try cast into
+     * @param <T> type to try and cast to.
+     * @param type class object of type T.
      * @return mReference cast into the type, if valid. Null otherwise.
      */
     public final <T extends Component> Reference<T> getReference(Class<T> type) {
         return mReference.cast(type);
     }
 
+    /** Clear the current reference of the object and create a new one. */
     public final void recreateReference() {
         mReference.clear();
         mReference = new Reference<>(this);

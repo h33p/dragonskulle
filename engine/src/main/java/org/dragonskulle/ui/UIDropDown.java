@@ -27,9 +27,15 @@ public class UIDropDown extends UIBuildableComponent implements IOnAwake, IFrame
 
     /** Interface that is invoked when an event occurs for the drop down. */
     public static interface IDropDownEvent {
+        /**
+         * Handle the drop down event.
+         *
+         * @param dropDown calling drop down.
+         */
         void handle(UIDropDown dropDown);
     }
 
+    /** Available options in the drop down. */
     private String[] mOptions;
 
     /**
@@ -179,7 +185,11 @@ public class UIDropDown extends UIBuildableComponent implements IOnAwake, IFrame
         }
     }
 
-    /** Select an element and invoke OnSelect event. */
+    /**
+     * Select an element and invoke OnSelect event.
+     *
+     * @param index the index of the selected item
+     */
     private void select(int index) {
         setSelected(index);
 

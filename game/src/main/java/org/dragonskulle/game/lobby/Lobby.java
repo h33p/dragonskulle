@@ -26,20 +26,26 @@ import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkManager.IGameEndEvent;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.ServerNetworkManager;
-import org.dragonskulle.ui.*;
+import org.dragonskulle.ui.TransformUI;
+import org.dragonskulle.ui.UIButton;
+import org.dragonskulle.ui.UIInputBox;
+import org.dragonskulle.ui.UIManager;
+import org.dragonskulle.ui.UIRenderable;
+import org.dragonskulle.ui.UIText;
+import org.dragonskulle.ui.UITextRect;
 import org.joml.Vector4f;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-@Log
-@Accessors(prefix = "m")
 /**
- * Class that handles the creation, deletion, joining and leaving of game lobbies
+ * Class that handles the creation, deletion, joining and leaving of game lobbies.
  *
  * @author Harry Stoltz
  */
+@Log
+@Accessors(prefix = "m")
 public class Lobby extends Component implements IFrameUpdate {
 
     private static final int PORT = 17569;
@@ -385,8 +391,13 @@ public class Lobby extends Component implements IFrameUpdate {
         GameAPI.getAllHostsAsync(this::onGetAllHosts);
     }
 
+    /**
+     * Create the game server.
+     *
+     * @param isLocal whether the game is local.
+     * @param removePort whether to remove the UPnP port on stop.
+     */
     private void createServer(boolean isLocal, boolean removePort) {
-
         GameConfig.refreshConfig().schedule();
 
         if (isLocal) {
@@ -430,6 +441,13 @@ public class Lobby extends Component implements IFrameUpdate {
         }
     }
 
+    /**
+     * Create the game server.
+     *
+     * @param manager network manager to craete the server on.
+     * @param endEvent game end event.
+     * @return {@code true} if server creation was successful.
+     */
     public static boolean createServer(NetworkManager manager, IGameEndEvent endEvent) {
         return manager.createServer(
                 PORT,

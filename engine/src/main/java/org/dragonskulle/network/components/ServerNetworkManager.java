@@ -41,6 +41,7 @@ import org.joml.Vector3f;
 @Log
 public class ServerNetworkManager {
 
+    /** Describes the server's game state. */
     public enum ServerGameState {
         IN_PROGRESS,
         LOBBY,
@@ -148,18 +149,39 @@ public class ServerNetworkManager {
         }
     }
 
+    /** Server's network object entry with additional metadata. */
     public static class ServerObjectEntry {
+        /** The spawned network object. */
         @Getter private final Reference<NetworkObject> mNetworkObject;
+        /** Original spawnable template ID for the object. */
         @Getter private final int mTemplateId;
+        /** Which clients have had this object spawn. */
         @Getter private final Set<ServerClient> mSpawnedFor;
+        /**
+         * Was this object waken up.
+         *
+         * <p>Needed, because beforeNetSerialize gets invoked at the start of the engine loop, and
+         * objects can spawn mid-loop.
+         */
         private boolean mAwoken = false;
 
+        /**
+         * Construct a server object entry.
+         *
+         * @param networkObject network object to add to create the entry for.
+         * @param templateId template ID of the object.
+         */
         public ServerObjectEntry(Reference<NetworkObject> networkObject, int templateId) {
             mNetworkObject = networkObject;
             mTemplateId = templateId;
             mSpawnedFor = new HashSet<>();
         }
 
+        /**
+         * Update a specific network client.
+         *
+         * @param client networked client to update.
+         */
         public void updateClient(ServerClient client) {
 
             NetworkObject obj = mNetworkObject.get();
@@ -227,10 +249,13 @@ public class ServerNetworkManager {
     /**
      * Constructor for {@link ServerNetworkManager}.
      *
-     * @param manager back reference to {@link NetworkManager}
-     * @param port target port to listen on
-     * @param clientLoadedEvent callback for client connections
-     * @param gameStartEventHandler callback for when the game starts
+     * @param manager back reference to {@link NetworkManager}.
+     * @param port target port to listen on.
+     * @param clientConnectionAttemptEvent callback for client connection attempts.
+     * @param clientConnectedEvent callback for client connections.
+     * @param clientLoadedEvent callback for clients loaded to game scene.
+     * @param gameStartEventHandler callback for when the game starts.
+     * @param gameEndEventHandler callback for game end event.
      */
     public ServerNetworkManager(
             NetworkManager manager,
@@ -250,6 +275,12 @@ public class ServerNetworkManager {
         mGameEndEventHandler = gameEndEventHandler;
     }
 
+    /**
+     * Start the networked game.
+     *
+     * @param shouldPresent should the server switch the presentation scene to its game scene (only
+     *     applicable if server's scene is the presentation scene).
+     */
     public void start(boolean shouldPresent) {
         if (mGameState == ServerGameState.LOBBY) {
             mGameState = ServerGameState.STARTING;

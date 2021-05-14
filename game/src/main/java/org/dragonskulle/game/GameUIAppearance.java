@@ -134,7 +134,12 @@ public class GameUIAppearance {
         appearance.setOnPressDown(GameUIAppearance::onPressDown);
     }
 
-    /** Inject a sound to every button click. */
+    /**
+     * Inject a sound to every button click.
+     *
+     * @param button button that clicked.
+     * @param deltaTime time delta of frame.
+     */
     private static void onClick(UIButton button, float deltaTime) {
         AudioSource source = getSource();
 
@@ -143,7 +148,12 @@ public class GameUIAppearance {
         }
     }
 
-    /** Inject a sound to every button down press. */
+    /**
+     * Inject a sound to every button down press.
+     *
+     * @param button button that clicked.
+     * @param deltaTime time delta of frame.
+     */
     private static void onPressDown(UIButton button, float deltaTime) {
         AudioSource source = getSource();
 
@@ -152,6 +162,11 @@ public class GameUIAppearance {
         }
     }
 
+    /**
+     * Get the static audio source used.
+     *
+     * @return audio source used for UI sounds.
+     */
     public static AudioSource getSource() {
         Scene activeScene = Scene.getActiveScene();
         if (activeScene == null) return null;

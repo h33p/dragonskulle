@@ -17,10 +17,20 @@ import lombok.experimental.Accessors;
 @Accessors(prefix = "m")
 @EqualsAndHashCode
 public class ResourceArguments<T, F> {
+    /** Type of the resource. */
     private final Class<T> mType;
+    /** Name of the resource. */
     private final String mName;
+    /** Additional arguments for the resource loader. */
     private final F mAdditionalArgs;
 
+    /**
+     * Construct {@link ResourceArguments}.
+     *
+     * @param type type of the data (target loader).
+     * @param name name of the data.
+     * @param additionalArgs additional arguments for the loader.
+     */
     public ResourceArguments(Class<T> type, String name, F additionalArgs) {
         mType = type;
         mName = name;

@@ -79,6 +79,16 @@ public class UIAppearance implements NativeResource {
     @Getter
     private static CursorType sInClickCursor = new CursorType("ui/cursor_inclick.png", 35, 10);
 
+    /**
+     * Set the text font texture.
+     *
+     * <p>It will free the old texture used.
+     *
+     * <p>Note that this method will NOT clone the resource. You must clone it manually before
+     * passing here, to use the texture in multiple places.
+     *
+     * @param textFont new texture to set.
+     */
     public void setTextFont(Resource<Font> textFont) {
         if (mTextFont != null) {
             mTextFont.free();
@@ -86,6 +96,16 @@ public class UIAppearance implements NativeResource {
         mTextFont = textFont;
     }
 
+    /**
+     * Set the button texture.
+     *
+     * <p>It will free the old texture used.
+     *
+     * <p>Note that this method will NOT clone the resource. You must clone it manually before
+     * passing here, to use the texture in multiple places.
+     *
+     * @param buttonTexture new texture to set.
+     */
     public void setButtonTexture(SampledTexture buttonTexture) {
         if (mButtonTexture != null) {
             mButtonTexture.free();
@@ -93,6 +113,16 @@ public class UIAppearance implements NativeResource {
         mButtonTexture = buttonTexture;
     }
 
+    /**
+     * Set the text rect texture.
+     *
+     * <p>It will free the old texture used.
+     *
+     * <p>Note that this method will NOT clone the resource. You must clone it manually before
+     * passing here, to use the texture in multiple places.
+     *
+     * @param textRectTexture new texture to set.
+     */
     public void setTextRect(SampledTexture textRectTexture) {
         if (mTextRectTexture != null) {
             mTextRectTexture.free();
@@ -100,6 +130,16 @@ public class UIAppearance implements NativeResource {
         mTextRectTexture = textRectTexture;
     }
 
+    /**
+     * Set the dropdown icon texture.
+     *
+     * <p>It will free the old texture used.
+     *
+     * <p>Note that this method will NOT clone the resource. You must clone it manually before
+     * passing here, to use the texture in multiple places.
+     *
+     * @param dropDownIconTexture new texture to set.
+     */
     public void setDropDownIconTexture(SampledTexture dropDownIconTexture) {
         if (mDropDownIconTexture != null) {
             mDropDownIconTexture.free();
@@ -107,6 +147,16 @@ public class UIAppearance implements NativeResource {
         mDropDownIconTexture = dropDownIconTexture;
     }
 
+    /**
+     * Set the slider knob texture.
+     *
+     * <p>It will free the old texture used.
+     *
+     * <p>Note that this method will NOT clone the resource. You must clone it manually before
+     * passing here, to use the texture in multiple places.
+     *
+     * @param sliderKnobTexture new texture to set.
+     */
     public void setSliderKnobTexture(SampledTexture sliderKnobTexture) {
         if (mSliderKnobTexture != null) {
             mSliderKnobTexture.free();
@@ -114,6 +164,16 @@ public class UIAppearance implements NativeResource {
         mSliderKnobTexture = sliderKnobTexture;
     }
 
+    /**
+     * Set additional rect textures.
+     *
+     * <p>It will free the old textures used.
+     *
+     * <p>Note that this method will NOT clone the resources. You must clone it manually before
+     * passing here, to use the texture in multiple places.
+     *
+     * @param rectTextures new textures to set.
+     */
     public void setRectTextures(SampledTexture[] rectTextures) {
         if (mRectTextures != null) {
             for (SampledTexture tex : mRectTextures) {

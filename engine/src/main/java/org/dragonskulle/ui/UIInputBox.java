@@ -45,22 +45,44 @@ public class UIInputBox extends UIBuildableComponent implements IOnAwake, IFrame
 
     private Reference<ICharEvent> mOnChar;
 
+    /** Default constructor for the input box. */
     public UIInputBox() {
         this("");
     }
 
+    /**
+     * Constructor for {@link UIInputBox}.
+     *
+     * @param text initial text to set.
+     */
     public UIInputBox(String text) {
         mInitialText = text;
     }
 
+    /**
+     * Get the input of the input box.
+     *
+     * @return current input in the input box.
+     */
     public String getInput() {
         return mText.get().getText();
     }
 
+    /**
+     * Set the current text of the input box.
+     *
+     * @param text new text to set.
+     */
     public void setText(String text) {
         mText.get().setText(text);
     }
 
+    /**
+     * Stop grabbing input when clicked something else.
+     *
+     * @return {@code true} if clicked something else, and should stop grabbing input, {@code false}
+     *     otherwise.
+     */
     private boolean clickedSomethingElse() {
         if (!UIButton.UI_PRESS.isActivated()) {
             return false;
@@ -73,7 +95,6 @@ public class UIInputBox extends UIBuildableComponent implements IOnAwake, IFrame
 
     @Override
     public void frameUpdate(float deltaTime) {
-
         if (!Reference.isValid(mText)) {
             if (Reference.isValid(mButton)) {
                 mText = mButton.get().getLabelText();

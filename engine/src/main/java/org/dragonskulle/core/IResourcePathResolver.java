@@ -9,5 +9,11 @@ package org.dragonskulle.core;
  *     ResourceArguments<T>}, and outputs {@code String} implements it automatically!
  */
 public interface IResourcePathResolver<T, F> {
+    /**
+     * Get the path from arguments.
+     *
+     * @param args arguments of the resource.
+     * @return relative path to the file of the resource.
+     */
     String toPath(ResourceArguments<T, F> args);
 }

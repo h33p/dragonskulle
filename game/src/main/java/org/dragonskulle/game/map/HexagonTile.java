@@ -18,7 +18,6 @@ import org.dragonskulle.core.Reference;
 import org.dragonskulle.core.Resource;
 import org.dragonskulle.game.App;
 import org.dragonskulle.game.building.Building;
-import org.dragonskulle.game.building.TileProp;
 import org.dragonskulle.game.map.HexagonTileStore.TileToStoreActions;
 import org.dragonskulle.game.materials.HighlightControls;
 import org.dragonskulle.game.player.Player;
@@ -27,14 +26,16 @@ import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
 /**
+ * Describes information on individual hexagon map tile.
+ *
  * @author Leela Muppala
+ * @author Aurimas Blažulionis
  *     <p>Creates each HexagonTile with their 3 coordinates. This stores information about the axial
  *     coordinates of each tile.
  */
 @Log
 @Accessors(prefix = "m")
 public class HexagonTile implements INetSerializable {
-    @Setter private TileProp mProp = null;
     static final Resource<GLTF> TEMPLATES = GLTF.getResource("templates");
 
     /** Describes a template for land hex tile. */
@@ -53,10 +54,7 @@ public class HexagonTile implements INetSerializable {
     static final GameObject MOUNTAIN_TILE =
             App.TEMPLATES.get().getDefaultScene().findRootObject("Mountains Hex");
 
-    public boolean hasProp() {
-        return mProp != null;
-    }
-
+    /** Describes the tile type on the map. */
     public static enum TileType {
         LAND((byte) 0),
         WATER((byte) 1),
@@ -67,10 +65,21 @@ public class HexagonTile implements INetSerializable {
 
         private static final TileType[] VALUES = TileType.values();
 
+        /**
+         * Create a {@link TileType}.
+         *
+         * @param value value used to identify the tile.
+         */
         private TileType(byte value) {
             mValue = value;
         }
 
+        /**
+         * Get the tile from byte value.
+         *
+         * @param value value to find.
+         * @return {@link TileType} with the value.
+         */
         public static TileType getTile(byte value) {
             for (TileType t : VALUES) {
                 if (t.mValue == value) {
@@ -88,7 +97,7 @@ public class HexagonTile implements INetSerializable {
     /** The Axial Coordinate in the Q Position. */
     @Getter private final int mQ;
 
-    /** The Axial Coordinate in the R Position */
+    /** The Axial Coordinate in the R . */
     @Getter private final int mR;
 
     @Setter(AccessLevel.PACKAGE)
@@ -111,12 +120,12 @@ public class HexagonTile implements INetSerializable {
     @Getter(AccessLevel.PACKAGE)
     private GameObject mGameObject;
 
-    /** Controls height and fading of the tile */
+    /** Controls height and fading of the tile. */
     private Reference<FadeTile> mFadeControl;
-    /** Controls height and fading of secondary tile surface */
+    /** Controls height and fading of secondary tile surface. */
     private Reference<FadeTile> mSecondaryFade;
 
-    /** Controls highlighting on the tile */
+    /** Controls highlighting on the tile. */
     @Getter(AccessLevel.PACKAGE)
     private Reference<HighlightControls> mHighlightControls;
 
@@ -135,6 +144,7 @@ public class HexagonTile implements INetSerializable {
      *
      * @param q The first coordinate.
      * @param r The second coordinate.
+     * @param height the height of the tile, this decides the {@link TileType}
      * @param handler handler passed by {@link HexagonTileStore} to be called on changes
      */
     HexagonTile(int q, int r, float height, TileToStoreActions handler) {
@@ -166,6 +176,13 @@ public class HexagonTile implements INetSerializable {
         return (int) ((Math.abs(mQ) + Math.abs(mR) + Math.abs(getS())) / 2);
     }
 
+    /**
+     * Get tile distance to particular coordinate.
+     *
+     * @param q Q-axis value.
+     * @param r R-axis value.
+     * @return integer distance from the tile to the given coordinate.
+     */
     public int distTo(int q, int r) {
         int s = -q - r;
 
@@ -325,13 +342,13 @@ public class HexagonTile implements INetSerializable {
         }
 
         if (player == null) {
-            log.warning("player was null so false");
+            log.fine("player was null so false");
             return false;
         }
 
         HexagonMap map = player.getMap();
         if (map == null) {
-            log.warning("Map is null.");
+            log.fine("Map is null.");
             return false;
         }
 
@@ -478,12 +495,18 @@ public class HexagonTile implements INetSerializable {
         }
     }
 
+    /**
+     * Get the surface height of the tile.
+     *
+     * @return surface height of the tile. It might be different from actual height, it is the
+     *     current visual height.
+     */
     public float getSurfaceHeight() {
         return mGameObject.getTransform(TransformHex.class).getHeight();
     }
 
     /**
-     * Update the height of the tile
+     * Update the height of the tile.
      *
      * @param fadeIn whether the tile should fade in, or fade out
      * @param destroyOnFadeOut set to automatically destroy the object if it fades out
@@ -505,7 +528,7 @@ public class HexagonTile implements INetSerializable {
         }
     }
 
-    /** Builds the tile object, and notifies {@link HexagonMap} of this change */
+    /** Builds the tile object, and notifies {@link HexagonMap} of this change. */
     private void buildGameObject() {
         mSecondaryFade = null;
 

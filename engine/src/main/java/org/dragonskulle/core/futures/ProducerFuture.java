@@ -22,6 +22,8 @@ public class ProducerFuture<T> extends Future {
         /**
          * This will be invoked on a new thread inside {@link ProducerFuture}, which will then await
          * for this method to return produced data.
+         *
+         * @return produced value.
          */
         T produce();
     }
@@ -32,6 +34,7 @@ public class ProducerFuture<T> extends Future {
          * This will perform a single action appropriate for a future, after data is produced.
          *
          * @param scene scene from which the future is executed.
+         * @param data data produced inside the producer.
          */
         void invoke(Scene scene, T data);
     }
@@ -41,9 +44,8 @@ public class ProducerFuture<T> extends Future {
     /** Thread used in production. */
     private final Thread mThread;
 
-    @Getter
     /** Produced data of this future. It becomes valid, only when {@code mComplete} is true. */
-    private T mProducedData;
+    @Getter private T mProducedData;
 
     /**
      * Constructor for {@link ProducerFuture}.
@@ -80,6 +82,8 @@ public class ProducerFuture<T> extends Future {
     /**
      * This method will check if production was finished, then invoke the post production interface,
      * alongside scheduling the next future.
+     *
+     * @param scene scene of the context.
      */
     private void forwardCheck(Scene scene) {
         if (mThread.isAlive()) {

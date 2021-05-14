@@ -27,6 +27,8 @@ import org.joml.Vector2fc;
 import org.joml.Vector3f;
 
 /**
+ * Store and synchronize the game map.
+ *
  * @author Leela Muppala and Craig Wilbourne
  *     <p>This class generates and stores a map of tiles with appropriate coordinates. Hexagon map
  *     objects are also created and stored.
@@ -64,13 +66,13 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
     /** The map that is created which is made of a 2d array of HexagonTiles. */
     private HexagonTileStore mTiles;
 
-    /** This will store what the largest landMass is */
+    /** This will store what the largest landMass is. */
     private int[] mLargestLandMass;
 
-    /** This will store what the next land mass number is */
+    /** This will store what the next land mass number is. */
     private int mLandMass = 0;
 
-    /** This will go through all the tiles and find all islands */
+    /** This will go through all the tiles and find all islands. */
     private void checkIslands() {
 
         mLargestLandMass = new int[2];
@@ -87,7 +89,7 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
 
     /**
      * This will use flood fill to find all connected tiles on land from the given {@link
-     * HexagonTile}
+     * HexagonTile}.
      *
      * @param tile The tile to start flooding from
      */
@@ -267,6 +269,11 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
         return Math.max(Math.max(Math.abs(q), Math.abs(r)), Math.abs(s));
     }
 
+    /**
+     * Convert cursor position to the tile it is over.
+     *
+     * @return hexagon tile the mouse cursor is over.
+     */
     public HexagonTile cursorToTile() {
         Camera mainCam = Scene.getActiveScene().getSingleton(Camera.class);
 
@@ -336,6 +343,15 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
         return closestTile;
     }
 
+    /**
+     * How far away the cursor is from the center of a tile.
+     *
+     * @param tile tile to check
+     * @param cam camera to check from.
+     * @param screenPos cursor position on screen.
+     * @param pos output position of the cursor on the tile plane.
+     * @return distance from cursor to tile center.
+     */
     private float cursorDistanceFromCenter(
             HexagonTile tile, Camera cam, Vector2fc screenPos, Vector3f pos) {
         pos =
@@ -380,7 +396,7 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
 
     /**
      * This checks if the given {@link HexagonTile} is an island (An island is defined as a land
-     * mass which is disconnected completely from the largest land mass)
+     * mass which is disconnected completely from the largest land mass).
      *
      * @param tile The {@link HexagonTile} to check if its in an island
      * @return Returns {@code true} if it is an island, {@code false} if not
@@ -422,6 +438,11 @@ public class HexagonMap extends NetworkableComponent implements IOnAwake {
         Scene.getActiveScene().registerSingleton(this);
     }
 
+    /**
+     * Update the visual game object of the tile.
+     *
+     * @param tile hexagon tile to update.
+     */
     void updateTileGameObject(HexagonTile tile) {
         getGameObject().addChild(tile.getGameObject());
     }

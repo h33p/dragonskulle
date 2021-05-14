@@ -64,10 +64,27 @@ public class GLTF implements NativeResource {
         int mCount;
         IGetObj<T> mGetObj;
 
+        /** Get a specific object at byte offset. */
         private static interface IGetObj<T> {
+            /**
+             * Read an object from buffer.
+             *
+             * @param buffer buffer to read from.
+             * @param position position within the buffer where the array starts.
+             * @param index index of the array.
+             * @return read buffer.
+             */
             T get(ByteBuffer buffer, int position, int index);
         }
 
+        /**
+         * Create a glTF accessor.
+         *
+         * @param buffer buffer to wrap.
+         * @param position position within the buffer.
+         * @param count number of elements in the accessor array.
+         * @param getObj interface to read elements of the array.
+         */
         public GLTFAccessor(ByteBuffer buffer, int position, int count, IGetObj<T> getObj) {
             mBuffer = buffer;
             mPosition = position;
@@ -75,6 +92,12 @@ public class GLTF implements NativeResource {
             mGetObj = getObj;
         }
 
+        /**
+         * Access an object at index.
+         *
+         * @param index array index to read.
+         * @return object at a given index.
+         */
         public T get(int index) {
             if (index >= mCount || index < 0) {
                 return null;
@@ -82,6 +105,16 @@ public class GLTF implements NativeResource {
             return mGetObj.get(mBuffer, mPosition, index);
         }
 
+        /**
+         * Get an accessor from a string type.
+         *
+         * @param type string value of the type.
+         * @param componentType type of the components within the type.
+         * @param buffer buffer to read from. Must set its position to the target array start
+         *     position.
+         * @param count number of elements within the accessor.
+         * @return a glTF accessor, if valid type is passed. {@code null} otherwise.
+         */
         public static GLTFAccessor<?> fromStringType(
                 String type, int componentType, ByteBuffer buffer, int count) {
 
@@ -334,9 +367,9 @@ public class GLTF implements NativeResource {
     /**
      * Parses a integer variable from JSON object.
      *
-     * @param obj JSON to parse from
-     * @param key JSON key to read
-     * @param defaultValue default int value
+     * @param obj JSON to parse from.
+     * @param key JSON key to read.
+     * @param defaultValue default int value.
      * @return parsed int value (defaultValue if failed to parse).
      */
     private static int parseInt(JSONObject obj, String key, int defaultValue) {
@@ -350,8 +383,9 @@ public class GLTF implements NativeResource {
     /**
      * Parses a integer point variable from JSON object.
      *
-     * @param obj object to parse from
-     * @return parsed int value or {@code null} if failed parsing
+     * @param obj object to parse from.
+     * @param key JSON key to read.
+     * @return parsed int value or {@code null} if failed parsing.
      */
     private static Integer parseInt(JSONObject obj, String key) {
         Object val = obj.get(key);
@@ -364,8 +398,8 @@ public class GLTF implements NativeResource {
     /**
      * Parses a integer variable from a scalar.
      *
-     * @param obj object to parse from
-     * @return parsed int value, or {@code 0} if failed parsing
+     * @param obj object to parse from.
+     * @return parsed int value, or {@code 0} if failed parsing.
      */
     private static int parseIntFromScalar(Object obj) {
         if (obj instanceof Integer) {
@@ -387,8 +421,8 @@ public class GLTF implements NativeResource {
     /**
      * Constructor for {@link GLTF}.
      *
-     * @param data JSON string data to parse
-     * @throws ParseException when parsing JSON fails
+     * @param data JSON string data to parse.
+     * @throws ParseException when parsing JSON fails.
      */
     private GLTF(String data) throws ParseException {
         JSONObject decoded = (JSONObject) JSONValue.parse(data);
@@ -745,6 +779,13 @@ public class GLTF implements NativeResource {
         loadedImages.stream().filter(e -> e != null).forEach(Resource::free);
     }
 
+    /**
+     * Parse a game object from node.
+     *
+     * @param nodes nodes of objects.
+     * @param idx index within the node array.
+     * @return parsed game object.
+     */
     public GameObject parseNode(JSONArray nodes, int idx) {
         JSONObject node = (JSONObject) nodes.get(idx);
         String name = node.get("name").toString();

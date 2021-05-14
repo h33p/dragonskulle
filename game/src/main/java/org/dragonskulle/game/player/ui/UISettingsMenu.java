@@ -248,6 +248,7 @@ public class UISettingsMenu extends Component implements IOnAwake, IFrameUpdate 
                 mAudioContainer, 0.3f, 0, 1f, titleInfo, muteInfo, volumeInfo, backInfo);
     }
 
+    /** Update the graphics settings. */
     private void updateGraphicsSettings() {
         Renderer rend = Engine.getInstance().getGLFWState().getRenderer();
 

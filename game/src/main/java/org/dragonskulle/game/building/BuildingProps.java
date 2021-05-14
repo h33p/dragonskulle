@@ -33,12 +33,14 @@ public class BuildingProps extends NetworkableComponent
     @Getter @Setter private String mStat = "";
     private StatType mStatType;
 
+    @Override
     public void fixedUpdate(float deltaTime) {
         if (getNetworkObject().isServer()) {
             updateStats();
         }
     }
 
+    /** Update the stats of the building. */
     private void updateStats() {
         if (!Reference.isValid(mBuilding)) {
             if (getNetworkObject().isServer()) {

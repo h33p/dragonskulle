@@ -44,6 +44,12 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.system.NativeResource;
 
+/**
+ * The entry point of the game.
+ *
+ * @author Aurimas Blažulionis
+ *     <p>others add yourself here..
+ */
 @Log
 public class App implements NativeResource {
     private static final Settings mSettings = Settings.getInstance().loadSettings();
@@ -55,8 +61,6 @@ public class App implements NativeResource {
     private static final String BGM_SOUND = GameUIAppearance.AudioFiles.BGM_SOUND.getPath();
 
     public static final Resource<GLTF> TEMPLATES = GLTF.getResource("templates");
-
-    public static final float MENU_BASEWIDTH = 0.2f;
 
     /**
      * Adds the debug overlay, this is enabled by pressing F3.
@@ -471,6 +475,7 @@ public class App implements NativeResource {
         System.exit(0);
     }
 
+    /** Load the Game and Start it!. */
     private void run() {
         // Create the main menu
         Scene mainMenu = createMainMenu();

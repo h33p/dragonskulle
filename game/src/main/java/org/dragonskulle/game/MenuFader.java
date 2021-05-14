@@ -19,14 +19,14 @@ import org.dragonskulle.renderer.components.Renderable;
 import org.dragonskulle.renderer.materials.IColouredMaterial;
 
 /**
- * Fade highlight menu objects!
+ * Fade highlight menu objects.
  *
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
 public class MenuFader extends Component implements IOnAwake, IFrameUpdate {
 
-    @Getter @Setter private float mTotalTime;
+    @Setter private float mTotalTime;
     @Getter @Setter private float mPhaseShift;
     @Getter @Setter private float mAlphaMul = 1f;
     @Getter @Setter private float mFadeSpeed = 1f;
@@ -48,10 +48,21 @@ public class MenuFader extends Component implements IOnAwake, IFrameUpdate {
         }
     }
 
+    /**
+     * Get the total time with phase shift applied.
+     *
+     * @return total time with phase shift offset.
+     */
     public float getTotalTime() {
         return mTotalTime + mPhaseShift * mFadeSpeed;
     }
 
+    /**
+     * Get the total time with sine applied to it.
+     *
+     * @param off offset of total time.
+     * @return the sine time.
+     */
     public float sineTime(float off) {
         return (float) Math.sin(off + getTotalTime() + mFadeSpeed / 2f);
     }

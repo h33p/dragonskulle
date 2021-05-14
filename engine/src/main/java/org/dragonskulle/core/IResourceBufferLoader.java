@@ -9,5 +9,13 @@ package org.dragonskulle.core;
  *     arguments of {@code ResourceArguments<F>}, and outputs {@code T} implements it automatically!
  */
 public interface IResourceBufferLoader<T, F> {
-    T loadFromBuffer(byte[] buffer, ResourceArguments<T, F> args) throws Exception;
+    /**
+     * Load resource from byte buffer.
+     *
+     * @param buffer byte buffer of data.
+     * @param args arguments for the loader.
+     * @return loaded data.
+     * @throws Throwable on any error.
+     */
+    T loadFromBuffer(byte[] buffer, ResourceArguments<T, F> args) throws Throwable;
 }

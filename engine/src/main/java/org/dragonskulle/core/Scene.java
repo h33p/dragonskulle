@@ -23,6 +23,8 @@ public class Scene {
 
     /** Contains a cached list of all components on the scene. */
     private final ArrayList<Component> mComponents = new ArrayList<>();
+    /** Whether mComponents is dirty. */
+    private boolean mComponentListDirty = true;
 
     /** Contains a cached list of all components that need starting on the scene. */
     private final ArrayList<Component> mToStartComponents = new ArrayList<>();
@@ -40,7 +42,7 @@ public class Scene {
     private boolean mEnabledComponentsDirty = false;
 
     /** List of enabled components by specific class types. */
-    private final Map<Class<?>, CompList> mInterfaceComponents = new HashMap<>();
+    private final Map<Class<?>, CompList<?>> mInterfaceComponents = new HashMap<>();
 
     /** Name used to identify the scene. */
     @Getter private final String mName;
@@ -48,29 +50,48 @@ public class Scene {
     /** Registered singletons on the scene. */
     @Getter private final SingletonStore mSingletons = new SingletonStore();
 
-    private boolean mComponentListDirty = true;
-
-    private class CompList {
+    /** Per-class component list. */
+    private class CompList<T> {
+        /** Is this list valid. */
         private boolean mIsValid = false;
-        private final Class<?> mType;
-        private final ArrayList<Object> mList = new ArrayList<>();
+        /** Type contained within the list. */
+        private final Class<T> mType;
+        /** The list itself. */
+        private final ArrayList<T> mList = new ArrayList<>();
 
-        public CompList(Class<?> type) {
+        /**
+         * Create a component list.
+         *
+         * @param type type of the list.
+         */
+        public CompList(Class<T> type) {
             mType = type;
         }
 
+        /**
+         * Clear the component list.
+         *
+         * <p>This method will clear the underlying list, and mark it as invalid.
+         */
         public void clear() {
             mIsValid = false;
             mList.clear();
         }
 
-        public ArrayList<Object> getList() {
+        /**
+         * Get the component list.
+         *
+         * <p>This method will return cached component list, constructing it if needed.
+         *
+         * @return component list for this type of data.
+         */
+        public ArrayList<T> getList() {
             if (!mIsValid) {
                 mList.clear();
 
                 for (Component comp : getEnabledComponents()) {
                     if (mType.isInstance(comp)) {
-                        mList.add(comp);
+                        mList.add(mType.cast(comp));
                     }
                 }
 
@@ -81,6 +102,7 @@ public class Scene {
         }
     }
 
+    /** Currently active scene. */
     @Accessors(prefix = "s")
     @Getter
     @Setter(AccessLevel.PACKAGE)
@@ -90,6 +112,13 @@ public class Scene {
     public static class SceneOverride implements AutoCloseable {
         private final Scene mPrevScene;
 
+        /**
+         * Create a scene override.
+         *
+         * <p>This override will be active until it is closed.
+         *
+         * @param newScene new scene to set as active scene.
+         */
         public SceneOverride(Scene newScene) {
             mPrevScene = sActiveScene;
             sActiveScene = newScene;
@@ -164,7 +193,12 @@ public class Scene {
         dirtyComponentLists();
     }
 
-    /** Moves a root object from one scene to the next. */
+    /**
+     * Moves a root object from one scene to the next.
+     *
+     * @param object object to move.
+     * @param target target scene to move the object to.
+     */
     public void moveRootObjectToScene(GameObject object, Scene target) {
         if (mGameObjects.remove(object)) {
             target.addRootObject(object);
@@ -192,6 +226,7 @@ public class Scene {
     /**
      * Retrieves a singleton for type if there is any.
      *
+     * @param <T> type of the singleton.
      * @param type type to retrieve the reference to
      * @return reference to the singleton. {@code null} if does not exist, or it has been destroyed
      */
@@ -202,6 +237,7 @@ public class Scene {
     /**
      * Retrieves a singleton reference for type if there is any.
      *
+     * @param <T> type of the singleton.
      * @param type type to retrieve the reference to
      * @return reference to the singleton. For invalid entries, it may be null, but may also be a
      *     non-null invalid reference.
@@ -277,6 +313,13 @@ public class Scene {
         return mEnabledComponents;
     }
 
+    /**
+     * Get a component list by their class.
+     *
+     * @param <T> type of the component.
+     * @param type class of type T.
+     * @return {@link ArrayList} with components of a given type.
+     */
     @SuppressWarnings("unchecked")
     protected <T> ArrayList<T> getComponentsByIface(Class<T> type) {
         updateComponentsList();
@@ -305,6 +348,7 @@ public class Scene {
         return mNotAwakeComponents;
     }
 
+    /** Dirty the list of components that need to be started. */
     void dirtyToStartComponents() {
         mToStartComponentsDirty = true;
     }

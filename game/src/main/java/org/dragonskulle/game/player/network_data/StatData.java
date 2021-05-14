@@ -27,6 +27,7 @@ public class StatData implements INetSerializable {
     /** The r coordinate of the desired {@link Building}. */
     private int mR;
 
+    /** Constructor. */
     public StatData() {}
 
     /**
@@ -39,12 +40,24 @@ public class StatData implements INetSerializable {
         setData(building, statType);
     }
 
+    /**
+     * Sets the event data that is needed to perform the request.
+     *
+     * @param building the building to update
+     * @param statType the stat type which is being upgraded
+     */
     public void setData(Building building, StatType statType) {
         mQ = building.getTile().getQ();
         mR = building.getTile().getR();
         mStatTypeID = statType.getID();
     }
 
+    /**
+     * Sets the event data that is needed to perform the request.
+     *
+     * @param building the building to update
+     * @param stat the stat being upgraded
+     */
     public void setData(Building building, SyncStat stat) {
         setData(building, stat.getType());
     }

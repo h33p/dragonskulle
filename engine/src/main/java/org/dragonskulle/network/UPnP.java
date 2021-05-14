@@ -125,7 +125,7 @@ public class UPnP {
     }
 
     /**
-     * Get the external IP address for the current network
+     * Get the external IP address for the current network.
      *
      * @return A string containing the IPv4 address of the network, or null if unable to
      */
@@ -247,7 +247,7 @@ public class UPnP {
         return out == null;
     }
 
-    /** Delete all port mappings that were added at runtime */
+    /** Delete all port mappings that were added at runtime. */
     public static void deleteAllMappings() {
         if (!sInitialised) {
             return;

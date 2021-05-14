@@ -54,11 +54,18 @@ public class NetworkClient {
 
     private final ConcurrentLinkedQueue<byte[]> mGameRequests = new ConcurrentLinkedQueue<>();
 
+    /** List of delayed networked requests, used when simulated latency is active. */
     private final ConcurrentLinkedQueue<TimestampedRequest> mDelayedRequests =
             new ConcurrentLinkedQueue<>();
 
+    /** Simulated network latency. */
     @Getter @Setter private float mSimLatency = 0f;
 
+    /**
+     * Get the output data stream for sending messages.
+     *
+     * @return wrapped output stream that will append message length on close.
+     */
     public DataOutputStream getDataOut() {
         return new NetworkMessageStream(mDataOut);
     }
@@ -149,12 +156,17 @@ public class NetworkClient {
     /**
      * Is connected boolean.
      *
-     * @return the boolean
+     * @return whether the client is connected to the server.
      */
     public boolean isConnected() {
         return mOpen;
     }
 
+    /**
+     * Queue a network request to appropriate queue.
+     *
+     * @param bytes data of the request.
+     */
     private void queueRequest(byte[] bytes) {
         if (bytes[0] == NetworkConfig.Codes.MESSAGE_UPDATE_STATE
                 || bytes[0] == NetworkConfig.Codes.MESSAGE_HOST_STARTED) {
@@ -164,6 +176,7 @@ public class NetworkClient {
         }
     }
 
+    /** Queue any delayed requests that have built up. */
     private void queueDelayedRequests() {
         TimestampedRequest r;
         float time = Time.getTimeInSeconds() - mSimLatency;
@@ -237,10 +250,29 @@ public class NetworkClient {
         }
     }
 
+    /**
+     * Process all game requests.
+     *
+     * @return number of game requests processed.
+     */
+    public int processGameRequests() {
+        return processRequests(mGameRequests);
+    }
+
+    /**
+     * Process all network requests.
+     *
+     * @return number of requests processed.
+     */
     public int processAllRequests() {
         return processRequests() + processGameRequests();
     }
 
+    /**
+     * Process all regular requests.
+     *
+     * @return number of regular requests processed.
+     */
     public int processRequests() {
 
         queueDelayedRequests();
@@ -248,11 +280,12 @@ public class NetworkClient {
         return processRequests(mRequests);
     }
 
-    public int processGameRequests() {
-        return processRequests(mGameRequests);
-    }
-
-    /** Processes all requests. */
+    /**
+     * Processes requests.
+     *
+     * @param requests the request queue to process.
+     * @return number of requests processed.
+     */
     private int processRequests(ConcurrentLinkedQueue<byte[]> requests) {
 
         if (mDidDispose.get()) {
@@ -286,6 +319,7 @@ public class NetworkClient {
      *
      * @param stream stream to read the message from
      * @return the byteCode of the message processed.
+     * @throws IOException if there is a message parsing or processing error.
      */
     private byte processMessage(DataInputStream stream) throws IOException {
         byte messageType = stream.readByte();

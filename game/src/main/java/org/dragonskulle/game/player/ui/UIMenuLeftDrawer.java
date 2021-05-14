@@ -64,6 +64,11 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
     private Reference<UIButton> mSellOption;
     private Reference<UIButton> mSellButton;
 
+    /**
+     * Hides the menu drawer.
+     *
+     * @param hide true if the drawer should hide, false if it should show
+     */
     public void setHidden(boolean hide) {
         if (hide && mIsHidden) return;
         if (!hide && !mIsHidden) return;
@@ -144,6 +149,11 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
 
     /** Set the predefined building used on the parent. */
     public interface ISetPredefinedBuildingChosen {
+        /**
+         * Set the predefined building.
+         *
+         * @param descriptor the descriptor
+         */
         void setPredefinedBuilding(BuildingDescriptor descriptor);
     }
 
@@ -156,6 +166,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
      * @param setHexChosen the set hex chosen callback
      * @param notifyScreenChange the notify screen change callback
      * @param getPlayer the get player callback
+     * @param setPredefinedBuildingChosen the set predefined building callback
      */
     public UIMenuLeftDrawer(
             IGetBuildingChosen getBuildingChosen,
@@ -219,6 +230,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         getGameObject().addComponent(drawer);
     }
 
+    /** Generate the attack menu components and store the menu in {@link #mAttackScreenMenu}. */
     private void generateAttackMenu() {
         ArrayList<UITextButtonFrame> items = new ArrayList<>();
 
@@ -280,6 +292,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         menu.addChild(attackConfirmObject);
     }
 
+    /** Generate the sell menu components and store the menu in {@link #mSellConfirmScreenMenu}. */
     private void generateSellMenu() {
         ArrayList<UITextButtonFrame> items = new ArrayList<>();
 
@@ -295,6 +308,10 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         mSellButton = children.get(0).getComponent(UIButton.class);
     }
 
+    /**
+     * Generate the building selected menu components and store the menu in {@link
+     * #mBuildScreenMenu}.
+     */
     private void generateBuildingSelectedMenu() {
         ArrayList<UITextButtonFrame> items = new ArrayList<>();
 
@@ -384,7 +401,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
     public void setVisibleScreen(Screen screen) {
         Reference<GameObject> newScreen = new Reference<>(null);
         if (screen != getLastScreen()) {
-            log.warning("setting visible screen to " + screen.toString());
+            log.fine("setting visible screen to " + screen.toString());
             switch (screen) {
                 case DEFAULT_SCREEN:
                     newScreen = null;
@@ -421,7 +438,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
                     setShopState(ShopState.BUILDING_NEW);
                     break;
                 default:
-                    log.warning("Menu hasn't been updated to reflect this screen yet");
+                    log.fine("Menu hasn't been updated to reflect this screen yet");
                     newScreen = null;
                     setShopState(ShopState.CLOSED);
             }
@@ -560,6 +577,12 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         return menu.getReference();
     }
 
+    /**
+     * Build a menu of {@link UITextButtonFrame} components.
+     *
+     * @param mButtonChildren the menu children
+     * @return the reference to the built menu
+     */
     private Reference<GameObject> buildMenu(List<UITextButtonFrame> mButtonChildren) {
         return buildMenu(mButtonChildren, 0f);
     }
@@ -602,6 +625,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         }
     }
 
+    /** Display is selling the building is possible. */
     private void updateSellOptionButton() {
 
         if (mLastScreen != Screen.BUILDING_SELECTED_SCREEN) return;
@@ -624,6 +648,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         }
     }
 
+    /** Display if an attack is possible. */
     private void updateAttackOptionButton() {
 
         if (mLastScreen != Screen.BUILDING_SELECTED_SCREEN) return;
@@ -657,6 +682,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         }
     }
 
+    /** Display the cost. */
     private void updateAttackCostText() {
         if (mLastScreen != Screen.ATTACKING_SCREEN) return;
 
@@ -705,6 +731,7 @@ public class UIMenuLeftDrawer extends Component implements IOnStart, IFixedUpdat
         text.get().setText(TextUtils.constructField("Chance", output, 15));
     }
 
+    /** Display if the player can attack or is in a cooldown. */
     private void updateAttackConfirmText() {
         if (mLastScreen != Screen.ATTACKING_SCREEN) return;
 

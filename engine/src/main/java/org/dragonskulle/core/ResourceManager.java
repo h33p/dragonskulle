@@ -50,6 +50,12 @@ public class ResourceManager {
         private int mRefcount;
         private boolean mLinked;
 
+        /**
+         * Create a counted resource.
+         *
+         * @param args original arguments for the resource.
+         * @param resource loaded resource itself.
+         */
         CountedResource(ResourceArguments<T, ?> args, T resource) {
             this.mArgs = args;
             this.mResource = resource;
@@ -81,6 +87,7 @@ public class ResourceManager {
         /**
          * Increase reference count, and return a Resource instance.
          *
+         * @param <F> target cast type of the resource.
          * @param type class of the type. Should really be {@code Class<T>}.
          * @return a resource with reference to underlying resource.
          */
@@ -133,6 +140,12 @@ public class ResourceManager {
         private final IResourcePathResolver<T, F> mPathResolver;
         private final IResourceBufferLoader<T, F> mBufferLoader;
 
+        /**
+         * Create a {@link CompositeResourceLoader}.
+         *
+         * @param pathResolver path resolver part of the loader.
+         * @param bufferLoader loading part of the loader.
+         */
         CompositeResourceLoader(
                 IResourcePathResolver<T, F> pathResolver,
                 IResourceBufferLoader<T, F> bufferLoader) {
@@ -140,11 +153,13 @@ public class ResourceManager {
             mBufferLoader = bufferLoader;
         }
 
+        @Override
         public String toPath(ResourceArguments<T, F> args) {
             return mPathResolver.toPath(args);
         }
 
-        public T loadFromBuffer(byte[] buffer, ResourceArguments<T, F> args) throws Exception {
+        @Override
+        public T loadFromBuffer(byte[] buffer, ResourceArguments<T, F> args) throws Throwable {
             return mBufferLoader.loadFromBuffer(buffer, args);
         }
     }
@@ -152,6 +167,8 @@ public class ResourceManager {
     /**
      * Register a resource loader in a composite way.
      *
+     * @param <T> type of the resource.
+     * @param <F> type of the resource arguments.
      * @param type type of the resource
      * @param pathResolver implementation (lambda) of path resolving
      * @param bufferLoader implementation (lambda) of resource loading
@@ -169,6 +186,8 @@ public class ResourceManager {
      * <p>This method is purely for convenience to allow to easily specify the {@code F} type, but
      * does exactly the same as the above method.
      *
+     * @param <T> type of the resource.
+     * @param <F> type of the resource arguments.
      * @param type type of the resource
      * @param argType type of the argument
      * @param pathResolver implementation (lambda) of path resolving
@@ -185,6 +204,8 @@ public class ResourceManager {
     /**
      * Register a resource loader.
      *
+     * @param <T> type of the resource.
+     * @param <F> type of the resource arguments.
      * @param type type of the resource
      * @param loader loader for the resource
      */
@@ -198,6 +219,8 @@ public class ResourceManager {
      * <p>This method returns a resource, cached, or newly loaded from `loader`, if nothing was
      * cached.
      *
+     * @param <T> type of the resource.
+     * @param <F> type of the resource arguments.
      * @param arguments arguments used for loading
      * @return loaded resource object, if it succeeded to load, {@code null} otherwise. In addition,
      *     {@code null} is returned if the object type does not match the input name
@@ -218,6 +241,8 @@ public class ResourceManager {
      * <p>This method returns a resource, cached, or newly loaded from `loader`, if nothing was
      * cached.
      *
+     * @param <T> type of the resource.
+     * @param <F> type of the resource arguments.
      * @param type class of {@code T}. Usually {@code T.class}.
      * @param name name of the resource to load
      * @param additionalArgs additional arguments to load with
@@ -234,6 +259,7 @@ public class ResourceManager {
      * <p>This method returns a resource, cached, or newly loaded from `loader`, if nothing was
      * cached.
      *
+     * @param <T> type of the resource.
      * @param type class of {@code T}. Usually {@code T.class}.
      * @param name name of the resource to load.
      * @return loaded resource object, if it succeeded to load, {@code null} otherwise. In addition,
@@ -276,6 +302,8 @@ public class ResourceManager {
      *
      * <p>This method loads a resource from file, and simply returns it. No caching occurs.
      *
+     * @param <T> type of the resource.
+     * @param <F> type of the resource arguments.
      * @param arguments arguments to load the resource with, including class, name, and custom args.
      * @return loaded object object, or {@code null}, if there was an error.
      */
@@ -303,6 +331,11 @@ public class ResourceManager {
      * Loads and caches a resource.
      *
      * <p>This method simply loads a resource, and caches it in the internal map
+     *
+     * @param <T> type of the resource.
+     * @param <F> type of the resource arguments.
+     * @param arguments resource arguments.
+     * @return loaded resource with increased reference count, or {@code null}, if loading fails.
      */
     private static <T, F> Resource<T> loadAndCacheResource(ResourceArguments<T, F> arguments) {
         T ret = loadResource(arguments);
@@ -314,7 +347,12 @@ public class ResourceManager {
         return inst.incRefCount(arguments.getType());
     }
 
-    /** Essentially Java 9 readAllBytes. */
+    /**
+     * Essentially Java 9 readAllBytes.
+     *
+     * @param stream stream to read the bytes from.
+     * @return all bytes of the stream.
+     */
     private static byte[] readAllBytes(InputStream stream) throws Exception {
         List<byte[]> chunks = new ArrayList<byte[]>();
         int n = 0;

@@ -23,6 +23,12 @@ public class ProbabilisticAiPlayer extends AiPlayer {
 
     /** Used to run events for building and attacking. */
     public interface IRunBuildingEvent {
+        /**
+         * This will run the event to do.
+         *
+         * @param building The {@link Building} to use
+         * @return {@code true} if it is invoked otherwise {@code false}
+         */
         public boolean runEvent(Building building);
     }
 
@@ -242,8 +248,9 @@ public class ProbabilisticAiPlayer extends AiPlayer {
     protected boolean tryToAttack(Building attacker) {
 
         // Ensure the player can afford to attack.
-        if (attacker == null || attacker.getAttackCost() > getPlayer().getTokens().get())
+        if (attacker == null || attacker.getAttackCost() > getPlayer().getTokens().get()) {
             return false;
+        }
 
         Building defender = attacker.getRandomAttackableBuilding();
         if (defender == null) return false;

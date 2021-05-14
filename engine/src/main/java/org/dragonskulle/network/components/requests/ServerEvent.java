@@ -81,20 +81,6 @@ public class ServerEvent<T extends INetSerializable> {
     }
 
     /**
-     * The interface for settings the values in an server invokation.
-     *
-     * @param <T> the type parameter for the Invoke type
-     */
-    public static interface IInvokationSetter<T extends INetSerializable> {
-        /**
-         * Runs the invokation setter.
-         *
-         * @param data the data
-         */
-        void setValues(T data);
-    }
-
-    /**
      * Defines a server event to be executed on the clients.
      *
      * @param defaultValue the template of the event e.g {@code TestAttackData}

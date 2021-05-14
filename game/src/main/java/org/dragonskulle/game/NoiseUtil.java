@@ -6,13 +6,15 @@ import com.flowpowered.noise.NoiseQuality;
 import lombok.experimental.Accessors;
 
 /**
+ * Generate noise with octaves.
+ *
  * @author Aurimas Blažulionis
  *     <p>This class allows to conveniently generate noise using input octaves
  */
 @Accessors(prefix = "m")
 public class NoiseUtil {
     /**
-     * Get noise height
+     * Get noise height.
      *
      * @param q first coordinate axis
      * @param r second coordinate axis

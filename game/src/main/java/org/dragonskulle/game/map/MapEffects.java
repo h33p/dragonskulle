@@ -21,6 +21,8 @@ import org.joml.Vector4f;
 import org.joml.Vector4fc;
 
 /**
+ * Client sided highlight effects on the map tiles.
+ *
  * @author Aurimas Blažulionis
  *     <p>This component provides client sided effects for the map, such as selecting tiles, marking
  *     valid, and invalid tiles, and so on.
@@ -30,21 +32,18 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
 
     /** Describes tile highlight option. */
     public static enum StandardHighlightType {
-        VALID(0),
-        INVALID(1),
-        PLAIN(2),
-        ATTACK(3),
-        SELECT(4),
-        SELECT_INVALID(5);
+        VALID,
+        INVALID,
+        PLAIN,
+        ATTACK,
+        SELECT,
+        SELECT_INVALID;
 
-        @Accessors(prefix = "m")
-        @Getter
-        private final int mValue;
-
-        StandardHighlightType(int type) {
-            this.mValue = type;
-        }
-
+        /**
+         * Convert {@link StandardHighlightType} to colour selection.
+         *
+         * @return selection colour of this tile.
+         */
         public Vector4fc asSelection() {
             switch (this) {
                 case VALID:
@@ -65,7 +64,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
         }
     }
 
-    /** Class controlling pulsating highlighting */
+    /** Class controlling pulsating highlighting. */
     private static class PulseHighlight {
         private Vector4fc mTargetColour;
         private final Vector4f mOut = new Vector4f(0f);
@@ -130,11 +129,24 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
 
     /** A simple interface that gets called to overlay. */
     public static interface IHighlightOverlay {
+        /**
+         * Handle highlight overlay.
+         *
+         * @param effects effects instance on which overlay can be added.
+         */
         public void onOverlay(MapEffects effects);
     }
 
     /** A simple tile highlight selection interface. */
     public static interface IHighlightSelector {
+        /**
+         * Handle tile selection.
+         *
+         * @param tile tile to highlight.
+         * @param currentSelection current highlight colour.
+         * @return new highlight colour. Use {@code null}, or {@code currentSelection} to not change
+         *     highlight.
+         */
         public Vector4fc handleTile(HexagonTile tile, Vector4fc currentSelection);
     }
 
@@ -149,6 +161,7 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
             highlightSelectionFromColour(0.9f, 0.1f, 0.7f);
     public static final Vector4fc CLEARED_MATERIAL = new Vector4f(0f);
 
+    /** Internal reference to the hexagon map. */
     private Reference<HexagonMap> mMapReference = null;
 
     /** Turn on to enable default highlighting (territory bounds). */
@@ -156,8 +169,10 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
     /** This interface gets called to allow overlaying any selections on top. */
     @Getter @Setter private IHighlightOverlay mHighlightOverlay = null;
 
+    /** List of active pulse highlight on each tile. */
     private final Map<HexagonTile, PulseHighlight> mPulseHighlights = new HashMap<>();
 
+    /** Active player used for fog highlights. */
     @Getter @Setter private Reference<Player> mActivePlayer;
 
     /**
@@ -389,6 +404,11 @@ public class MapEffects extends Component implements IOnStart, ILateFrameUpdate 
         unhighlightAllTiles();
     }
 
+    /**
+     * Ensure the map reference is valid, and try to update if it's not.
+     *
+     * @return {@code true} if the hexagon map reference is valid, {@code false} if it's not.
+     */
     private boolean ensureMapReference() {
         if (Reference.isValid(mMapReference)) {
             return true;

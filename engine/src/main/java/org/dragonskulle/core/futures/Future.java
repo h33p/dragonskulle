@@ -36,10 +36,16 @@ public class Future {
     /** Stores whether the future is completed or not. */
     protected boolean mComplete;
 
+    /**
+     * Create a future.
+     *
+     * @param root root of this future chain. {@code null} to set this as root.
+     */
     public Future(Future root) {
         mRoot = root == null ? this : root;
     }
 
+    /** Create a future. */
     public Future() {
         this(null);
     }
@@ -157,6 +163,7 @@ public class Future {
      * <p>This future will produce data on separate thread, and then invoke a post production
      * interface on the main thread.
      *
+     * @param <T> type of data to produce.
      * @param dataProducer data to produce.
      * @param postProduction post production action to invoke.
      * @return the newly constructed {@link ProducerFuture}.

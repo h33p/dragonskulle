@@ -15,6 +15,8 @@ import org.dragonskulle.network.components.NetworkManager;
 import org.joml.Vector3f;
 
 /**
+ * Add depth to the fog tiles.
+ *
  * @author Aurimas Blažulionis
  *     <p>This component adds a sense of depth to the fog tiles when they are further away from the
  *     player

@@ -7,7 +7,6 @@ import lombok.experimental.Accessors;
 import org.dragonskulle.components.IOnAwake;
 import org.dragonskulle.core.Reference;
 import org.dragonskulle.renderer.SampledTexture;
-import org.dragonskulle.ui.UIManager.IUIBuildHandler;
 import org.dragonskulle.ui.UIManager.UIBuildableComponent;
 import org.joml.Vector4f;
 import org.joml.Vector4fc;
@@ -18,19 +17,28 @@ import org.joml.Vector4fc;
  * @author Aurimas Blažulionis
  */
 @Accessors(prefix = "m")
-public class UITextRect extends UIBuildableComponent implements IOnAwake, IUIBuildHandler {
+public class UITextRect extends UIBuildableComponent implements IOnAwake {
+    /** Underlying box renderable. */
     @Getter protected Reference<UIRenderable> mRenderable;
+
+    /** UI material used by this box. */
     protected UIMaterial mMaterial;
 
+    /** Texture used by the text box. */
     @Getter @Setter protected SampledTexture mRectTexture = null;
 
+    /** Instance of {@link UIAppearance} to style this text. */
     @Getter @Setter protected UIAppearance mAppearance = UIManager.getInstance().getAppearance();
 
+    /** Colour of the box to set on awake. */
     @Getter protected final Vector4f mColour = new Vector4f(1f);
 
+    /** Text component to add. */
     private UIText mLabelTextComp;
+    /** Added text component instance. */
     @Getter private Reference<UIText> mLabelText;
 
+    /** Icon to add on the side. */
     @Getter @Setter SampledTexture mIcon;
 
     /**
@@ -39,38 +47,86 @@ public class UITextRect extends UIBuildableComponent implements IOnAwake, IUIBui
      */
     @Getter @Setter Float mOverrideAspectRatio = null;
 
+    /** Default constructor for {@link UITextRect}. */
     public UITextRect() {
         mLabelTextComp = new UIText();
     }
 
+    /**
+     * Constructor for {@link UITextRect}.
+     *
+     * @param label custom label text to apply.
+     */
     public UITextRect(UIText label) {
         mLabelTextComp = label;
     }
 
+    /**
+     * Constructor for {@link UITextRect}.
+     *
+     * @param label custom label text string to apply.
+     */
     public UITextRect(String label) {
         mLabelTextComp = new UIText(label);
     }
 
+    /**
+     * Constructor for {@link UITextRect}.
+     *
+     * @param label custom label text string to apply.
+     * @param labelColour colour of the text to set.
+     */
     public UITextRect(String label, Vector4fc labelColour) {
         mLabelTextComp = new UIText(labelColour, label);
     }
 
+    /**
+     * Constructor for {@link UITextRect}.
+     *
+     * @param label custom label text string to apply.
+     * @param labelColour colour of the text to set.
+     * @param colour colour of the text box to set.
+     */
     public UITextRect(String label, Vector4fc labelColour, Vector4fc colour) {
         this(label, labelColour);
         mColour.set(colour);
     }
 
+    /**
+     * Constructor for {@link UITextRect}.
+     *
+     * @param label custom label text string to apply.
+     * @param labelColour colour of the text to set.
+     * @param colour colour of the text box to set.
+     * @param overrideAspect overriden aspect ratio. Set to 0 to have no override.
+     */
     public UITextRect(String label, Vector4fc labelColour, Vector4fc colour, float overrideAspect) {
         this(label, labelColour, colour);
         mOverrideAspectRatio = overrideAspect;
     }
 
+    /**
+     * Constructor for {@link UITextRect}.
+     *
+     * @param label custom label text string to apply.
+     * @param overrideAspect overriden aspect ratio. Set to 0 to have no override.
+     * @param rectTexture custom rectangle texture to apply.
+     */
     public UITextRect(String label, float overrideAspect, SampledTexture rectTexture) {
         this(label);
         mOverrideAspectRatio = overrideAspect;
         mRectTexture = rectTexture;
     }
 
+    /**
+     * Constructor for {@link UITextRect}.
+     *
+     * @param label custom label text string to apply.
+     * @param labelColour colour of the text to set.
+     * @param colour colour of the text box to set.
+     * @param overrideAspect overriden aspect ratio. Set to 0 to have no override.
+     * @param rectTexture custom rectangle texture to apply.
+     */
     public UITextRect(
             String label,
             Vector4fc labelColour,

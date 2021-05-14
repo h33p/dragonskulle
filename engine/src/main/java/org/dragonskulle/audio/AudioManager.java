@@ -330,6 +330,11 @@ public class AudioManager {
         setMasterMute(mMasterMuted);
     }
 
+    /**
+     * Set the master mute value.
+     *
+     * @param muted New value of master mute.
+     */
     public void setMasterMute(boolean muted) {
         if (muted) {
             mMasterMuted = true;
@@ -341,6 +346,7 @@ public class AudioManager {
         Settings.getInstance().saveValue(SETTINGS_MUTE_STRING, muted, true);
     }
 
+    /** Toggles the master mute. */
     public void toggleMasterMute() {
         setMasterMute(!mMasterMuted);
     }

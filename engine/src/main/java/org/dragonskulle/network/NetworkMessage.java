@@ -4,7 +4,12 @@ package org.dragonskulle.network;
 import java.util.Collection;
 import java.util.List;
 
-/** @author Oscar L */
+/**
+ * Contains utilities for network message processing.
+ *
+ * @author Oscar L
+ * @author Aurimas Blažulionis
+ */
 public class NetworkMessage {
     /**
      * Converts an Array of Bytes to a byte array.
@@ -22,7 +27,7 @@ public class NetworkMessage {
     }
 
     /**
-     * Calculates how many bytes input booleans use
+     * Calculates how many bytes input booleans use.
      *
      * @param boolCount number of booleans that are to be packed together
      * @return how many bytes this mask would take

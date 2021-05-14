@@ -154,6 +154,7 @@ public class ServerClient {
         mThread.start();
     }
 
+    /** Queue any delayed requests that have built up. */
     private void queueDelayedRequests() {
         TimestampedRequest r;
         float time = Time.getTimeInSeconds() - mSimLatency;

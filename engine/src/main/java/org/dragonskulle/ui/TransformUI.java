@@ -49,35 +49,59 @@ public class TransformUI extends Transform {
     /** Scale of the transform, propagated to child transforms. */
     private final Vector2f mScale = new Vector2f(1f);
 
+    /** Intermediate local corners. */
     private final Vector4f mLocalCorners = new Vector4f(0f);
+    /** Intermediate scaled local corners. */
     private final Vector4f mScaledLocalCorners = new Vector4f(0f);
 
+    /** Intermediate parent local corners. */
     private final Vector4f mParentCorners = new Vector4f(0f);
+    /** Intermediate parent pivot point. */
     private final Vector2f mParentPivotPoint = new Vector2f();
 
+    /** Rotation of the UI element. */
     private float mRotation = 0f;
 
     /** Whether or not we should clip children that are out of bounds. */
     // TODO: Actually somehow implement this
     @Getter @Setter private boolean mClipChildren = false;
 
+    /** Intermediate corner matrix. */
+    private Matrix4f mCornerMatrix = new Matrix4f();
+    /** Intermediate local corner matrix. */
+    private Matrix4f mLocalCornersMatrix = new Matrix4f();
+    /** Intermediate screen-scaled corner matrix. */
+    private Matrix4f mScreenCornerMatrix = new Matrix4f();
+
+    /** Pivot point. */
+    private final Vector2f mPivotPoint = new Vector2f();
+
+    /** Intermediate box matrix. */
+    private Matrix4f mBoxMatrix = new Matrix4f();
+
+    /** Current screen aspect ratio. */
+    private float mScreenAspectRatio = 1f;
+
+    /**
+     * Create a {@link TransformUI}.
+     *
+     * @param maintainAspect whether or not should maintain aspect ratio.
+     */
     public TransformUI(boolean maintainAspect) {
         super();
         mMaintainAspect = maintainAspect;
     }
 
+    /**
+     * Default constructor for {@link TransformUI}.
+     *
+     * <p>This transform will not maintain aspect ratio.
+     */
     public TransformUI() {
         this(false);
     }
 
-    public TransformUI(float width, float height, boolean scaleToScreen) {
-        this(scaleToScreen);
-    }
-
-    public TransformUI(float width, float height) {
-        this(width, height, false);
-    }
-
+    /** Update the parent transform corners. */
     private void updateParentCorners() {
         Transform parentGen = getGameObject().getParentTransform();
 
@@ -100,6 +124,7 @@ public class TransformUI extends Transform {
         mParentPivotPoint.mul(width, height);
     }
 
+    /** Update the local corners. */
     private void updateLocalCorners() {
         // Update local corners
         mLocalCorners.set(mParentAnchor);
@@ -149,16 +174,12 @@ public class TransformUI extends Transform {
                 MathUtils.lerp(mScaledLocalCorners.y(), mScaledLocalCorners.w(), mPivotOffset.y()));
     }
 
-    private Matrix4f mCornerMatrix = new Matrix4f();
-    private Matrix4f mLocalCornersMatrix = new Matrix4f();
-    private Matrix4f mScreenCornerMatrix = new Matrix4f();
-
-    private final Vector2f mPivotPoint = new Vector2f();
-
-    private Matrix4f mBoxMatrix = new Matrix4f();
-
-    private float mScreenAspectRatio = 1f;
-
+    /**
+     * Get the corners to world matrix.
+     *
+     * @return constant corners to world matrix. It will be valid until this or parent
+     *     transformation changes.
+     */
     public Matrix4fc cornersToWorld() {
         mCornerMatrix.identity().set(getMatrixForChildren());
 
@@ -241,6 +262,13 @@ public class TransformUI extends Transform {
         return mBoxMatrix;
     }
 
+    /**
+     * Set the target aspect ratio for the transform.
+     *
+     * <p>This will only take effect if mMaintainAspect is set to true.
+     *
+     * @param targetAspectRatio target aspect ratio to set.
+     */
     public void setTargetAspectRatio(float targetAspectRatio) {
         mTargetAspectRatio = targetAspectRatio;
         setUpdateFlag();
@@ -271,6 +299,12 @@ public class TransformUI extends Transform {
         setUpdateFlag();
     }
 
+    /**
+     * Get the local corners vector.
+     *
+     * @return local corners. This vector will be valid until this, or parent transformation
+     *     changes.
+     */
     public Vector4fc getLocalCorners() {
         if (mShouldUpdate) {
             updateLocalCorners();
@@ -287,6 +321,11 @@ public class TransformUI extends Transform {
         return mParentAnchor;
     }
 
+    /**
+     * Get scaled local corners.
+     *
+     * @return scaled local corners.
+     */
     public Vector4fc getScaledLocalCorners() {
         if (mShouldUpdate) {
             updateLocalCorners();
@@ -294,82 +333,173 @@ public class TransformUI extends Transform {
         return mScaledLocalCorners;
     }
 
+    /**
+     * Scale the transform by a factor.
+     *
+     * @param scale scaling factor to apply.
+     */
     public void scale(float scale) {
         mScale.mul(scale);
         setUpdateFlag();
     }
 
+    /**
+     * Scale the transform by a factor.
+     *
+     * @param x X-axis scaling factor to apply.
+     * @param y Y-axis scaling factor to apply.
+     */
     public void scale(float x, float y) {
         mScale.mul(x, y);
         setUpdateFlag();
     }
 
+    /**
+     * Set the scale of the transform.
+     *
+     * @param scale scaling factor to set.
+     */
     public void setScale(float scale) {
         mScale.set(scale);
         setUpdateFlag();
     }
 
+    /**
+     * Set the scale of the transform.
+     *
+     * @param x X-axis scaling factor to set.
+     * @param y Y-axis scaling factor to set.
+     */
     public void setScale(float x, float y) {
         mScale.set(x, y);
         setUpdateFlag();
     }
 
+    /**
+     * Get the pivot offset of the transform.
+     *
+     * @return pivot offset.
+     */
     public Vector2fc getPivotOffset() {
         return mPivotOffset;
     }
 
-    /** Set the pivot offset. */
+    /**
+     * Set the pivot offset.
+     *
+     * @param x X-axis pivot offset.
+     * @param y Y-axis pivot offset.
+     */
     public void setPivotOffset(float x, float y) {
         mPivotOffset.set(x, y);
         setUpdateFlag();
     }
 
-    /** Set parent anchor position. */
+    /**
+     * Set parent anchor position.
+     *
+     * @param offset inwards offset for all corners.
+     */
     public void setParentAnchor(float offset) {
         mParentAnchor.set(offset, offset, 1f - offset, 1f - offset);
         setUpdateFlag();
     }
 
+    /**
+     * Set parent anchor position.
+     *
+     * @param x inwards offset for vertical edges.
+     * @param y inwards offset for horizontal edges.
+     */
     public void setParentAnchor(float x, float y) {
         mParentAnchor.set(x, y, 1f - x, 1f - y);
         setUpdateFlag();
     }
 
+    /**
+     * Set parent anchor position.
+     *
+     * @param x absolute anchor offset for the left edge.
+     * @param y absolute anchor offset for the top edge.
+     * @param z absolute anchor for the right edge.
+     * @param w absolute anchor for the bottom edge.
+     */
     public void setParentAnchor(float x, float y, float z, float w) {
         mParentAnchor.set(x, y, z, w);
         setUpdateFlag();
     }
 
+    /**
+     * Set the UI margin.
+     *
+     * @param margin inwards margin to set.
+     */
     public void setMargin(float margin) {
         mMargin.set(margin, margin, -margin, -margin);
         setUpdateFlag();
     }
 
+    /**
+     * Set the UI margin.
+     *
+     * @param x inwards margin to set on vertical edges.
+     * @param y inwards margin to set on horizontal edges.
+     */
     public void setMargin(float x, float y) {
         mMargin.set(x, y, -x, -y);
         setUpdateFlag();
     }
 
+    /**
+     * Set the UI margin.
+     *
+     * @param x inwards margin to set on vertical edges.
+     * @param y inwards margin to set on horizontal edges.
+     * @param z outwards margin to set on vertical edges.
+     * @param w outwards margin to set on horizontal edges.
+     */
     public void setMargin(float x, float y, float z, float w) {
         mMargin.set(x, y, z, w);
         setUpdateFlag();
     }
 
+    /**
+     * Rotate the element by degrees.
+     *
+     * @param deg degree rotation to apply.
+     */
     public void rotateDeg(float deg) {
         mRotation += deg * MathUtils.DEG_TO_RAD;
         setUpdateFlag();
     }
 
+    /**
+     * Set the rotation of the element by degrees.
+     *
+     * @param deg degree rotation to set.
+     */
     public void setRotationDeg(float deg) {
         mRotation = deg * MathUtils.DEG_TO_RAD;
         setUpdateFlag();
     }
 
+    /**
+     * Set the position of the element.
+     *
+     * @param x target X-axis position.
+     * @param y target Y-axis position.
+     */
     public void setPosition(float x, float y) {
         mPosition.set(x, y);
         setUpdateFlag();
     }
 
+    /**
+     * Translate (move) element.
+     *
+     * @param x target X-axis translation.
+     * @param y target Y-axis translation.
+     */
     public void translate(float x, float y) {
         mPosition.add(x, y);
         setUpdateFlag();

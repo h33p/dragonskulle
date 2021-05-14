@@ -41,6 +41,7 @@ public class AttackData implements INetSerializable {
         mDefenderR = stream.readInt();
     }
 
+    /** Constructor. */
     public AttackData() {}
 
     /**
@@ -68,11 +69,23 @@ public class AttackData implements INetSerializable {
         mDefenderR = toTile.getR();
     }
 
+    /**
+     * Gets the attacking building from the map.
+     *
+     * @param map the map
+     * @return the attacking building
+     */
     public Building getAttacker(HexagonMap map) {
         HexagonTile tile = map.getTile(mAttackerQ, mAttackerR);
         return tile == null ? null : tile.getBuilding();
     }
 
+    /**
+     * Gets the defending building from the map.
+     *
+     * @param map the map
+     * @return the defending building
+     */
     public Building getDefender(HexagonMap map) {
         HexagonTile tile = map.getTile(mDefenderQ, mDefenderR);
         return tile == null ? null : tile.getBuilding();

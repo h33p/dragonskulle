@@ -355,7 +355,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private boolean isBuildable(HexagonTile tile) {
 
         if (getMap() == null) {
-            log.warning("Map is null.");
+            log.fine("map is null.");
             return false;
         }
 
@@ -381,7 +381,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     private Vector2f createCoordinates(float angleBetween) {
 
         if (!Reference.isValid(mGameState)) {
-            log.warning("Game State does not exist");
+            log.fine("Game State does not exist");
             return null;
         }
 
@@ -478,35 +478,35 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         HexagonMap map = getMap();
         if (map == null) {
-            log.warning("Unable to create building: no HexagonMap.");
+            log.fine("Unable to create building: no HexagonMap.");
             return null;
         }
 
         // Get the HexagonTile.
         HexagonTile tile = map.getTile(qPos, rPos);
         if (tile == null) {
-            log.warning("Unable to create building: Tile does not exist.");
+            log.fine("Unable to create building: Tile does not exist.");
             return null;
         }
 
         if (tile.isClaimed()) {
-            log.warning("Unable to create building: Tile is already claimed by a Building.");
+            log.fine("Unable to create building: Tile is already claimed by a Building.");
             return null;
         }
 
         if (tile.hasBuilding()) {
-            log.warning("Unable to create building: Tile already has Building.");
+            log.fine("Unable to create building: Tile already has Building.");
             return null;
         }
 
         if (tile.getTileType() != TileType.LAND) {
-            log.warning("Unable to create Building: Tile placed is not land");
+            log.fine("Unable to create Building: Tile placed is not land");
             return null;
         }
 
         if (checkIsland) {
             if (getMap().isIsland(getMap().getTile(qPos, rPos))) {
-                log.warning("This is an island and a capital cannot be placed here");
+                log.fine("This is an island and a capital cannot be placed here");
                 return null;
             }
         }
@@ -517,7 +517,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
                 getNetworkManager().getServerManager().spawnNetworkObject(playerId, template);
 
         if (!Reference.isValid(networkObject)) {
-            log.warning("Unable to create building: Could not create a Network Object.");
+            log.fine("Unable to create building: Could not create a Network Object.");
             return null;
         }
 
@@ -528,7 +528,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         Reference<Building> building = gameObject.getComponent(Building.class);
 
         if (!Reference.isValid(building)) {
-            log.warning("Unable to create building: Reference to Building component is invalid.");
+            log.fine("Unable to create building: Reference to Building component is invalid.");
             return null;
         }
 
@@ -594,6 +594,12 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         return val != null && val > 0;
     }
 
+    /**
+     * Get how viewable the tile is.
+     *
+     * @param tile tile to check.
+     * @return integer value for tile viewability. Only positive values mean viewable.
+     */
     public int getTileViewability(HexagonTile tile) {
         ensureViewableTilesAreValid();
         return mTilesAround.getOrDefault(tile, VIEWABILITY_LOWER_BOUND);
@@ -796,13 +802,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         HexagonTile tile = data.getTile(map);
         if (tile == null) {
-            log.warning("Unable to parse BuildData: Tile from BuildData is null.");
+            log.fine("Unable to parse BuildData: Tile from BuildData is null.");
             return;
         }
 
         BuildingDescriptor descriptor = data.getDescriptor();
         if (descriptor == null) {
-            log.warning("Unable to parse BuildData: Descriptor from BuildData is null.");
+            log.fine("Unable to parse BuildData: Descriptor from BuildData is null.");
             return;
         }
 
@@ -841,7 +847,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         building.setSellPrice(descriptor.getSellPrice(this));
         // Subtract the cost.
         mTokens.subtract(descriptor.getTotalCost(this));
-        log.warning("Added building.");
+        log.fine("Added building.");
         return true;
     }
 
@@ -854,7 +860,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
      */
     public boolean buildCheck(HexagonTile tile, int buyPrice) {
         if (tile == null) {
-            log.warning("Tile is null.");
+            log.fine("Tile is null.");
             return false;
         }
         if (getTokens().get() < buyPrice) {
@@ -872,19 +878,19 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     void attackEffect(AttackData data) {
         HexagonMap map = getMap();
         if (map == null) {
-            log.warning("Unable to parse AttackData: Map is null.");
+            log.fine("Unable to parse AttackData: Map is null.");
             return;
         }
 
         Building attacker = data.getAttacker(map);
         if (attacker == null) {
-            log.warning("Unable to parse AttackData: attacking building is null.");
+            log.fine("Unable to parse AttackData: attacking building is null.");
             return;
         }
 
         Building defender = data.getDefender(map);
         if (defender == null) {
-            log.warning("Unable to parse AttackData: defending building is null.");
+            log.fine("Unable to parse AttackData: defending building is null.");
             return;
         }
 
@@ -915,13 +921,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         Building attacker = data.getAttacker(map);
         if (attacker == null) {
-            log.warning("Unable to parse AttackData: attacking building is null.");
+            log.fine("Unable to parse AttackData: attacking building is null.");
             return;
         }
 
         Building defender = data.getDefender(map);
         if (defender == null) {
-            log.warning("Unable to parse AttackData: defending building is null.");
+            log.fine("Unable to parse AttackData: defending building is null.");
             return;
         }
 
@@ -1068,7 +1074,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         // Checks you have the cash
         if (mTokens.get() < attacker.getAttackCost()) {
-            log.warning("You don't have the cash to attack.");
+            log.fine("You don't have the cash to attack.");
             return false;
         }
 
@@ -1097,7 +1103,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         // Checks if you're in cooldown
         if (inCooldown()) {
-            log.warning("Still in cooldown: " + getNetworkManager().getServerTime());
+            log.fine("Still in cooldown: " + getNetworkManager().getServerTime());
             return false;
         }
 
@@ -1123,7 +1129,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         Building building = data.getBuilding(map);
         if (building == null) {
-            log.warning("Unable to parse StatData: Building from StatData is null.");
+            log.fine("Unable to parse StatData: Building from StatData is null.");
             return;
         }
 
@@ -1183,7 +1189,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
     public boolean sellCheck(Building building) {
 
         if (building == null) {
-            log.warning("building is null.");
+            log.fine("building is null.");
             return false;
         }
 
@@ -1226,13 +1232,13 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
 
         Building building = data.getBuilding(map);
         if (building == null) {
-            log.warning("Unable to parse StatData: Building from StatData is null.");
+            log.fine("Unable to parse StatData: Building from StatData is null.");
             return;
         }
 
         StatType statType = data.getStat();
         if (statType == null) {
-            log.warning("Unable to parse StatData: StatType from StatData is null.");
+            log.fine("Unable to parse StatData: StatType from StatData is null.");
             return;
         }
 
@@ -1289,7 +1295,7 @@ public class Player extends NetworkableComponent implements IOnStart, IFixedUpda
         }
 
         if (statType == null) {
-            log.warning("StatType is null.");
+            log.fine("StatType is null.");
             return false;
         }
 

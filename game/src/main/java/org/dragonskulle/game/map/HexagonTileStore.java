@@ -21,7 +21,10 @@ import org.dragonskulle.utils.IOUtils;
 import org.dragonskulle.utils.MathUtils;
 
 /**
+ * Stores and synchronizes the hexagon map.
+ *
  * @author Leela Muppala
+ * @author Aurimas Blažulionis
  *     <p>This class generates and stores a map of tiles with appropriate coordinates. Hexagon map
  *     objects are also created and stored.
  */
@@ -37,7 +40,13 @@ class HexagonTileStore implements ISyncVar {
     private final HexagonMap mMap;
     private final TileToStoreActions mHandler = new TileToStoreActions();
 
+    /** Actions a {@link HexagonTile} can invoke on the tile store. */
     class TileToStoreActions {
+        /**
+         * Invoked whenever a tile is updated.
+         *
+         * @param tile which tile updated.
+         */
         void update(HexagonTile tile) {
             int q = tile.getQ() + mCoordShift;
             int r = tile.getR() + mCoordShift;
@@ -68,10 +77,20 @@ class HexagonTileStore implements ISyncVar {
             }
         }
 
+        /**
+         * Get the network manager.
+         *
+         * @return network manager that owns the map.
+         */
         NetworkManager getNetworkManager() {
             return mMap.getNetworkManager();
         }
 
+        /**
+         * Update (change) tile game object.
+         *
+         * @param tile which tile's object changed.
+         */
         void updateGameObject(HexagonTile tile) {
             mMap.updateTileGameObject(tile);
         }
@@ -94,6 +113,12 @@ class HexagonTileStore implements ISyncVar {
         return dirty[0];
     }
 
+    /**
+     * Get the viewed tiles mask for particular player.
+     *
+     * @param id integer ID for the player in question.
+     * @return mask for the player.
+     */
     boolean[][] getViewedTileMask(Integer id) {
         boolean[][] viewedTileMask = mViewedTileMask.get(id);
 
@@ -105,6 +130,12 @@ class HexagonTileStore implements ISyncVar {
         return viewedTileMask;
     }
 
+    /**
+     * Get the tile dirty mask for particular player.
+     *
+     * @param id integer ID for the player in question.
+     * @return mask for the player.
+     */
     private boolean[][] getTileMask(Integer id) {
         boolean[][] tileMask = mTileMask.get(id);
 
@@ -116,6 +147,12 @@ class HexagonTileStore implements ISyncVar {
         return tileMask;
     }
 
+    /**
+     * Get the updated rows mask for particular player.
+     *
+     * @param id integer ID for the player in question.
+     * @return mask for the player.
+     */
     private boolean[] getTileRowMask(Integer id) {
         boolean[] tileRowMask = mTileRowMask.get(id);
 
@@ -127,6 +164,12 @@ class HexagonTileStore implements ISyncVar {
         return tileRowMask;
     }
 
+    /**
+     * Get the dirty mask for particular player.
+     *
+     * @param id integer ID for the player in question.
+     * @return mask for the player. Size of 1.
+     */
     private boolean[] getDirty(Integer id) {
         boolean[] dirty = mDirty.get(id);
 
@@ -138,6 +181,11 @@ class HexagonTileStore implements ISyncVar {
         return dirty;
     }
 
+    /**
+     * Dirty viewable tiles for particular player.
+     *
+     * @param id integer ID for the player in question.
+     */
     private void dirtyViewableTiles(Integer id) {
         Player p = mMap.getNetworkManager().getIdSingletons(id).get(Player.class);
 
@@ -262,7 +310,15 @@ class HexagonTileStore implements ISyncVar {
         }
     }
 
-    /** Hex(q,r) is stored as array[r+shift][q+shift] Map is created and stored in HexMap. */
+    /**
+     * Create a {@link HexagonTileStore}.
+     *
+     * <p>Hex(q,r) is stored as array[r+shift][q+shift] Map is created and stored in HexMap.
+     *
+     * @param size size of the map.
+     * @param seed random seed of the map.
+     * @param map back reference tothe map creating this.
+     */
     public HexagonTileStore(int size, int seed, HexagonMap map) {
         mTiles = new HexagonTile[size][size];
         mViewedTileMask = new HashMap<>();
@@ -297,10 +353,10 @@ class HexagonTileStore implements ISyncVar {
         }
 
         /* Generates the middle part of the map */
-        int r_m = (size / 2);
+        int rM = (size / 2);
         for (int q = 0; q < size; q++) {
             int q1 = q - mCoordShift;
-            int r1 = r_m - mCoordShift;
+            int r1 = rM - mCoordShift;
             float height = getHeight(q1, r1);
             setTile(new HexagonTile(q1, r1, height, mHandler));
         }
@@ -352,6 +408,11 @@ class HexagonTileStore implements ISyncVar {
         return Arrays.stream(mTiles).flatMap(Arrays::stream).filter(x -> x != null);
     }
 
+    /**
+     * Set a tile in the internal list.
+     *
+     * @param tile tile to set.
+     */
     private void setTile(HexagonTile tile) {
         int q = tile.getQ() + mCoordShift;
         int r = tile.getR() + mCoordShift;
@@ -372,14 +433,23 @@ class HexagonTileStore implements ISyncVar {
         return (input - 1) / 2;
     }
 
+    /** Rounding factor used to get a stepped look. */
     private static final float NOISE_STEP = 0.2f;
 
+    /** Noise octaves used for map generation. */
     private static final float[][] OCTAVES = {
         {0.1f, 0.9f, 0f},
         {0.3f, 0.2f, 0f},
         {0.6f, 0.1f, 0f}
     };
 
+    /**
+     * Get the height at a particular coordinate.
+     *
+     * @param q Q coordinate of the tile.
+     * @param r R coordinate of the tile.
+     * @return height at the point.
+     */
     private float getHeight(int q, int r) {
         return MathUtils.roundStep(NoiseUtil.getHeight(q, r, mSeed, OCTAVES), NOISE_STEP);
     }

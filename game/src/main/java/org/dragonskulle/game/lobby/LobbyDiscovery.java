@@ -16,19 +16,19 @@ import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicBoolean;
 import lombok.extern.java.Log;
 
-@Log
 /**
- * Utility class that can be used for host discovery on local networks
+ * Utility class that can be used for host discovery on local networks.
  *
  * @author Harry Stoltz
  */
+@Log
 public class LobbyDiscovery {
 
     private static final int DISCOVER_PORT = 17571;
     private static final byte[] UDP_DISCOVER_MAGIC = "HWDiscover".getBytes();
     private static final byte[] UDP_CONNECT_RESPONSE = "HWFound".getBytes();
 
-    private static Listener mListener = null;
+    private static Listener sListener = null;
 
     /**
      * Thread that will receive UDP packets on UDP_PORT and if the data in the packet is equal to
@@ -42,7 +42,7 @@ public class LobbyDiscovery {
 
         private final AtomicBoolean mRunning = new AtomicBoolean(true);
 
-        /** Sets mRunning to false which results in the thread stopping */
+        /** Sets mRunning to false which results in the thread stopping. */
         public void close() {
             mRunning.set(false);
         }
@@ -85,23 +85,29 @@ public class LobbyDiscovery {
         }
     }
 
-    /** Creates a new Listener thread if there isn't one already running */
+    /** Creates a new Listener thread if there isn't one already running. */
     public static void openLocalLobby() {
-        if (mListener != null) {
-            mListener.close();
+        if (sListener != null) {
+            sListener.close();
         }
-        mListener = new Listener();
-        mListener.start();
+        sListener = new Listener();
+        sListener.start();
     }
 
-    /** Stops the Listener thread if there is one running */
+    /** Stops the Listener thread if there is one running. */
     public static void closeLocalLobby() {
-        if (mListener != null) {
-            mListener.close();
-            mListener = null;
+        if (sListener != null) {
+            sListener.close();
+            sListener = null;
         }
     }
 
+    /**
+     * Get a list of all udp broadcast addresses by iterating through all network interfaces.
+     *
+     * @return A list containing all broadcast addresses, or a list containing just 255.255.255.255
+     *     if no specific broadcast addresses could be found.
+     */
     private static ArrayList<InetSocketAddress> getBroadcastAddresses() {
         ArrayList<InetSocketAddress> addresses = new ArrayList<>();
 

@@ -16,6 +16,11 @@ class TimestampedRequest {
     private byte[] mData;
     private float mTimestamp;
 
+    /**
+     * Construct a timestamped request.
+     *
+     * @param data data of the request.
+     */
     public TimestampedRequest(byte[] data) {
         mData = data;
         mTimestamp = Time.getTimeInSeconds();

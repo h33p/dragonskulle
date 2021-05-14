@@ -34,7 +34,7 @@ public class GameObject {
     @Getter private Scene mScene;
     /** How deep the object is within the game object structure. */
     @Getter private int mDepth = 0;
-    /** How much depth is added by the object */
+    /** How much depth is added by the object. */
     @Getter private int mDepthOffset = 1;
 
     static {
@@ -292,6 +292,12 @@ public class GameObject {
         }
     }
 
+    /**
+     * Get every child that is enabled with this GameObject acting as the root in a tree, adding to
+     * the list in a depth-first order.
+     *
+     * @param ret The list that will be populated with children.
+     */
     protected void getAllEnabledChildren(List<GameObject> ret) {
         for (GameObject child : mChildren) {
             if (child.isEnabled()) {
@@ -490,6 +496,11 @@ public class GameObject {
         dirtyComponentLists();
     }
 
+    /**
+     * Create a clone of this GameObject.
+     *
+     * @return A deep clone of this GameObject.
+     */
     public GameObject createClone() {
         GameObject ret = Engine.getCloner().deepClone(this);
         ret.setScene(mScene);
@@ -545,7 +556,7 @@ public class GameObject {
     }
 
     /**
-     * Setter for mEnabled. This value is recursively set for all children
+     * Setter for mEnabled. This value is recursively set for all children.
      *
      * @param enabled New value for mEnabled.
      */
@@ -564,9 +575,9 @@ public class GameObject {
     }
 
     /**
-     * Setter for mDepthOffset
+     * Setter for mDepthOffset.
      *
-     * <p>This method will update the depth of the object and its children
+     * <p>This method will update the depth of the object and its children.
      *
      * @param newOffset new depth offset to use.
      */
@@ -591,6 +602,15 @@ public class GameObject {
         for (GameObject child : mChildren) {
             child.setDepth(mDepth + child.getDepthOffset());
         }
+    }
+
+    /**
+     * Getter for mComponents, should only be used by the engine.
+     *
+     * @return mComponents
+     */
+    protected ArrayList<Component> getComponents() {
+        return mComponents;
     }
 
     /**
@@ -627,15 +647,6 @@ public class GameObject {
         if (mScene != null) {
             mScene.dirtyComponentLists();
         }
-    }
-
-    /**
-     * Getter for mComponents, should only be used by the engine.
-     *
-     * @return mComponents
-     */
-    protected ArrayList<Component> getComponents() {
-        return mComponents;
     }
 
     /** Handle the destruction of the object. */

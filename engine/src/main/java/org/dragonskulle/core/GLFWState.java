@@ -93,7 +93,7 @@ public class GLFWState implements NativeResource {
     }
 
     /**
-     * Set fullscreen mode for the current window
+     * Set fullscreen mode for the current window.
      *
      * @param fullscreen whether to make the window fullscreen or not. If set to true, the window
      *     will be made full screen, if set to false, the window will no longer be fullscreen. An
@@ -162,7 +162,13 @@ public class GLFWState implements NativeResource {
         mRenderer.free();
     }
 
-    /** Creates a GLFW window. */
+    /**
+     * Creates a GLFW window. @param width the width
+     *
+     * @param width the width
+     * @param height the height
+     * @param appName the app name
+     */
     private void initWindow(int width, int height, String appName) {
         log.fine("Initialize GLFW window");
 
@@ -184,6 +190,13 @@ public class GLFWState implements NativeResource {
         setFullscreen(mSettings.retrieveBoolean(FULLSCREEN, false));
     }
 
+    /**
+     * Event called when framebuffer is resized.
+     *
+     * @param window window that got resized.
+     * @param width new width.
+     * @param height new height.
+     */
     private void onFramebufferResize(long window, int width, int height) {
         mFramebufferResized = true;
     }

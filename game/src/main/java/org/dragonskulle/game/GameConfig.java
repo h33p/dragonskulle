@@ -136,6 +136,12 @@ public class GameConfig implements ISyncVar {
         }
     }
 
+    /**
+     * Load {@link GameConfig} from a valid JSON file.
+     *
+     * @param path the path to the file
+     * @return the generated game config, or {@code null} if invalid.
+     */
     public static GameConfig fromFile(String path) {
         File file = new File(path);
 
@@ -156,11 +162,18 @@ public class GameConfig implements ISyncVar {
         /** Map to size spawn. */
         private int mMapSize;
 
+        /**
+         * Constructor for {@link GlobalConfig}.
+         *
+         * @param inflation inflation to set.
+         * @param mapSize map size to spawn.
+         */
         public GlobalConfig(float inflation, int mapSize) {
             mInflation = inflation;
             mMapSize = mapSize;
         }
 
+        /** Default constructor for {@link GlobalConfig}. */
         public GlobalConfig() {
             this(1.002f, 51);
         }
@@ -183,15 +196,36 @@ public class GameConfig implements ISyncVar {
     @Setter
     @Accessors(prefix = "m")
     public static class PlayerConfig implements INetSerializable {
+        /** Attack cooldown to set. */
         private float mAttackCooldown;
+        /** Token generation rate to set. */
         private float mTokenRate;
+        /** Token generation time to set. */
         private float mTokenTime;
+        /** How much inflation a building adds. */
         private float mInflationPerBuilding;
+        /** How much advantage a unit of height adds. */
         private float mAttackHeightMul;
+        /** How much taking over an enemy capital helps with inflation. */
         private float mCapitalInflationBonus;
+        /** How much taking over an enemy building helps with inflation. */
         private float mBuildingInflationBonus;
+        /** How much extra losing a building helps with inflation. */
         private float mBuildingLostInflationBonus;
 
+        /**
+         * Constructor for {@link PlayerConfig}.
+         *
+         * @param attackCooldown attack cooldown to set.
+         * @param tokenRate token generation rate to set.
+         * @param tokenTime how fast the tokens should be generated.
+         * @param inflationPerBuilding how much inflation a building adds.
+         * @param attackHeightMul how much advantage a unit of height adds.
+         * @param capitalInflationBonus how much taking over a capital helps with inflation.
+         * @param buildingInflationBonus how much taking over an enemy building helps with
+         *     inflation.
+         * @param buildingLostInflationBonus how much extra losing a building helps with inflation.
+         */
         public PlayerConfig(
                 float attackCooldown,
                 float tokenRate,
@@ -211,6 +245,7 @@ public class GameConfig implements ISyncVar {
             mBuildingLostInflationBonus = buildingLostInflationBonus;
         }
 
+        /** Default constructor for {@link PlayerConfig}. */
         public PlayerConfig() {
             this(2, 5, 1, 1.04f, 1, -5, -0.1f, 0.1f);
         }
@@ -254,6 +289,14 @@ public class GameConfig implements ISyncVar {
         /** Probability of selling an owned {@link Building}. */
         private float mSellProbability;
 
+        /**
+         * Construtor for {@link ProbabilisticAiConfig}.
+         *
+         * @param buildProbability probability of placing a building.
+         * @param upgradeProbability probability of upgrading a building.
+         * @param attackProbability probability of attacking.
+         * @param sellProbability probability of selling a building.
+         */
         public ProbabilisticAiConfig(
                 float buildProbability,
                 float upgradeProbability,
@@ -265,6 +308,7 @@ public class GameConfig implements ISyncVar {
             mSellProbability = sellProbability;
         }
 
+        /** Default contructor for {@link ProbabilisticAiConfig}. */
         public ProbabilisticAiConfig() {
             // Probabilistic
             this(0.65f, 0.155f, 0.19f, 0.005f);
@@ -294,17 +338,25 @@ public class GameConfig implements ISyncVar {
     public static class AiAimerConfig implements INetSerializable {
         /** Whether to use the A* route. */
         private float mPlayAStar;
-        /** The number of attempts before it will always aim for a Capital */
+        /** The number of attempts before it will always aim for a Capital. */
         private int mMaxAttempts;
         /** This is the number of tries we should do before resetting. */
         private int mTries;
 
+        /**
+         * Constructor for {@link AiAimerConfig}.
+         *
+         * @param playAStar probability of using AStar algorithm.
+         * @param maxAttempts maximum attempts of aiming for enemy capital.
+         * @param tries number of tries before resetting attempts.
+         */
         public AiAimerConfig(float playAStar, int maxAttempts, int tries) {
             mPlayAStar = playAStar;
             mMaxAttempts = maxAttempts;
             mTries = tries;
         }
 
+        /** Default constructor for {@link AiAimerConfig}. */
         public AiAimerConfig() {
             this(0.75f, 50, 5);
         }
@@ -330,7 +382,9 @@ public class GameConfig implements ISyncVar {
     @Accessors(prefix = "m")
     @JsonIgnoreProperties({"_id"})
     public static class AiConfig implements INetSerializable {
+        /** Lower bound for delaying moves. */
         private float mLowerBoundTime;
+        /** Upper bound for delaying moves. */
         private float mUpperBoundTime;
 
         /** Properties for probabilistic AI. */
@@ -338,6 +392,14 @@ public class GameConfig implements ISyncVar {
         /** Properties for aimer AI. */
         private AiAimerConfig mAiAimer;
 
+        /**
+         * Constructor for {@link AiConfig}.
+         *
+         * @param lowerBoundTime lower bound for delaying moves.
+         * @param upperBoundTime upper bound for delaying moves.
+         * @param probabilisticAi {@link ProbabilisticAiConfig} instance.
+         * @param aimerAi {@link AiAimerConfig} instance.
+         */
         public AiConfig(
                 float lowerBoundTime,
                 float upperBoundTime,
@@ -349,8 +411,8 @@ public class GameConfig implements ISyncVar {
             mAiAimer = aimerAi;
         }
 
+        /** Default constructor for {@link AiConfig}. */
         public AiConfig() {
-
             this(1, 2, new ProbabilisticAiConfig(), new AiAimerConfig());
         }
 
@@ -377,14 +439,23 @@ public class GameConfig implements ISyncVar {
     @Setter
     @Accessors(prefix = "m")
     public static class StatBonusConfig implements INetSerializable {
+        /** Tile that adds bonus for the stat. */
         private TileType mBonusTile;
+        /** How much bonus value a tile adds to stat. */
         private float mMultiplier;
 
+        /**
+         * Constructor for {@link StatBonusConfig}.
+         *
+         * @param bonusTile bonus tile to set.
+         * @param multiplier how much bonus a tile adds.
+         */
         public StatBonusConfig(TileType bonusTile, float multiplier) {
             mBonusTile = bonusTile;
             mMultiplier = multiplier;
         }
 
+        /** Default constructor for {@link StatBonusConfig}. */
         public StatBonusConfig() {
             this(null, 0);
         }
@@ -413,12 +484,27 @@ public class GameConfig implements ISyncVar {
     @Setter
     @Accessors(prefix = "m")
     public static class StatValueConfig implements INetSerializable {
+        /** Base value of the stat. */
         private float mBaseValue;
+        /** How much each level adds to the stat. */
         private float mMulLevel;
+        /** Minimum value of the stat. */
         private float mMinValue;
+        /** Maximum value of the stat. */
         private float mMaxValue;
+        /** Bonus of the stat (applied after minmax bounds). */
         private StatBonusConfig mBonus;
 
+        /**
+         * Constructor for {@link StatValueConfig}.
+         *
+         * @param baseValue base value for the stat.
+         * @param mulLevel how much each level adds to the stat.
+         * @param minValue minimum value of the stat.
+         * @param maxValue maximum value of the stat.
+         * @param bonusTile bonus tile to use.
+         * @param bonusMultiplier bonus multiplier for the tile.
+         */
         public StatValueConfig(
                 float baseValue,
                 float mulLevel,
@@ -433,6 +519,7 @@ public class GameConfig implements ISyncVar {
             mBonus = new StatBonusConfig(bonusTile, bonusMultiplier);
         }
 
+        /** Default constructor for {@link StatValueConfig}. */
         public StatValueConfig() {
             this(0, 1, 0, 100, null, 0);
         }
@@ -461,12 +548,19 @@ public class GameConfig implements ISyncVar {
     @Setter
     @Accessors(prefix = "m")
     public static class StatCostConfig implements INetSerializable {
+        /** How much each level of stat costs more. */
         private float mSelfLevelMultiplier;
 
+        /**
+         * Constructor for {@link StatCostConfig}.
+         *
+         * @param selfLevelMultiplier how much each level of stat costs more.
+         */
         public StatCostConfig(float selfLevelMultiplier) {
             mSelfLevelMultiplier = selfLevelMultiplier;
         }
 
+        /** Default constructor for {@link StatCostConfig}. */
         public StatCostConfig() {
             this(3f);
         }
@@ -487,9 +581,22 @@ public class GameConfig implements ISyncVar {
     @Setter
     @Accessors(prefix = "m")
     public static class StatConfig implements INetSerializable {
+        /** Value value configuration for the stat. */
         private StatValueConfig mValue;
+        /** Cost configuration for the stat. */
         private StatCostConfig mCost;
 
+        /**
+         * Constructor for {@link StatConfig}.
+         *
+         * @param baseValue base value for the stat.
+         * @param mulLevel how much each level adds to the stat.
+         * @param minValue minimum value of the stat.
+         * @param maxValue maximum value of the stat.
+         * @param bonusTile bonus tile to use.
+         * @param bonusMultiplier bonus multiplier for the tile.
+         * @param selfLevelMultiplier how much each level of stat costs more.
+         */
         public StatConfig(
                 float baseValue,
                 float mulLevel,
@@ -504,6 +611,16 @@ public class GameConfig implements ISyncVar {
             mCost = new StatCostConfig(selfLevelMultiplier);
         }
 
+        /**
+         * Constructor for {@link StatConfig}.
+         *
+         * @param baseValue base value for the stat.
+         * @param mulLevel how much each level adds to the stat.
+         * @param minValue minimum value of the stat.
+         * @param maxValue maximum value of the stat.
+         * @param bonusTile bonus tile to use.
+         * @param bonusMultiplier bonus multiplier for the tile.
+         */
         public StatConfig(
                 float baseValue,
                 float mulLevel,
@@ -517,6 +634,7 @@ public class GameConfig implements ISyncVar {
             mCost = new StatCostConfig();
         }
 
+        /** Default constructor for {@link StatConfig}. */
         public StatConfig() {
             mValue = new StatValueConfig();
             mCost = new StatCostConfig();

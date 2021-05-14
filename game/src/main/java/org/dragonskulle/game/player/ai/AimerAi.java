@@ -65,7 +65,7 @@ public class AimerAi extends ProbabilisticAiPlayer {
     /** The chance to aim at a capital. */
     private float mAimAtCapital = 0.0f;
 
-    /** The number of times we've attempted A* */
+    /** The number of times we've attempted A*. */
     private int mAStarAttempts = 0;
 
     /** Basic Constructor. */
@@ -382,7 +382,7 @@ public class AimerAi extends ProbabilisticAiPlayer {
             mNodePreviouslyOn = mGraph.getNode(firstElement);
 
         } else {
-            log.warning("Cannot do the first move");
+            log.fine("Cannot do the first move");
         }
         return;
     }
@@ -542,7 +542,7 @@ public class AimerAi extends ProbabilisticAiPlayer {
                                     });
         }
         if (!foundTile) {
-            log.severe("Cannot find a tile to aim for");
+            log.fine("Cannot find a tile to aim for");
             return null;
         } else {
             return tileToAim[0];
@@ -586,6 +586,11 @@ public class AimerAi extends ProbabilisticAiPlayer {
         return buildings;
     }
 
+    /**
+     * This will choose randomly the HexagonTile to start from.
+     *
+     * @return The {@link HexagonTile} to start be the start node.
+     */
     private HexagonTile getStartHex() {
         List<Reference<Building>> ownedBuildings = getPlayer().getOwnedBuildings();
         if (ownedBuildings.size() == 0) {

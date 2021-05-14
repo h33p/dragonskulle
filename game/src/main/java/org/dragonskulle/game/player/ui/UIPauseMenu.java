@@ -36,10 +36,6 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
 
     private final Reference<AudioSource> mEndGameJukeBox;
 
-    public interface IHandleEvent {
-        void handle();
-    }
-
     /** The possible states the settings menu can be in. */
     private static enum State {
         MENU,
@@ -329,6 +325,12 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
         }
     }
 
+    /**
+     * Hides the menu.
+     *
+     * @param hide true if we want to hide the menu, false if we want to unhide
+     * @param hp the {@link HumanPlayer} where the pause menu lives
+     */
     private void hideMenu(boolean hide, HumanPlayer hp) {
         Reference<UIMenuLeftDrawer> menuDrawer = hp.getMenuDrawer();
         Reference<UILinkedScrollBar> scrollBar = hp.getScrollBar();
@@ -344,6 +346,7 @@ public class UIPauseMenu extends Component implements IOnAwake, IFrameUpdate {
         }
     }
 
+    /** Displays the confirm quit screen. */
     private void onClickQuit() {
         mQuitBackState = mCurrentState;
         switchToState(State.QUIT_CONFIRM);

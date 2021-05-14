@@ -52,7 +52,7 @@ public class Camera extends Component implements IFrameUpdate {
     private Matrix4f mProj = new Matrix4f();
 
     @Getter
-    /** Current screen aspect ratio. */
+    /* Current screen aspect ratio. */
     private float mAspectRatio = 1.f;
 
     /**
@@ -70,9 +70,9 @@ public class Camera extends Component implements IFrameUpdate {
     /**
      * Get the current projection matrix.
      *
-     * <p>This method will update the camera's projection matrix and return it back.
+     * <p>This method will update the camera's projection matrix and return it back
      *
-     * @return projection matrix for the camera.
+     * @return the projection matrix for the camera. The same as {@link #mProj}
      */
     public Matrix4fc getProj() {
         switch (mProjection) {

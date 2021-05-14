@@ -12,18 +12,29 @@ import org.dragonskulle.components.IFrameUpdate;
 import org.dragonskulle.components.IOnStart;
 import org.dragonskulle.core.Reference;
 
+/**
+ * Simple sound effect player.
+ *
+ * @author Aurimas Blažulionis
+ */
 @Accessors(prefix = "m")
 public class SoundEffectSource extends Component implements IOnStart, IFrameUpdate {
 
+    /** List of sound effect descriptors to choose from. */
     private List<Reference<SoundEffectDescriptor>> mEffects = new ArrayList<>();
+    /** Audio source to play from. */
     private Reference<AudioSource> mSource;
 
+    /** Effect source range. */
     @Getter @Setter private float mSourceRange = 4f;
 
+    /** Should only one sound effect play. */
     @Getter @Setter private boolean mPlayOnce = false;
 
+    /** Did play the sound effect. */
     private boolean mPlayed = false;
 
+    /** Global disable for all sound effects. */
     @Accessors(prefix = "s")
     @Getter
     @Setter
@@ -51,6 +62,7 @@ public class SoundEffectSource extends Component implements IOnStart, IFrameUpda
         }
     }
 
+    /** Play a sound effect. */
     public void playEffect() {
         if (!Reference.isValid(mSource)) {
             return;

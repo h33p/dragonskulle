@@ -31,7 +31,9 @@ import org.dragonskulle.network.components.sync.SyncInt;
  */
 @Accessors(prefix = "m")
 public class GameState extends NetworkableComponent implements IOnAwake, IFixedUpdate {
+    /** Event invoked on game end. */
     private static class GameEndEventData implements INetSerializable {
+        /** Winner of the game. */
         private int mWinnerId;
 
         @Override
@@ -45,10 +47,20 @@ public class GameState extends NetworkableComponent implements IOnAwake, IFixedU
         }
     }
 
+    /**
+     * A networked event that allows playing of a certain clip from {@link
+     * org.dragonskulle.game.GameUIAppearance.AudioFiles}.
+     */
     public static class InvokeAudioEvent implements INetSerializable {
 
+        /** Constructor. */
         public InvokeAudioEvent() {}
 
+        /**
+         * Constructor.
+         *
+         * @param sound the sound to play
+         */
         public InvokeAudioEvent(GameUIAppearance.AudioFiles sound) {
             mSoundId = sound;
         }
@@ -68,7 +80,13 @@ public class GameState extends NetworkableComponent implements IOnAwake, IFixedU
         }
     }
 
+    /** Handler for game end event. */
     public static interface IGameEndEvent {
+        /**
+         * Handle the game end.
+         *
+         * @param winnerId ID of the winner's network ID.
+         */
         void handle(int winnerId);
     }
 
@@ -137,6 +155,13 @@ public class GameState extends NetworkableComponent implements IOnAwake, IFixedU
     @Override
     public void onDestroy() {}
 
+    /**
+     * Register the game end listener.
+     *
+     * <p>This listener will be invoked whenever the game end event is invoked.
+     *
+     * @param e the event listener.
+     */
     public void registerGameEndListener(Reference<IGameEndEvent> e) {
         if (Reference.isValid(e)) {
             mGameEndListeners.add(e);
@@ -156,6 +181,11 @@ public class GameState extends NetworkableComponent implements IOnAwake, IFixedU
         return (float) Math.pow(mConfig.getGlobal().getInflation(), deltaTime);
     }
 
+    /**
+     * Gets the {@link GameConfig} singleton from the scene if it exists, otherwise {@code null}.
+     *
+     * @return the scene config
+     */
     public static GameConfig getSceneConfig() {
         GameState state = Scene.getActiveScene().getSingleton(GameState.class);
 

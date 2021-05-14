@@ -19,7 +19,7 @@ import org.dragonskulle.game.player.ai.AimerAi;
 public class Graph {
 
     /** The hash map which will hold the node id to the Node. */
-    protected HashMap<Integer, Node> mGraph = new HashMap<>();;
+    protected HashMap<Integer, Node> mGraph = new HashMap<>();
 
     /** The {@link HexagonMap} which is used. */
     private Reference<HexagonMap> mMap;
@@ -219,7 +219,7 @@ public class Graph {
     }
 
     /**
-     * Gets the hash of a {@link HexagonTile}
+     * Gets the hash of a {@link HexagonTile}.
      *
      * @param tile The {@link HexagonTile} to get a hash for
      * @return The hash of it

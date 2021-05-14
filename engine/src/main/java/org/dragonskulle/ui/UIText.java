@@ -83,22 +83,32 @@ public class UIText extends Renderable implements IOnAwake, IFrameUpdate, IUIBui
         go.addComponent(this);
     }
 
-    /** Constructor for UIText. */
+    /** Constructor for {@link UIText}. */
     public UIText() {
         this(UIManager.getInstance().getAppearance());
     }
 
+    /**
+     * Constructor for {@link UIText}.
+     *
+     * @param appearance custom appearance to set.
+     */
     public UIText(UIAppearance appearance) {
         this(appearance.getTextColour(), appearance.getTextFont().clone());
     }
 
+    /**
+     * Constructor for {@link UIText}.
+     *
+     * @param text initial text to set.
+     */
     public UIText(String text) {
         this();
         mText = text;
     }
 
     /**
-     * Constructor for UIText.
+     * Constructor for {@link UIText}.
      *
      * @param colour RGBA float colour value
      * @param font font to use for text
@@ -109,7 +119,7 @@ public class UIText extends Renderable implements IOnAwake, IFrameUpdate, IUIBui
     }
 
     /**
-     * Constructor for UIText.
+     * Constructor for {@link UIText}.
      *
      * @param colour RGBA float colour value
      * @param font font to use for text
@@ -121,7 +131,7 @@ public class UIText extends Renderable implements IOnAwake, IFrameUpdate, IUIBui
     }
 
     /**
-     * Constructor for UIText.
+     * Constructor for {@link UIText}.
      *
      * @param colour RGB float colour value
      * @param font font to use for text
@@ -133,7 +143,7 @@ public class UIText extends Renderable implements IOnAwake, IFrameUpdate, IUIBui
     }
 
     /**
-     * Constructor for UIText.
+     * Constructor for {@link UIText}.
      *
      * @param colour RGBA float colour value
      */
@@ -142,7 +152,7 @@ public class UIText extends Renderable implements IOnAwake, IFrameUpdate, IUIBui
     }
 
     /**
-     * Constructor for UIText.
+     * Constructor for {@link UIText}.
      *
      * @param colour RGB float colour value
      */
@@ -151,7 +161,7 @@ public class UIText extends Renderable implements IOnAwake, IFrameUpdate, IUIBui
     }
 
     /**
-     * Constructor for UIText.
+     * Constructor for {@link UIText}.
      *
      * @param colour RGBA float colour value
      * @param text text to render
@@ -162,7 +172,7 @@ public class UIText extends Renderable implements IOnAwake, IFrameUpdate, IUIBui
     }
 
     /**
-     * Constructor for UIText.
+     * Constructor for {@link UIText}.
      *
      * @param colour RGB float colour value
      * @param text text to render
