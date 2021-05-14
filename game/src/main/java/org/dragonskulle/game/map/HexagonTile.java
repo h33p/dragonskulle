@@ -26,6 +26,8 @@ import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.sync.INetSerializable;
 
 /**
+ * Describes information on individual hexagon map tile.
+ *
  * @author Leela Muppala
  * @author Aurimas Blažulionis
  *     <p>Creates each HexagonTile with their 3 coordinates. This stores information about the axial
@@ -174,6 +176,13 @@ public class HexagonTile implements INetSerializable {
         return (int) ((Math.abs(mQ) + Math.abs(mR) + Math.abs(getS())) / 2);
     }
 
+    /**
+     * Get tile distance to particular coordinate.
+     *
+     * @param q Q-axis value.
+     * @param r R-axis value.
+     * @return integer distance from the tile to the given coordinate.
+     */
     public int distTo(int q, int r) {
         int s = -q - r;
 

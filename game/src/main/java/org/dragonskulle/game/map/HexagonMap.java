@@ -27,6 +27,8 @@ import org.joml.Vector2fc;
 import org.joml.Vector3f;
 
 /**
+ * Store and synchronize the game map.
+ *
  * @author Leela Muppala and Craig Wilbourne
  *     <p>This class generates and stores a map of tiles with appropriate coordinates. Hexagon map
  *     objects are also created and stored.
