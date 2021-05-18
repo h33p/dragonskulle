@@ -102,9 +102,9 @@ const ConfigSchema = new mongoose.Schema(
             tokenTime: Float,
             inflationPerBuilding: Float,
             attackHeightMul: Float,
-            mCapitalInflationBonus: Float,
-            mBuildingInflationBonus: Float,
-            mBuildingLostInflationBonus: Float
+            capitalInflationBonus: Float,
+            buildingInflationBonus: Float,
+            buildingLostInflationBonus: Float
         },
         ai: [{
             lowerBoundTime: Float,

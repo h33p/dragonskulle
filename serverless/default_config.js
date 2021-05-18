@@ -4,14 +4,14 @@
       "mapSize" : 51
   },
   "player" : {
-    "inflationPerBuilding" : 1.04,
+    "inflationPerBuilding" : 1.08,
     "attackCooldown" : 2.0,
     "tokenRate" : 5.0,
     "tokenTime" : 1.0,
     "attackHeightMul" : 1.0,
-    "mCapitalInflationBonus": -5,
-    "mBuildingInflationBonus": -0.1,
-    "mBuildingLostInflationBonus": 0.1
+    "capitalInflationBonus": -5,
+    "buildingInflationBonus": -0.1,
+    "buildingLostInflationBonus": 0.1
   },
   "ai" : [{
     "lowerBoundTime": 1.0,
