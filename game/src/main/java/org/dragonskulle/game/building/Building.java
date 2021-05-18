@@ -43,6 +43,7 @@ import org.dragonskulle.game.misc.ArcPath;
 import org.dragonskulle.game.misc.ArcPath.IArcHandler;
 import org.dragonskulle.game.misc.ArcPath.IPathUpdater;
 import org.dragonskulle.game.player.Player;
+import org.dragonskulle.network.components.NetworkManager;
 import org.dragonskulle.network.components.NetworkObject;
 import org.dragonskulle.network.components.NetworkableComponent;
 import org.dragonskulle.network.components.ServerNetworkManager;
@@ -997,7 +998,18 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * @return {@code true} if building is action locked, {@code false} otherwise.
      */
     public boolean isTimeActionLocked() {
-        return mActionLockTime.get() > getNetworkManager().getServerTime();
+        float time;
+
+        NetworkManager man = getNetworkManager();
+
+        // Can be null in tests smh my head...
+        if (man != null) {
+            time = man.getServerTime();
+        } else {
+            time = Engine.getInstance().getCurTime();
+        }
+
+        return mActionLockTime.get() > time;
     }
 
     /**
