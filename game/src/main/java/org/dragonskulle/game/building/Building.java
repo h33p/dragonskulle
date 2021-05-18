@@ -997,7 +997,7 @@ public class Building extends NetworkableComponent implements IOnAwake, IOnStart
      * @return {@code true} if building is action locked, {@code false} otherwise.
      */
     public boolean isTimeActionLocked() {
-        return mActionLockTime.get() > Engine.getInstance().getCurTime();
+        return mActionLockTime.get() > getNetworkManager().getServerTime();
     }
 
     /**
